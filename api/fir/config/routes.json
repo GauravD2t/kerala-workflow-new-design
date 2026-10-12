@@ -1,0 +1,81 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/firs",
+      "handler": "fir.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/firs/count",
+      "handler": "fir.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/firs/:id",
+      "handler": "fir.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/firs",
+      "handler": "fir.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/firs/:id",
+      "handler": "fir.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/firs/:id",
+      "handler": "fir.delete",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "GET",
+      "path": "/firsByBatch/:batch",
+      "handler": "fir.firsByBatch",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "DELETE",
+      "path": "/delteFRIbyBatch/:batch",
+      "handler": "fir.delteFRIbyBatch",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "PUT",
+      "path": "/taskassingFIR/:id",
+      "handler": "fir.taskassingFIR",
+      "config": {
+        "policies": []
+      }
+      
+    },{
+      "method": "GET",
+      "path": "/findfirbyQuery",
+      "handler": "fir.findfirbyQuery",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

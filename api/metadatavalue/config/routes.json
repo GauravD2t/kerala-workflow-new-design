@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/metadatavalues",
+      "handler": "metadatavalue.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/metadatavalues/count",
+      "handler": "metadatavalue.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/metadatavalues/:id",
+      "handler": "metadatavalue.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/metadatavalues",
+      "handler": "metadatavalue.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/metadatavalues/:id",
+      "handler": "metadatavalue.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/metadatavalues/:id",
+      "handler": "metadatavalue.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

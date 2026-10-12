@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "databasebackups",
+  "info": {
+    "name": "databasebackup"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "storepath": {
+      "type": "text"
+    },
+    "scheduletype": {
+      "type": "integer"
+    },
+    "scheduletime": {
+      "type": "string"
+    }
+  }
+}

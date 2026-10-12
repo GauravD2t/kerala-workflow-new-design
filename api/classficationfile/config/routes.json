@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/classficationfiles",
+      "handler": "classficationfile.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/classficationfiles/count",
+      "handler": "classficationfile.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/classficationfiles/:id",
+      "handler": "classficationfile.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/classficationfiles",
+      "handler": "classficationfile.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/classficationfiles/:id",
+      "handler": "classficationfile.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/classficationfiles/:id",
+      "handler": "classficationfile.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "menus",
+  "info": {
+    "name": "menu"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "menuname": {
+      "type": "string"
+    },
+    "menuurl": {
+      "type": "string",
+      "required": false
+    },
+    "roles": {
+      "via": "menus",
+      "plugin": "users-permissions",
+      "collection": "role",
+      "dominant": true
+    },
+    "index": {
+      "type": "integer"
+    },
+    "menugroup": {
+      "model": "menugroup"
+    },
+    "menuicon": {
+      "type": "string"
+    },
+    "users": {
+      "via": "menus",
+      "plugin": "users-permissions",
+      "collection": "user"
+    }
+  }
+}

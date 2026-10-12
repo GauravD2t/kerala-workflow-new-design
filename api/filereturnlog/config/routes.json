@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/filereturnlogs",
+      "handler": "filereturnlog.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/filereturnlogs/count",
+      "handler": "filereturnlog.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/filereturnlogs/:id",
+      "handler": "filereturnlog.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/filereturnlogs",
+      "handler": "filereturnlog.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/filereturnlogs/:id",
+      "handler": "filereturnlog.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/filereturnlogs/:id",
+      "handler": "filereturnlog.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

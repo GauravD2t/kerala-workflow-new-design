@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "policestation",
+  "info": {
+    "name": "policestation"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "ps_cd": {
+      "type": "integer"
+    },
+    "lang_cd": {
+      "type": "integer"
+    },
+    "ps": {
+      "type": "string"
+    },
+    "isdeleted": {
+      "type": "boolean"
+    },
+    "district": {
+      "model": "district"
+    },
+    "user": {
+      "via": "policestations",
+      "plugin": "users-permissions",
+      "model": "user"
+    }
+  }
+}

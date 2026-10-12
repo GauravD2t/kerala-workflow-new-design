@@ -1,0 +1,107 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/batches",
+      "handler": "batch.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/batches/count",
+      "handler": "batch.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/batches/:id",
+      "handler": "batch.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/batches",
+      "handler": "batch.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/batches/:id",
+      "handler": "batch.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/batches/:id",
+      "handler": "batch.delete",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/batchesfindAllbyCreatedby",
+      "handler": "batch.batchesfindAllbyCreatedby",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "GET",
+      "path": "/batchesfindOnebycreatedby",
+      "handler": "batch.findOnebyCreated",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "PUT",
+      "path": "/retriveBatchUpdateFIR/:id",
+      "handler": "batch.retriveBatchUpdateFIR",
+      "config": {
+        "policies": []
+      }
+      
+    },{
+      "method": "PUT",
+      "path": "/retriveBatchUpdateFIRFileTag/:id",
+      "handler": "batch.retriveBatchUpdateFIRFileTag",
+      "config": {
+        "policies": []
+      }
+      
+    },{
+      "method": "PUT",
+      "path": "/retriveBatchUpdateFIRReurnStatus/:id",
+      "handler": "batch.retriveBatchUpdateFIRReurnStatus",
+      "config": {
+        "policies": []
+      }
+      
+    },
+    {
+      "method": "GET",
+      "path": "/FileBulkTag/:filetagcommitted_by",
+      "handler": "batch.FileBulkTag",
+      "config": {
+        "policies": []
+      }
+      
+    },{
+      "method": "GET",
+      "path": "/receiveBulkTag/:receivecommited_by",
+      "handler": "batch.receiveBulkTag",
+      "config": {
+        "policies": []
+      }
+      
+    }]
+}

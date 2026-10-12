@@ -1,0 +1,52 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/databasebackups",
+      "handler": "databasebackup.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/databasebackups/count",
+      "handler": "databasebackup.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/databasebackups/:id",
+      "handler": "databasebackup.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/databasebackups",
+      "handler": "databasebackup.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/databasebackups/:id",
+      "handler": "databasebackup.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/databasebackups/:id",
+      "handler": "databasebackup.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "filereturnlogs",
+  "info": {
+    "name": "filereturnlog"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "fir": {
+      "model": "fir"
+    },
+    "users_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "action_at": {
+      "type": "datetime"
+    },
+    "pagecount": {
+      "type": "biginteger"
+    },
+    "scancount": {
+      "type": "biginteger"
+    },
+    "qccount": {
+      "type": "biginteger"
+    },
+    "pdfcount": {
+      "type": "biginteger"
+    },
+    "metadatacount": {
+      "type": "biginteger"
+    },
+    "fromstage": {
+      "type": "string"
+    },
+    "tostage": {
+      "type": "string"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "rejectstage": {
+      "type": "biginteger"
+    }
+
+  }
+}

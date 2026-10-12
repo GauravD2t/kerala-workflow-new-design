@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "users-permissions_permission",
+  "info": {
+    "name": "permission",
+    "description": ""
+  },
+  "attributes": {
+    "type": {
+      "type": "string",
+      "required": true,
+      "configurable": false
+    },
+    "controller": {
+      "type": "string",
+      "required": true,
+      "configurable": false
+    },
+    "action": {
+      "type": "string",
+      "required": true,
+      "configurable": false
+    },
+    "enabled": {
+      "type": "boolean",
+      "required": true,
+      "configurable": false
+    },
+    "policy": {
+      "type": "string",
+      "configurable": false
+    },
+    "role": {
+      "via": "permissions",
+      "plugin": "users-permissions",
+      "model": "role"
+    }
+  }
+}

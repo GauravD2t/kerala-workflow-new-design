@@ -1,0 +1,60 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/policestations",
+      "handler": "policestation.find",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/policestations/count",
+      "handler": "policestation.count",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/policestations/:id",
+      "handler": "policestation.findOne",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/policestationswithdistrict/:id",
+      "handler": "policestation.policestationswithdistrict",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/policestations",
+      "handler": "policestation.create",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/policestations/:id",
+      "handler": "policestation.update",
+      "config": {
+        "policies": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/policestations/:id",
+      "handler": "policestation.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}

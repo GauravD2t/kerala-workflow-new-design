@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "menugroups",
+  "info": {
+    "name": "menugroup"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "menugroupname": {
+      "type": "string",
+      "required": true
+    },
+    "menugroupicon": {
+      "type": "string"
+    }
+  }
+}

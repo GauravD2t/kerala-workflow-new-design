@@ -1,0 +1,138 @@
+{
+  "kind": "collectionType",
+  "collectionName": "batches",
+  "info": {
+    "name": "batch",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "bundlenumber": {
+      "type": "string"
+    },
+    "deliveryschedule": {
+      "type": "datetime"
+    },
+    "created_by_d2": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "firs": {
+      "via": "batch",
+      "collection": "fir"
+    },
+    "created_at_d2": {
+      "type": "datetime"
+    },
+    "inwardcommited_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "inwardcommited_at": {
+      "type": "datetime"
+    },
+    "islock": {
+      "type": "boolean"
+    },
+    "batchstatus": {
+      "type": "integer"
+    },
+    "inwardreceive_at": {
+      "type": "datetime"
+    },
+    "filetagreceive_at": {
+      "type": "datetime"
+    },
+    "filetagcommitted_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "filetagcommitted_at": {
+      "type": "datetime"
+    },
+    "scanningreceive_at": {
+      "type": "datetime"
+    },
+    "scanningcommited_at": {
+      "type": "datetime"
+    },
+    "scanningcommited_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "outwardreceive_at": {
+      "type": "datetime"
+    },
+    "outwardcommited_at": {
+      "type": "datetime"
+    },
+    "outwardcommited_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "returndate": {
+      "type": "datetime"
+    },
+    "qcreceive_at": {
+      "type": "datetime"
+    },
+    "qccommited_at": {
+      "type": "datetime"
+    },
+    "qccommited_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "receive_at": {
+      "type": "datetime"
+    },
+    "receivecommited_at": {
+      "type": "datetime"
+    },
+    "receivecommited_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "gapbatch": {
+      "type": "boolean",
+      "default": false
+    },
+    "orientation": {
+      "type": "string"
+    },
+    "photocopy": {
+      "type": "string"
+    },
+    "comparison": {
+      "type": "boolean"
+    },
+    "legibility": {
+      "type": "boolean"
+    },
+    "considerations": {
+      "type": "boolean"
+    },
+    "edits_performed": {
+      "type": "boolean"
+    },
+    "Integrity": {
+      "type": "boolean"
+    },
+    "agent_associated": {
+      "type": "string"
+    },
+    "capture_device": {
+      "type": "string"
+    },
+    "Date_last_calibration": {
+      "type": "string"
+    },
+    "quality_image": {
+      "type": "string"
+    }
+  }
+}

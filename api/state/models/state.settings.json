@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "state",
+  "info": {
+    "name": "state"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "state_cd": {
+      "required": true,
+      "type": "integer"
+    },
+    "lang_cd": {
+      "type": "integer",
+      "required": true
+    },
+    "state": {
+      "type": "text"
+    },
+    "isdeleted": {
+      "type": "boolean",
+      "required": true
+    }
+  }
+}

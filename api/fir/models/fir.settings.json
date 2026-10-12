@@ -1,0 +1,234 @@
+{
+  "kind": "collectionType",
+  "collectionName": "firs",
+  "info": {
+    "name": "fir",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true,
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "crn": {
+      "type": "string"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "pagecount": {
+      "type": "integer"
+    },
+    "remarks": {
+      "type": "text"
+    },
+    "inwardstatus": {
+      "type": "integer"
+    },
+    "tagstatus": {
+      "type": "boolean",
+      "default": false
+    },
+    "batch": {
+      "model": "batch",
+      "via": "firs"
+    },
+    "firinwardremarks": {
+      "type": "richtext"
+    },
+    "returnstatus": {
+      "type": "integer"
+    },
+    "problematiceFIR": {
+      "type": "boolean",
+      "default": false
+    },
+    "receiveremarks": {
+      "type": "richtext"
+    },
+    "outwardremarks": {
+      "type": "richtext"
+    },
+    "imagestatus": {
+      "type": "integer"
+    },
+    "scan_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "qc_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "scanpagecount": {
+      "type": "integer"
+    },
+    "scanreceive_at": {
+      "type": "datetime"
+    },
+    "scancommited_at": {
+      "type": "datetime"
+    },
+    "qcreceive_at": {
+      "type": "datetime"
+    },
+    "qccommited_at": {
+      "type": "datetime"
+    },
+    "islock": {
+      "type": "boolean"
+    },
+    "qcpagecount": {
+      "type": "integer"
+    },
+    "pdfpagecount": {
+      "type": "integer"
+    },
+    "qcreject": {
+      "type": "boolean",
+      "default": false
+    },
+    "firvalidate": {
+      "type": "boolean",
+      "default": false
+    },
+    "qcreject_reason": {
+      "type": "string"
+    },
+    "qcreject_by": {
+      "type": "string"
+    },
+    "isupload": {
+      "type": "boolean",
+      "default": false
+    },
+    "itemid": {
+      "type": "string"
+    },
+    "classficationfiles": {
+      "collection": "classficationfile",
+      "via": "fir"
+    },
+    "classification_at": {
+      "type": "datetime"
+    },
+    "classification_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "classificationqc_at": {
+      "type": "datetime"
+    },
+    "classificationqc_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "caseno": {
+      "type": "string"
+    },
+    "casetype": {
+      "type": "string"
+    },
+    "verify_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "verify_at": {
+      "type": "datetime"
+    },
+    "verifyremarks": {
+      "type": "richtext"
+    },
+    "upload_at": {
+      "type": "datetime"
+    },
+    "readyforverify": {
+      "type": "boolean",
+      "default": false
+    },
+    "readyforupload": {
+      "type": "boolean",
+      "default": false
+    },
+    "classficationpagecount": {
+      "type": "biginteger"
+    },
+    "setuploadfile": {
+      "type": "boolean",
+      "default": false
+    },
+    "first_verify_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "first_verify_at": {
+      "type": "datetime"
+    },
+    "metadatavalues": {
+      "collection": "metadatavalue",
+      "via": "fir"
+    },
+    "firstverifypage": {
+      "type": "integer"
+    },
+    "metadatapage": {
+      "type": "integer"
+    },
+    "metadata_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "metadata_at": {
+      "type": "datetime"
+    },
+    "pdf_at": {
+      "type": "datetime"
+    },
+    "pdf_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "est_code": {
+      "type": "string"
+    },
+    "uploadmsg": {
+      "type": "text"
+    },
+    "secondverify": {
+      "type": "boolean",
+      "default": false
+    },
+    "secondverify_at": {
+      "type": "datetime"
+    },
+    "secondverify_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "secondverifyremarks": {
+      "type": "text"
+    },
+    "thirdverifyremarks": {
+      "type": "text"
+    },
+    "thirdverify": {
+      "type": "boolean",
+      "default": false
+    },
+    "thirdverify_at": {
+      "type": "datetime"
+    },
+    "thirdverify_by": {
+      "plugin": "users-permissions",
+      "model": "user"
+    },
+    "formab": {
+      "type": "boolean"
+    },
+    "qcauto": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

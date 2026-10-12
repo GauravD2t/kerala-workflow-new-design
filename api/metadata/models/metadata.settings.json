@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "metadata",
+  "info": {
+    "name": "metadata"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "entityname": {
+      "type": "string"
+    },
+    "isactive": {
+      "type": "boolean"
+    }
+  }
+}

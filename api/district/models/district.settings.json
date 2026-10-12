@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "district",
+  "info": {
+    "name": "district"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "district_cd": {
+      "type": "integer"
+    },
+    "lang_cd": {
+      "type": "integer"
+    },
+    "state": {
+      "model": "state"
+    },
+    "range_cd": {
+      "type": "integer"
+    },
+    "district": {
+      "type": "text"
+    },
+    "isdeleted": {
+      "type": "boolean"
+    }
+    
+  }
+}

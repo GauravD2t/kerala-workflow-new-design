@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "classficationfiles",
+  "info": {
+    "name": "classficationfile"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "documenttype": {
+      "type": "string"
+    },
+    "imagename": {
+      "type": "string"
+    },
+    "documentdate": {
+      "type": "string"
+    },
+    "documentdesc": {
+      "type": "string"
+    },
+    "documentremark": {
+      "type": "string"
+    },
+    "fir": {
+      "via": "classficationfiles",
+      "model": "fir"
+    },
+    "ocrpdfpath": {
+      "type": "string"
+    },
+    "isupload": {
+      "type": "boolean",
+      "default": false
+    },
+    "issubchild": {
+      "type": "boolean",
+      "default": false
+    },
+    "child": {
+      "collection": "classficationfile",
+      "via": "parent"
+    },
+    "parent": {
+      "model": "classficationfile",
+      "via": "child"
+    },
+    "documenttypename": {
+      "type": "string"
+    },
+    "sendtoocr": {
+      "type": "boolean"
+    },
+    "firstsign": {
+      "type": "boolean",
+      "default": false
+    },
+    "secondsign": {
+      "type": "boolean",
+      "default": false
+    },
+    "pagecount": {
+      "type": "integer"
+    }
+  }
+}
