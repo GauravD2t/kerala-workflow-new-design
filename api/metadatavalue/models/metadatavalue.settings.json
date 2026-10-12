@@ -8,16 +8,5 @@
     "increments": true,
     "timestamps": true
   },
-  "attributes": {
-    "value": {
-      "type": "text"
-    },
-    "fir": {
-      "via": "metadatavalues",
-      "model": "fir"
-    },
-    "metadatum": {
-      "model": "metadata"
-    }
-  }
+  "attributes": {}
 }

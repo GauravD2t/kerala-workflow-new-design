@@ -165,10 +165,6 @@
     "first_verify_at": {
       "type": "datetime"
     },
-    "metadatavalues": {
-      "collection": "metadatavalue",
-      "via": "fir"
-    },
     "firstverifypage": {
       "type": "integer"
     },
