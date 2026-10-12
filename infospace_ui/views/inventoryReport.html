@@ -1,0 +1,84 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<style>
+    .tagify__input{
+  display: none !important;
+}
+</style>
+<div class=" container ">
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Generate Inventory Report</span>
+                </h4>
+                <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate" id="firForm">
+                    <div class="row">
+                        <div class="form-group col-lg-4 py-2">
+                            <div class=" py-2 px-2">
+                                <span class="bg-secondary text-primary form-text px-2 py-1">Batch ID</span>
+                                <div class="bg-secondary mb-7">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-12">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-12 my-2 my-md-0">
+                                                    <div class="input-icon">
+                                                        <input type="text" class="bg-secondary form-control"
+                                                            placeholder="Enter Batch id for generating inventory report"
+                                                            id="kt_datatable_search_query" />
+                                                        <span><i class="flaticon2-search-1 text-muted"></i></span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-6 py-2 ">
+                            <div class="py-2 px-2">
+                                <span class="text-primary form-text px-2 py-1">Batches selected for inventory Generation</span>
+                                <!-- <input id="kt_tagify_5" class="form-control tagify" name='tags3' value="" /> -->
+                                <div class="border" id="selectedbatch"></div>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-2 py-2">
+                            <div class=" py-4">
+                                <div class="col-lg-12 ">
+                                    <button type="button" id="addmenu" name="submitButton"
+                                        class="savebtn btn font-weight-bolder btn-primary mr-2" value="Generate Report"
+                                        onclick="genrateReport(this)" style="margin-bottom: 8px;width:135px;"
+                                        tabindex="5">Generate Report</button></div>
+                                <div class="col-lg-12 ">
+                                    <input type="button" class="btn btn-light-primary font-weight-bolder mr-2"
+                                        tabindex="6" id="resetform" value="Reset" style="width: 135px;"
+                                        onclick="resetData()"></button></div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white rounded">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Batch Summary</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="datatable datatable-bordered datatable-head-custom" id="kt_datatable"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="editor"></div>
+</div>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+
+<script src="./template/assets/js/ccntsJS/inventoryReport.js"></script>
+{% endblock %}

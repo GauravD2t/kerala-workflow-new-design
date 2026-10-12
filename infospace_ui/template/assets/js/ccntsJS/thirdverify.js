@@ -1,0 +1,481 @@
+
+
+function pushtoSrever(pushObject, url, method, callback) {
+    $.ajax({
+        async: true,
+        type: method,
+        dataType: 'json',
+        url: url,
+        data: pushObject,
+        success: function (response) {
+            //toastr.success('Data InserteId Successfully!');                
+            callback(response);
+        },
+        error: function (response) {
+            //toastr.error('Problem in Deleting Data!');
+            console.log("error")
+            callback(response)
+        }
+    });
+}
+let listofBatches = [];
+
+function rejectScannDocumentModal(id) {
+
+    $('#modalimagestatus').val(id);
+    $('#rejectRemarksModal').modal('show');
+}
+function submitRemarksmenu() {
+    if ($('#verifyTextarea').val().length != 0) {
+        bulkVerify($('#modalimagestatus').val())
+        $('#rejectRemarksModal').modal('hide');
+    } else {
+        toastr.error('Remaks required !');
+        $('#rejectRemarksModal').modal('show');
+
+    }
+
+}
+
+
+
+function getBatches() {
+    pushtoSrever(null, "/getbstchethirdverify.dwf", "GET", function (node) {
+        listofBatches = node.data;
+        let option = "";
+        for (var i = 0; i < listofBatches.length; i++) {
+            option = option + "<option batchobj=" + listofBatches[i] + " value='" + listofBatches[i].id + "'>" + listofBatches[i].bundlenumber + "</option>";
+        }
+
+        $('#batches').html(option);
+    })
+}
+function selectAll() {
+    if ($('#iif1').prop('checked')) {
+        $('#firlist .ckhform').prop('checked', true);
+        $('#firlist .ckhform').attr('value', 'true');
+    } else {
+        $('#firlist  .ckhform').prop('checked', false);
+        $('#firlist  .ckhform').attr('value', 'false');
+    }
+
+}
+function bulkVerify(imagestatus) {
+    var jsonform = []
+
+    $('#firlist .ckhform').each(function () {
+        if ($(this).is(':checked')) {
+            jsonform.push(this.name)
+        }
+    });
+
+    if (jsonform.length == 0) {
+        toastr.error("Select one file !");
+    } else {
+        $.blockUI();
+        pushtoSrever({ 'selectedfile': jsonform, imagestatus: imagestatus, Verifyremarks: $('#verifyTextarea').val() }, "/thirdverifybulkwithupload.dwf", "POST", function (node) {
+            for (var i = 0; i < jsonform.length; i++) {
+                $('#firs' + jsonform[i]).remove();
+            }
+
+            $('#verifyTextarea').val("")
+            selected_fir = "";
+            $('#kt_tree_1').jstree(true).settings.core.data = [];
+            $('#kt_tree_1').jstree(true).refresh();
+            toastr.success('File verified successfully!');
+            document.getElementById("pdfiream").src = "";
+            getBatches();
+            $.unblockUI();
+        })
+
+    }
+    console.log(jsonform);
+}
+function findfirs(batch) {
+    pushtoSrever(null, "/findFIrsbybathcthidverify.dwf?batch=" + batch, "GET", function (node) {
+        let firs = node.data;
+        let li = "";
+        for (var i = 0; i < firs.length; i++) {
+            li = li + '<li class="lilist list-group-item" id="firs' + firs[i].id + '" firstverify="' + firs[i].verify_by.name + '"   secondverify="' + firs[i].secondverify_by.name + '"  onclick="getdocument(this,' + firs[i].id + ')"><div class="form-check"><label class="form-check-label"><input type="checkbox" class="form-check-input mr-3 ckhform"  name="' + firs[i].id + '" value="false"> <span class="ml-4"> ' + firs[i].casetype + '/' + firs[i].caseno + '/' + firs[i].year + '</span>  </label></div></li>'
+        }
+        if (firs.length != 0) {
+            $("#bulkdiv").show();
+        } else {
+            $("#bulkdiv").hide();
+        }
+        $("#firlist").html(li);
+    })
+}
+
+let selected_fir = "";
+function getdocument(dom, id) {
+    selected_fir = id;
+    $('.lilist').removeClass('active');
+    $(dom).addClass('active');
+    $('.verifydiv').html('<h5>First Verify By: ' + $(dom).attr('firstverify') + '</h5> <h5>Second Verify By: ' + $(dom).attr('secondverify') + '</h5>');
+    let data = [];
+    pushtoSrever(null, "/getdocumentclassficationByfir.dwf?fir=" + id, "GET", function (node) {
+        let classfication = node.data;
+        let treearry = [];
+
+        for (var i = 0; i < classfication.length; i++) {
+            let desc = (classfication[i].documentdesc == "" || classfication[i].documentdesc == null) ? classfication[i].documentdate : classfication[i].documentdesc;
+            // desc = (desc == "" || desc == null) ? classfication[i].documenttypename.split(">>")[classfication[i].documenttypename.split(">>").length-1] : desc;
+            let index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
+            if (classfication[i].child.length != 0) {
+                var childdata = [];
+                for (var k = 0; k < classfication[i].child.length; k++) {
+                    let child = classfication[i].child[k];
+                    //  let childdesc = (child.documentdesc == "" || child.documentdesc == null) ? child.documentdate : child.documentdesc;
+                    childdata.push({ 'pdfpath': child.ocrpdfpath, "id": child.id, "text": child.documenttypename, "icon": "fa fa-file text-danger " });
+                }
+                if (index == -1) {
+                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [{ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-primary ", "children": childdata }] })
+                } else {
+                    treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-danger ", "children": childdata })
+                }
+            } else {
+                if (index == -1) {
+                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">>")[0].trim(), "children": [] });
+                }
+                index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
+                let documentname = classfication[i].documenttypename.split(">>");
+                var childdata = [];
+                childdata.push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-file text-danger " });
+
+                if (0 == documentname.length - 1) {
+                    treearry[index]["children"] = [...treearry[index]["children"], ...childdata];
+                } else {
+                    if (documentname.length == 3) {
+                        childdata[0].text = classfication[i].documenttypename.split(">>")[2].trim() + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>';
+                        childindex = treearry[index]["children"].findIndex(x => x.text === classfication[i].documenttypename.split(">>")[1].trim());
+                        if (childindex == -1) {
+
+                            treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
+                        } else {
+                            treearry[index]["children"][childindex]['children'] = [...treearry[index]["children"][childindex]['children'], ...childdata];
+                            //treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
+                        }
+
+                    } else {
+                        treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
+                    }
+                    // treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
+                }
+                // treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " })
+
+
+            }
+
+
+            data = treearry
+        }
+
+        $('#kt_tree_1').jstree(true).settings.core.data = data;
+        $('#kt_tree_1').jstree(true).refresh();
+    })
+
+
+
+
+
+}
+
+
+let editCalssfication = "";
+function getDigitizationCenter() {
+    pushtoSrever(null, "/getAllUser.dwf?type=1", "GET", function (node) {
+        for (var i = 0; i < node.data.length; i++) {
+            console.log(node.data[0])
+        }
+    })
+}
+function poppuEditNode(dom, classid) {
+    pushtoSrever(null, "/getclassficationmodal.dwf?id=" + classid, "GET", function (node) {
+        let classfication = node.data;
+        editCalssfication = classid
+        $('#modaldate').val(classfication.documentdate);
+        $('#modalremark').val(classfication.documentdesc);
+        $('#deleteModal').modal('show');
+    })
+
+}
+function updateClassfication() {
+    pushtoSrever({ documentdate: $('#modaldate').val(), documentdesc: $('#modalremark').val() }, "/updatedocumentclassficationByfir.dwf?id=" + editCalssfication, "POST", function (node) {
+        toastr.success('File update successfully!');
+        $('#deleteModal').modal('hide');
+        editCalssfication = "";
+        getdocument(null, selected_fir);
+        $('#modaldate').val("");
+        $('#modalremark').val("");
+    })
+}
+function updateMetadata() {
+
+    if ($('#rejectmetadata').val().length != 0) {
+        let formdata = {
+            id: selected_fir,
+            verifyremarks: $('#rejectmetadata').val(),
+            readyforverify: false,
+            secondverify: false,
+            imagestatus: 5,
+
+        }
+        pushtoSrever(formdata, "/rejectforMetadatathidverify.dwf", "POST", function (node) {
+            toastr.success('Data Reject successfully!');
+            $('#viewmeatadata').modal('hide');
+            $('#firs' + selected_fir).remove()
+            selected_fir = "";
+            $('#kt_tree_1').jstree(true).settings.core.data = [];
+            $('#kt_tree_1').jstree(true).refresh();
+            getBatches();
+        })
+    } else {
+        toastr.error("Enter Reject Remarks!!");
+    }
+
+}
+
+function viewMetadataByFile() {
+    if (selected_fir == "") {
+        toastr.error("Select one file !");
+    } else {
+        pushtoSrever(null, "/getmetadatabffile.dwf?fileid=" + selected_fir, "GET", function (node) {
+            $('#viewmeatadata').modal('show');
+
+            let data = node.data;
+            //let data = [1, 2, 3];
+            $('#casedetailstable').html("");
+            for (let i = 0; i < data.length; i += 2) {
+                // Create a new table row
+                let row = $('<tr></tr>');
+
+                var id = data[i].metadatum.entityname.replaceAll('.', '_');
+                row.append('<td><b>' + data[i].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i].metadatum.id + '" value="' + data[i].value + '"  id = "' + id + '" ></td>');
+
+                // Check if there's a next element to avoid undefined
+                if (data[i + 1] !== undefined) {
+                    var id = data[i + 1].metadatum.entityname.replaceAll('.', '_');
+                    row.append('<td><b>' + data[i + 1].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i + 1].metadatum.id + '" value="' + data[i + 1].value + '"  id = "' + id + '" ></td>');
+
+                }
+
+                // Append the row to the table
+                $('#casedetailstable').append(row);
+            }
+            $('#casedetailstable').append('<tr><td><b class="h5">Reject Remarks</b></td><td><textarea class="form-control" id="rejectmetadata" placeholder="Enter Remarks " rows="5"     spellcheck = "false" ></textarea ></td></tr>')
+
+        })
+    }
+}
+function getpdf(id) {
+
+    document.getElementById("pdfiream").src = "/getpdf.dwf?id=" + id;
+}
+
+
+function bulkverifySing(imagestatus) {
+
+
+    var jsonform = [];
+
+    if ($('#digitalsign').val() != '') {
+        $('#firlist .ckhform').each(function () {
+            if ($(this).is(':checked')) {
+                jsonform.push(this.name)
+            }
+        });
+
+        if (jsonform.length == 0) {
+            toastr.error("Select one file !");
+        } else {
+            $.blockUI();
+            $('.approvespin1').show();
+
+
+            let datalistofBatches = {
+
+                selectedfile: jsonform.toString(),
+
+
+            }
+            pushtoSrever(datalistofBatches, "/getpdfwithstatusSecondVerification.dwf", "POST", function (node6) {
+                datalistofBatches = {
+                    alias: $('#digitalsign').val(),
+                    files: node6.data,
+                    isFirstverification: false
+
+                }
+                if (node6.data.length == 0) {
+                    $('.approvespin1').hide();
+                    $.unblockUI();
+                    $('#DigitalSignModal').modal('hide');
+                    bulkVerify(imagestatus);
+                    return false;
+                } else {
+                    $.ajax({
+                        url: "http://localhost:8087/api/signPDF", // Replace with your API endpoint
+                        type: "POST", // Can be "POST", "PUT", "DELETE", etc.
+                        contentType: "application/json",
+
+                        data: JSON.stringify(datalistofBatches),
+                        success: function (response) {
+                            let callones = true;
+                            let falsepdf = "";
+                            let updatestatusfile = [];
+                            for (var i = 0; i < response.data.length; i++) {
+                                if (!response.data[i].status) {
+                                    falsepdf = falsepdf + "</br><span class='text-danger'>" + response.data[i].filepath + "</span>";
+                                    callones = false;
+                                } else {
+                                    updatestatusfile.push(response.data[i].fileid);
+                                }
+                                // $('#firs' + jsonform[i]).remove();
+                            }
+
+                            if (updatestatusfile.length != 0) {
+                                pushtoSrever({ classficationlist: updatestatusfile.toString() }, "/updateclassficationSecondSign.dwf", "POST", function (node45) {
+                                    if (!callones) {
+                                        $('.listfilenotsing').html(falsepdf);
+                                        $.unblockUI();
+                                        $('.approvespin').hide();
+                                        $('.approvespin1').hide();
+                                        toastr.error("Problem in Sign PDF");
+                                        return false;
+                                    } else {
+                                        $('.approvespin1').hide();
+                                        $.unblockUI();
+                                        $('#DigitalSignModal').modal('hide');
+                                        bulkVerify(imagestatus);
+
+                                    }
+                                })
+                            } else {
+                                $('.listfilenotsing').html(falsepdf);
+                                $.unblockUI();
+                                $('.approvespin').hide();
+                                $('.approvespin1').hide();
+                                toastr.error("Problem in Sign PDF");
+                                return false;
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            $('.approvespin1').hide();
+                            $.unblockUI();
+                            toastr.error("Problem calling local service");
+                            console.error("Error:", status, error);
+                        }
+                    });
+                }
+
+
+
+            })
+
+
+
+
+        }
+    } else {
+        toastr.error("Select certificate !");
+        $.unblockUI();
+    }
+
+
+}
+function DegitalRemarksModal() {
+
+    // bulkverifySing(6)
+    var jsonform = []
+
+    $('#firlist .ckhform').each(function () {
+        if ($(this).is(':checked')) {
+            jsonform.push(this.name)
+        }
+    });
+
+    if (jsonform.length == 0) {
+        toastr.error("Select one file !");
+    } else {
+        $('.approvespin').show();
+        $.ajax({
+            url: "http://localhost:8087/api/getProvider", // Replace with your API endpoint
+            type: "GET", // Can be "POST", "PUT", "DELETE", etc.
+            dataType: "json", // Expected response type
+            success: function (response) {
+
+                $('.approvespin').hide();
+                let option = "";
+                let token = response.data;
+                if (token.length != 0) {
+                    for (var i = 0; i < token.length; i++) {
+                        option = option + "<option  value='" + token[i] + "'>" + token[i] + "</option>";
+                    }
+
+                    $('#digitalsign').html(option);
+
+                    $('#DigitalSignModal').modal('show');
+
+                } else {
+                    toastr.error("Dongle not detected, Attach dongle to get certificate");
+                }
+            },
+            error: function (xhr, status, error) {
+                $('.approvespin').hide();
+                toastr.error("Problem calling local service");
+                console.error("Error:", status, error);
+            }
+        });
+
+
+    }
+}
+jQuery(document).ready(function () {
+    // getDigitizationCenter();
+    $(document).on('click', '.ckhform', function () {
+
+        if ($(this).is(':checked')) {
+            $(this).attr('value', 'true');
+        } else {
+            $(this).attr('value', 'false');
+        }
+
+
+    });
+    $("#kt_tree_1").jstree({
+        "core": {
+            "themes": {
+                "responsive": false
+            },
+            // so that create works
+            "check_callback": false,
+            "data": [],
+        },
+        "types": {
+            "default": {
+                "icon": "fa fa-folder text-primary"
+            },
+            "file": {
+                "icon": "fa fa-file  text-primary"
+            }
+        },
+        "state": {
+            "key": "demo2"
+        },
+        "plugins": ["contextmenu", "state", "types"]
+    });
+    $('#kt_tree_1').on("select_node.jstree", function (e, data) {
+        if (data.node.id.indexOf('parent') != -1 || data.node.id.indexOf('child') != -1) {
+            console.log(data.node.id + " found");
+        } else {
+            getpdf(data.node.id);
+        }
+
+    });
+    $('#batches').select2({
+        placeholder: "Select Batches ",
+        allowClear: true
+    });
+
+    getBatches();
+});

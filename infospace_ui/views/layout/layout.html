@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- saved from url=(0077)https://www.egrappler.com/bootstrap-responsive-admin-template/shortcodes.html -->
+<html lang="en">
+
+<head>
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    {% include 'cssfilelist.html' %}
+    {% block stylesheet %}
+    {% endblock %}
+    {% include 'jsfilelist.html' %}
+    {% block script %}
+    {% endblock %}
+
+</head>
+
+<body id="kt_body"
+    class="header-fixed header-mobile-fixed subheader-enabled subheader-fixed subheader-mobile-fixed aside-enabled aside-fixed aside-minimize-hoverable page-loading">
+
+    {% include 'mobile_header.html' %}
+    <div class="d-flex flex-column flex-root">
+        <!--begin::Page-->
+        <div class="d-flex flex-row flex-column-fluid page">
+            {% include 'subnavbar.html' %}
+            <div class="d-flex flex-column flex-row-fluid wrapper" id="kt_wrapper">
+
+                <div class="content  d-flex flex-column flex-column-fluid" id="kt_content">
+                    {% include 'header.html' %}
+                    <div class="d-flex flex-column-fluid">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+
+                {% include 'footer.html' %}
+            </div>
+        </div>
+    </div>
+    {% include 'outsideLayout.html' %}
+</body>
+
+</html>

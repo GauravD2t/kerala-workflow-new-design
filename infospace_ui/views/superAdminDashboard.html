@@ -1,0 +1,183 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="d-flex flex-column flex-md-row">
+        <div class="flex-md-row-fluid " id="appendRepot">
+            <div class="form-group   row">
+                <div class="col-lg-12">
+                    <select class="form-control" multiple id="digitaluser" ></select>
+                </div>
+            </div>
+        </div>
+     </div>
+</div>        
+<!-- sample Formate-->
+<div id="samplereport" style="display: none;">
+<div class="row" id="row#DIGIID"  >
+    <div class="col-lg-6">
+        <div class="card card-custom gutter-b">
+            <div class="card-header pt-5">
+                <div class="card-title">
+                    <h4>
+                        <span class="card-label font-weight-bolder text-dark">Work status overview (Pending for processing) <span class="text-primary">#centername </span></span>
+                    </h4>
+                </div>
+            </div>
+            <div class="card-body pt-4">
+                <div class="row ">
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">Due for Inward </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6" id="inwardbatches#centeridPR">  </label>  <label class="text-black-50 font-size-h6" id="inwardfirs#centeridPR"> </label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2" style="display: none">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">File   Tagging </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="filebatch#centeridPR"> </label>  <label class="text-black-50 font-size-h6" id="filefirs#centeridPR">  </label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">Scan batch allotment </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="allotmentbatches#centeridPR"></label>  <label class="text-black-50 font-size-h6" id="allotmentfirs#centeridPR"></label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">Scanning / Scan QC </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="scanbatches#centeridPR"></label>  <label class="text-black-50 font-size-h6" id="scanfirs#centeridPR"></label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">QA Reject </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="qabatches#centeridPR"></label>  <label class="text-black-50 font-size-h6" id="qafirs#centeridPR"></label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">Approval Pending </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="outwardbatches#centeridPR"></label>  <label class="text-black-50 font-size-h6" id="outwardfirs#centeridPR"></label> </div>
+                    </div>
+                    <div class="col-lg-12 row py-2">
+                        <div class="col-lg-6 bg-gray-200"> <label class="  m-2 font-size-h4 font-weight-bolder ">Delivery </label></div>
+                        <div class="col-lg-6 bg-gray-200 text-right"> <label class=" m-2 text-black-50 font-size-h6 " id="deliverybatches#centeridPR"></label>  <label class="text-black-50 font-size-h6" id="deliveryfirs#centeridPR"></label> </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-custom gutter-b">
+            <div class="card-header pt-5">
+                <div class="card-title">
+                    <h4>
+                        <span class="card-label font-weight-bolder text-dark">Perfromance Overview</span>
+                    </h4>
+                 </div>
+                <div class="card-toolbar">
+                    <select class="bs-select form-control input-small" id="select" selectcenter="#selectreport" data-style="btn-primary" onchange="getReplotcompletd(this)">
+                        <option value="1"> Current Week</option>
+                        <option value="2"> Current Month</option>
+                    </select>
+                </div>
+            </div>
+            
+                <div class="card-body pt-4">
+                    <div class="row py-5">
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">Inward</h7>
+                                    <h6 class=" text-center font-weight-bolder " id="percentage_inward#centeridPR"> </h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="inwardbatchesPR#centeridPR"></label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="inwardfirsPR#centeridPR"> </label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xxl-6" style="display: none">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">File Tagging</h7>
+                                    <h6 class=" text-center font-weight-bolder "  id="percentage_file#centeridPR"> </h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="fileatchesPR#centeridPR"></label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-2 text-black-50" id="filefirsPR#centeridPR"></label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row ">
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">Scan Batch allotment</h7>
+                                    <h6 class=" text-center font-weight-bolder " id="percentage_scanning#centeridPR"> </h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="scanningbatchesPR#centeridPR"> </label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="scanningfirsPR#centeridPR"></label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">Scanning / Scan QC </h7>
+                                    <h6 class=" text-center font-weight-bolder " id="percentage_qc#centeridPR"></h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="qcbatchesPR#centeridPR"></label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="qcfirsPR#centeridPR"></label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row ">
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">QA Reject</h7>
+                                    <h6 class=" text-center font-weight-bolder " id="percentage_qa#centeridPR"></h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="qabatchesPR#centeridPR"></label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="qafirsPR#centeridPR"></label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">Approved</h7>
+                                    <h6 class=" text-center font-weight-bolder " id="percentage_outward#centeridPR"> </h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="outwardbatchesPR#centeridPR"></label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="outwardfirsPR#centeridPR"> </label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row ">
+                        <div class="col-lg-6 col-xxl-6">
+                            <div class="example-preview py-4">
+                                <div class=" border border-dark" >
+                                    <h7 class=" m-2 font-weight-bolder ">Returned</h7>
+                                    <h6 class=" text-center font-weight-bolder "  id="percentage_return#centeridPR"> </h6>
+                                    <div class="row ">
+                                        <div class="col-lg-6"> <label class=" font-size-sm m-4 text-black-50" id="returnbatchesPR#centeridPR">  </label></div>
+                                        <div class="col-lg-6  text-right">  <label class=" font-size-sm m-4 text-black-50" id="returnfirsPR#centeridPR"></label> </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-xxl-6">
+                            
+                        </div>
+                    </div>
+                </div>
+           
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/supperadmindashboard.js"></script>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css"/>
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Batch Validation</span>
+                </h4>
+                <div class="row containbatch">
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted"> Batch ID </span>
+                            <input type="hidden" id="batchiddp"/>
+                            <label class=" font-weight-bolder text-dark" id="batchname"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Cases in this batch</span>
+                            <label class=" font-weight-bolder text-dark" id="totalFIR"></label>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="row py-3 containbatch">
+                    <div class="col-lg-2 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Dispatcher </span>
+                            <label class=" font-weight-bolder text-dark" id="batchdispatcher"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Dispatcher's Contat Number</span>
+                            <label class=" font-weight-bolder text-dark" id="usercontact"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Dispatcher's E Mail</span>
+                            <label class=" font-weight-bolder text-dark" id="usermail"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Dispatch date</span>
+                            <label class=" font-weight-bolder text-dark" id="receiptdate"></label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="col-lg-12 bg-white py-3 containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Batch Return - Progress status</span>
+                </h4>
+                    <div class="row">
+                        <div class="col-lg-3 py-2 ">
+                            <div class=" py-2 px-2 border  border-info rounded-lg  text-info">
+                                <span class="h5 font-weight-bolder  form-text ">Total FIRs in batch</span>
+                                <label class="h6 font-weight-bolder "><span id="totalFIR"></span> <span>FIRs</span> </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 py-2" >
+                            <div class="text-green py-2 px-2   rounded-lg" style="border:1px solid #45b945;">
+                                <span class="h5 font-weight-bolder  form-text ">Accepted FIRs</span>
+                                <label class="h6 font-weight-bolder "><span id="acceptFIR" ></span> <span>FIRs</span></label>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 py-2">
+                            <div class=" py-2 px-2  border  border-danger rounded-lg text-danger">
+                                <span class="h5 font-weight-bolder  form-text ">Rejected FIRs</span>
+                                <label class="h6 font-weight-bolder"><span id="rejectFIR"></span> <span>FIRs</span></label>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div> -->
+        <div class="col-lg-12 bg-white containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Validate Cases(s) in this batch</span>
+                </h4>
+                <div class="row">
+                    <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate" id="firForm">
+                        <div class="col-lg-12 ">
+                                <!-- <div class="table-bordered table-striped datatable datatable-bordered datatable-head-custom"
+                                    id="kt_datatable_fir"></div> -->
+
+                                    <table class="table table-bordered table-hover table-checkable" id="kt_datatable" style="margin-top: 13px !important">
+                                        <thead>
+                                     <tr>
+                                        <th style="width:50px">Acceptance Status</th>
+                                        <th style="width:80px">CNR</th>
+                                        <th style="width:50px">Case No</th>
+                                        <th style="width:50px">Page Count</th>
+                                        <th style="width:150px">Department's Remarks</th>
+                                        <th style="width:250px">Digitization Team's Remarks</th>
+                                        <th style="width:120px">Actions</th>
+                                     </tr>
+                             </thead>
+         
+         
+                        </table>
+                      
+                        </div>
+                     </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 bg-white rounded rounded-top-0 containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <div class="row">
+
+                    <div class="col-lg-9"></div>
+                    <div class="col-lg-3 py-8">
+                        <input type="button" id="commitBatchButton" name="commitBatchButton"
+                            class="savebtn btn btn-primary mr-2"  value="Commit Batch"
+                            onclick="commitBatch()" tabindex="2"></button>
+                        <input type="button" id="cancleButton" name="cancleButton" class=" btn btn-warning mr-2"
+                            value="Cancel" onclick="cancleCommitBatch()" tabindex="3"></button>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white rounded">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Manage Batches</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <ul class="nav nav-tabs nav-tabs-line">
+                            <li class="nav-item">
+                                <a class="nav-link " data-toggle="tab" href="#Penddingbatch" onclick="getdelayedBatch(this)">Pending for Receipt </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#Progressbatch" onclick="getpendingBatch(this)">Receipt in Progress</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#deliveredbatch" onclick="getdeliveryBatch()">Batches Received </a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content mt-5" id="myTabContent">
+                            <div class="tab-pane fade " id="Penddingbatch" role="tabpanel"aria-labelledby="kt_tab_pane_2">
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"  id="kt_datatable_delayed"></div>
+                                <!-- <div class="col-lg-12 py-10">
+                                    <div class="col-lg-2 ">
+                                        <input type="button" id="BulkCimmitButton" name="BulkCimmitButton"
+                                        class="savebtn btn btn-primary mr-2"  value="Bulk Return "
+                                        onclick="bulkCommit(1)" tabindex="2">
+                                    </div>
+                                </div> -->
+                            </div>
+                            <div class="tab-pane fade show active" id="Progressbatch" role="tabpanel" aria-labelledby="kt_tab_pane_2">
+                                
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"  id="kt_datatable_pending"></div>
+                                <div class="col-lg-12 py-10">
+                                    <div class="col-lg-2 ">
+                                        <input type="button" id="BulkCimmitButton" name="BulkCimmitButton"
+                                        class="savebtn btn btn-primary mr-2"  value="Bulk Return "
+                                        onclick="bulkCommit(2)" tabindex="2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="deliveredbatch" role="tabpanel" aria-labelledby="kt_tab_pane_2">
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"  id="kt_datatable_received"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- delete Modal-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure want to Delete <strong id="ModalValue"></strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                        onclick="deletemenu()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/receivebatch.js"></script>
+{% endblock %}

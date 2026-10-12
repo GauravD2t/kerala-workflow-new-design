@@ -1,0 +1,265 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <style>
+        .apexcharts-legend{
+            display: none;
+        }
+        .table td {
+            border-top: 1px solid #868c9c;
+        }
+        .table thead th {
+            border-bottom: 1px solid #151925;
+            color:#525db1;
+        }
+    </style>
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css"/>
+    <div class="row ">
+        <div class="col-lg-4 bg-white  rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Filter</span>
+                </h4>
+                <div class="row containbatch">
+                    <div class="col-lg-12 py-2">
+                        <select  class="form-control" name="filter1" id="filter1" tabindex="1" multiple>
+                            <option value="1" selected >Digitization</option>
+                            <option value="2" selected>CIPA Migration</option>
+                            <option value="3" selected>Gaps Digitization</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-12 py-2">
+                        <select  class="form-control" name="filter2" id="filter2" tabindex="1" multiple onchange="getpolicestation()">
+                            <option value>Select District</option>
+                            {%for x in district%}
+                            <option value="{{x.district_cd}}">{{x.district}}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="col-lg-12 py-2">
+                        <select  class="form-control" name="filter3" id="filter3" tabindex="1" multiple >
+                            <option value>Select Police Station</option>
+                            {%for x in policestations%}
+                            <option value="{{x.ps_cd}}">{{x.ps}}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="col-lg-12 py-2">
+                        <div class="row">
+                        <div class="col-lg-5"><input type="text" name="fromyear" id="fromyear" class="fromyear numberOnly  year form-control"
+                        maxlength="4" placeholder=" From Year" tabindex="1" /></div>  <div class="col-lg-2 py-2"> To </div> 
+                        <div class="col-lg-5"><input type="text" name="toyear" id="toyear" class="toyear  numberOnly  year form-control"
+                        maxlength="4" placeholder="End Year" tabindex="1" /></div>
+                    </div>
+                    </div>
+                    
+                    <div class="col-lg-12 py-2">
+                    <input type="button" id="commitBatchButton" name="commitBatchButton" style="width: 115px;"
+                                class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="8"
+                                value="Apply" onclick="showdata()" />
+                    <input type="button" id="reset" name="reset" style="width: 115px;"
+                    class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="8"
+                    value="Reset" onclick="resetdata()" />
+                    </div>            
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 bg-white  rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Progress Overview</span>
+                    
+                </h4>
+
+                <div class="row containbatch">
+                    <div class="col-lg-4 digitizationgraph">
+                            <div id="chart_11" class="d-flex justify-content-center"></div>
+                    </div>
+                    <div class="col-lg-4 cipagrapg">
+                            <div id="chart_12" class="d-flex justify-content-center"></div>
+                    </div>
+                     <div class="col-lg-4 gapsgraph">
+                            <div id="chart_13" class="d-flex justify-content-center"></div>
+                    </div>
+                </div>
+            </div>
+           
+                <div class="row legendshow" style="display: none;">
+                    <div class="col-lg-12 ">
+                    <div  style="float: right;" > <i style ="color:#ff0000;    margin: 5px;" class="fas fa-square"></i>Yet to start <i style ="color:#475c94;margin: 5px;" class="fas fa-square"></i>In Progress<i style ="color:#77ff6e;    margin: 5px;" class="fas fa-square"></i>Validated</div>
+                    </div>
+                   
+                </div>
+
+        </div>
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+        
+
+    </div>
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <div class="font-weight-bolder text-dark">Scope Summary <i style="float: right;color: #3699FF;cursor: pointer;" class="icon-xl fas fa-plus" onclick="showhideworktable(this)"></i> </div>
+                   
+                </h4>
+                <div class="row ">
+                    <table class="table" id="worktable" style="display: none;">
+                        <thead>
+                            <tr>
+                              <th>Work Stream</th>
+                              <th>Scope Item</th>
+                              <th>Total Quantity</th>
+                              <th>Completion Status</th>
+                              <th>Pending for QC</th>
+                              <th>Validated Deliverables</th>
+                             
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+        
+
+    </div>
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <div class="font-weight-bolder text-dark">Progress Details by Police Stations (Validated Volume)<i style="float: right;color: #3699FF;cursor: pointer;" class="icon-xl fas fa-plus" onclick="showhidepolicetable(this)"></i></div>
+                </h4>
+                <div class="row ">
+                    <table class="table" id="policetable" style="display: none;">
+                        <thead>
+                            <tr>
+                              <th>District</th>  
+                              <th>Police Station</th>
+                              <th>IIF1</th>
+                              <th>IIF2</th>
+                              <th>IIF3</th>
+                              <th>IIF4</th>
+                              <th>IIF5</th>
+                              <th>IIF6</th>
+                              <th>IIF7</th>
+                              <th>Scanning</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+    </div>
+    <!-- stage Digitization-->
+    <div class="row " id="divdigitazation">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <div class="font-weight-bolder text-dark">Progress Details by stage - Digitization <i style="float: right;color: #3699FF;cursor: pointer;" class="icon-xl fas fa-plus" onclick="showhidedigitizationtable(this)"></i></div>
+                </h4>
+                <div class="row ">
+                    <table class="table" id="digitizationtable" style="display: none;">
+                        <thead>
+                            <tr>
+                              <th>Scope Item</th>  
+                              <th>Estimated Volume (Quantity as per RFP/ BOQ)</th>
+                              <th style="width: 150px;">Inward Volume (Physical file received from PS)</th>
+                              <th>Processed Volume</th>
+                              <th>Internal QC</th>
+                              <th style="border-bottom: 2px solid #151925;">Police Personnel Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">In-charge Police Station Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">SP Office Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">State Nodal Officer Pending QC</th>
+                              <th>Validated Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+    </div>
+    <!-- stage CIPA Migration-->
+    <div class="row "  id="divcipa">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <div class="font-weight-bolder text-dark">Progress Details by stage - CIPA Migration<i style="float: right;color: #3699FF;cursor: pointer;" class="icon-xl fas fa-plus" onclick="showhidesipatable(this)"></i></div>
+                </h4>
+                <div class="row ">
+                    <table class="table" id="cipatable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Scope Item</th>  
+                                <th>Estimated Volume (Quantity as per RFP/ BOQ)</th>
+                                <th>Migrated Volume</th>
+                                <th>Pending Volume</th>
+                               <th>Internal QC</th>
+                               <th style="border-bottom: 2px solid #151925;">Police Personnel Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">In-charge Police Station Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">SP Office Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">State Nodal Officer Pending QC</th>
+                                <th>Validated Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+    </div>
+    <!-- stage Gaps Digitization-->
+    <div class="row " id="divgaps">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Progress Details by stage - Gaps Digitization<i style="float: right;color: #3699FF;cursor: pointer;" class="icon-xl fas fa-plus" onclick="showhidegapstable(this)"></i></span>
+                </h4>
+                <div class="row ">
+                    <table class="table" id="gapstable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Scope Item</th>  
+                                <th>Migrated Volume</th>
+                                <th>Inward Volume</th>
+                                <th>Gaps Volume</th>
+                                <th>Internal QC</th>
+                                <th style="border-bottom: 2px solid #151925;">Police Personnel Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">In-charge Police Station Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">SP Office Pending QC</th>
+                                <th  style="border-bottom: 2px solid #151925;">State Nodal Officer Pending QC</th>
+                                <th>Validated Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+    </div>
+    
+</div>
+<script src="./template/assets/plugins/custom/flot/flot.bundle.js"></script>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/mintdashborad.js"></script>
+{% endblock %}

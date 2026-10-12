@@ -1,0 +1,75 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">File Not Upload </span>
+                </h4>
+            </div>
+        </div>
+
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Result</span>
+                </h4>
+                <div class="row m-4">
+
+                    <div class="col-12"><button class="btn btn-primary w-100" onclick="bulkVerify()">
+                            Upload</button>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-12 ">
+                        <!-- <div class="table-bordered table-striped datatable datatable-bordered datatable-head-custom"
+                                    id="kt_datatable_fir"></div> -->
+
+                        <table class="table table-bordered table-hover table-checkable" id="kt_datatable"
+                            style="margin-top: 13px !important">
+                            <thead>
+                                <tr>
+                                    <th style="width:190px">Sr No.</th>
+                                    <th style="width:190px">Batch</th>
+                                    <th style="width:190px">File No</th>
+                                    <th style="width:100px">
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input type="checkbox" id="iif1" class="form-check-input"
+                                                    onclick="selectAll()" value="false">Select All
+                                            </label>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="firlist">
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row m-4">
+
+                        <div class="col-12"><button class="btn btn-primary w-100" onclick="bulkVerify()">
+                                Upload</button>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/secondtimeupload.js"></script>
+{% endblock %}

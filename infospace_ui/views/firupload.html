@@ -1,0 +1,64 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <style>
+        .apexcharts-legend{
+            display: none;
+        }
+        .table td {
+            border-top: 1px solid #868c9c;
+        }
+        .table thead th {
+            border-bottom: 1px solid #151925;
+            color:#525db1;
+        }
+    </style>
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css"/>
+    
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class="">
+                <h4 class=" py-2 px-2 ">
+                    <div class="font-weight-bolder text-dark">File Upload List
+                        <input type="button" id="addmenu" name="submitButton"
+                            class="savebtn btn  btn-primary mr-2" value="Bulk Upload"
+                            onclick="sumbitFIR()" style="margin-bottom: 8px;width: 105px;float:right"
+                            tabindex="2"></button> </div>
+                   
+                </h4>
+                <div class="row ">
+                    <table class="table" id="worktable" >
+                        <thead>
+                            <tr>
+                                <th><div class="checkbox-inline">
+                                    <label class="checkbox"><input type="checkbox" class="ckhform" id="iif1" name="iif1"  value="false" tabindex="1" onclick="checkall()"/><span class="border-primary" ></span></label>
+                                    
+                                </div></th>
+                            <th>Batch No</th>
+                            <th>FIR REG NO</th>
+                            <th>FIR Serial NO</th>
+                             <th>Year</th>
+                              <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileuploadtbody"> 
+                            
+                        </tbody>
+                    </table>          
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+        
+
+    </div>
+    
+    
+</div>
+<script src="./template/assets/plugins/custom/flot/flot.bundle.js"></script>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/firupload.js"></script>
+{% endblock %}

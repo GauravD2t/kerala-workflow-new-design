@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="../../../">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="./template/assets/css/pages/login/login-1.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/css/style.bundle.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/plugins/custom/fullcalendar/fullcalendar.bundle.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/plugins/global/plugins.bundle.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/plugins/custom/prismjs/prismjs.bundle.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/css/style.bundle.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/css/themes/layout/brand/dark.css">
+    <link rel="stylesheet" type="text/css" href="./template/assets/css/themes/layout/aside/dark.css">
+
+    <script src="./template/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="./template/assets/plugins/custom/prismjs/prismjs.bundle.js"></script>
+    <script src="./template/assets/js/moment.min.js"></script>
+</head>
+
+<body id="kt_body"
+    class="header-fixed header-mobile-fixed subheader-enabled subheader-fixed subheader-mobile-fixed aside-enabled aside-fixed aside-minimize-hoverable page-loading">
+    <!--begin::Main-->
+    <div class="d-flex flex-column flex-root">
+        <!--begin::Login-->
+        <div class="login login-1 login-signin-on d-flex flex-column flex-lg-row flex-column-fluid bg-white"
+            id="kt_login">
+            <!--begin::Aside-->
+            <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #1A8DC6;">
+                <!--begin::Aside Top-->
+                <div class="d-flex flex-column-auto flex-column pt-lg-40 pt-15">
+                    <!--begin::Aside header-->
+                    <a href="#" class="text-center mb-10">
+                        <img src="./template/assets/media/logos/repLogo.png" class="max-h-70px" alt=""
+                            style="width: 100%" />
+                    </a>
+                    <h3 class="font-weight-bolder text-center font-size-h4 font-size-h1-lg" style="color: #986923;">
+
+                    </h3>
+                </div>
+            </div>
+            <!--begin::Aside-->
+            <!--begin::Content-->
+            <div
+                class="login-content flex-row-fluid d-flex flex-column justify-content-center position-relative overflow-hidden p-7 mx-auto">
+                <!--begin::Content body-->
+                <div class="d-flex flex-column-fluid flex-center">
+                    <!--begin::Signin-->
+                    <div class="login-form login-signin">
+                        <!--begin::Form-->
+                        <form method="post" action="/login" class="form" novalidate="novalidate"
+                            id="kt_login_signin_form">
+                            <!--begin::Title-->
+                            <div class="pb-13 pt-lg-0 pt-5">
+                                <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">Welcome to
+                                    InfoSpace Capture</h3>
+
+                            </div>
+                            <!--begin::Title-->
+                            <!--begin::Form group-->
+                            <div class="form-group">
+                                <label class="font-size-h6 font-weight-bolder text-dark">User ID</label>
+                                <input class="form-control form-control-solid h-auto py-7 px-6 rounded-lg" type="text"
+                                    name="identifier" value="{{identifier}}" autocomplete="off" />
+                            </div>
+                            <!--end::Form group-->
+                            <!--begin::Form group-->
+                            <div class="form-group" style="margin-bottom: 2%;">
+                                <div class="d-flex justify-content-between mt-n5">
+                                    <label class="font-size-h6 font-weight-bolder text-dark pt-5">Password</label>
+                                </div>
+                                <input class="form-control form-control-solid h-auto py-7 px-6 rounded-lg"
+                                    type="password" value="{{password}}" name="password" autocomplete="off" />
+                            </div>
+                            {% if issessionexist == true %}
+                            <input style=" display: none;" checked name="confirm" type="checkbox" />
+                            {% endif %}
+                            <span style="color: red;">{{message}}</span>
+                            <!--end::Form group-->
+                            <!--begin::Action-->
+                            <div class="pb-lg-0 pb-5">
+                                <button type="submit" id="kt_login_signin_submit"
+                                    class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">Sign
+                                    In</button>
+                            </div>
+                            <!--end::Action-->
+
+
+                        </form>
+                        <!--end::Form-->
+                    </div>
+                </div>
+                <!--end::Content body-->
+            </div>
+            <!--end::Content-->
+        </div>
+        <!--end::Login-->
+    </div>
+    <!--end::Main-->
+
+</body>
+{% if issessionexist == true %}
+<script>
+    jQuery(document).ready(function () {
+        $('#exampleModalScrollable').modal('show');
+        $(Document).on("click", ".confirmbtn", function (event) {
+            $("#kt_login_signin_form").attr("action", "/confirmlogin")
+            $("#kt_login_signin_form").submit();
+        });
+    })
+</script>
+{% endif %}
+<div class="modal fade " id="exampleModalScrollable" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-body" style="padding:0px">
+                <div class="alert alert-custom alert-outline-danger fade show mb-5" role="alert">
+                    <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                    <div class="alert-text">An existing session is in progress with this User ID. Logging in again will
+                        end existing session. Click OK to continue.</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:0px">
+                <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary font-weight-bold confirmbtn">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

@@ -1,0 +1,174 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <style>
+        .apexcharts-legend {
+            display: none;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <div class="row bg-white">
+        <div class="col-lg-12   rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Filter</span>
+                </h4>
+                <div class="row containbatch">
+                    <div class="col-lg-6 py-2">
+                        <div class=" row">
+                            <div class="col-lg-2 col-md-9 col-sm-12"><label
+                                    class="col-form-label text-left col-lg-1 col-sm-12">Date</label></div>
+                            <div class="col-lg-10 col-md-9 col-sm-12">
+                                <div class="input-daterange input-group" id="kt_datepicker_5">
+                                    <input type="text" class="form-control" name="start" id="start" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">To</span>
+                                    </div>
+                                    <input type="text" class="form-control" name="end" id="end" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 py-2">
+                        <input type="button" id="commitBatchButton" name="commitBatchButton" style="width: 115px;"
+                            class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="8"
+                            value="Apply" onclick="showdata()" />
+                        <!-- <input type="button" id="reset" name="reset" style="width: 115px;"
+                            class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="8"
+                            value="Reset" onclick="resetdata()" /> -->
+                        <input type="button" id="downloadexlcle" name="downloadexlcle" style="width: 125px;"
+                            class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="8"
+                            value="Download excel" onclick="downloadExcle()" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-12 py-2 bg-secondary"></div>
+
+
+    </div>
+    <div class="row bg-white ">
+        <div class="col-lg-12 text-right">
+            <button class="btn btn-primary  m-5" onclick="print()"> Print </button>
+        </div>
+    </div>
+    <div class="row bg-white printdiv">
+
+        <div class="col-lg-12 bg-white  rounded rounded-bottom-0" style="    text-align: center !important;">
+
+
+            <br><br><br><strong><span style="margin: 4px;; font-size:24px;line-height:107%;">&nbsp;Productivity
+                    Report</span></strong>
+
+        </div>
+        <div class="col-12" style="margin-top: 25px;">
+            <div style="    margin: 7px;"><strong><span style="font-size:14px;line-height:107%;">Project Name:
+                    </span></strong> <span style="font-size:14px;line-height:107%;">Scanning & Digitization of
+                    District Court Records</span>
+            </div>
+            <div style="    margin: 7px;"><strong><span style="font-size:14px;line-height:107%;">Agency :
+                    </span></strong> <span style="font-size:14px;line-height:107%;">IRON MOUNTAIN INDIA PRIVATE LIMITED</span>
+            </div>
+            <div style="    margin: 7px;text-align: right;"><strong><span class="datespan"
+                        style="    margin-right: 40px;"></span></strong>
+            </div>
+        </div>
+        <div class="col-12" style="margin-top: 40px;display: none;">
+            <div>
+                <strong><span style="margin-left: 40px;font-size:18px;line-height:107%;">AO filling Section:
+                    </span></strong>
+            </div>
+            <div>
+                <table
+                    style=" border-collapse: collapse;width:95%;border:0px solid;margin-left:auto;margin-top:10px;margin-right:auto">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Days figure</th>
+                            <th>Cumulative figure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin95">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div class="col-12" style="margin-top: 40px;">
+            <div>
+                <strong><span style="margin-left: 40px;font-size:16px;line-height:107%;">DigitizationCell:
+                    </span></strong>
+            </div>
+            <div>
+                <table
+                    style=" border-collapse: collapse;width:95%;border:0px solid;margin-left:auto;margin-top:10px;margin-right:auto">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Days figure</th>
+                            <th>Cumulative figure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin89">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-12" style="margin-top: 40px;display: none;">
+            <div style="text-align: center;">
+                <strong><span style="font-size:18px;line-height:107%;    text-decoration: underline;">Total Count:
+                    </span></strong>
+            </div>
+            <div>
+                <table
+                    style=" border-collapse: collapse;width:95%;border:0px solid;margin-left:auto;margin-top:10px;margin-right:auto">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Days figure</th>
+                            <th>Cumulative figure</th>
+                        </tr>
+                    </thead>
+                    <tbody id="totalcounter">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-12" style="margin-top: 140px;">
+            <div>
+                <strong><span style="text-decoration: underline; margin-left: 40px;font-size:16px;line-height:107%;">For
+                        IRON MOUNTAIN INDIA PRIVATE LIMITED.
+                    </span></strong>
+                <strong style="float: right;
+    margin-right: 47px;"><span style="text-decoration: underline; font-size:16px;line-height:107%;">For Received by
+                    </span></strong>
+            </div>
+
+        </div>
+    </div>
+
+
+
+</div>
+<script src="./template/assets/plugins/custom/flot/flot.bundle.js"></script>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/productiveReport.js"></script>
+{% endblock %}

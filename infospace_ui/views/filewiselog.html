@@ -1,0 +1,126 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">File Logs </span>
+                </h4>
+                <div class="row containbatch">
+                    <div class="col-lg-2 ">
+                        <label>Establishment Code *</label>
+                        <select class="form-control" name="estcode" id="estcode" tabindex="1" onchange="getcasetype()">
+
+                        </select>
+                    </div>
+                    <div class="col-lg-2 ">
+                        <label>Case Type *</label>
+                        <select class="form-control" name="casetypes" id="casetypes" tabindex="1">
+
+                        </select>
+                    </div>
+                    <div class="col-lg-2 ">
+                        <label> Case No *</label>
+                        <input type="text" name="caseno" id="caseno" class="bg-secondary  numberOnly form-control"
+                            placeholder="Enter Case no" tabindex="1" />
+                    </div>
+                    <div class="col-lg-2 ">
+                        <label> Case Year *</label>
+                        <input type="text" name="caseyear" id="caseyear" class="bg-secondary numberOnly form-control"
+                            placeholder="Enter Case year" tabindex="1" />
+                    </div>
+                    <div class="col-lg-4 mt-5 ">
+                        <label></label>
+                        <input type="button" id="addmenu" name="submitButton" class="savebtn btn mt-3 btn-primary mr-2"
+                            value="Search" onclick="findFIr()" style="margin-bottom: 8px;width: 70px;" tabindex="2">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Result</span>
+                </h4>
+                <div class="">
+                    
+                        <div class="col-lg-12 ">
+                            <!-- <div class="table-bordered table-striped datatable datatable-bordered datatable-head-custom"
+                                    id="kt_datatable_fir"></div> -->
+
+                            <table class="table table-bordered table-hover table-checkable" id="kt_datatable"
+                                style="margin-top: 13px !important">
+                                <thead>
+                                    <tr>
+                                        <th style="width:100px">CaseNo</th>
+                                        <th style="width:150px">Batch</th>
+                                                                           
+                                      
+                                        <th style="width:100px">View Log</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: center;" colspan="3"> Data not found !</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                   
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <div class="modal fade" id="viewlogs" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">File Logs</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 ">
+                            <table class="table table-bordered table-hover table-checkable" id="logdatatable"
+                                style="margin-top: 13px !important">
+                                <thead>
+                                    <tr>
+                                        <th style="width:100px">Action</th>
+                                        <th style="width:150px">Date</th>
+                                        <th style="width:100px">User</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: center;" colspan="3"> Data not found !</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/filewiselog.js"></script>
+{% endblock %}

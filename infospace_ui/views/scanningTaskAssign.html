@@ -1,0 +1,129 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css"/>
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-4 px-3 ">
+                    <span class="font-weight-bolder text-dark">Scan & Scan QC Case(s) Allotment</span>
+                </h4>
+                <form class="border form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate" id="firForm">
+                    <div class="row">
+                        <div class="col-lg-12 ">
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <div class="col-lg-3">
+                                            <label> Scanning User <span class="text-danger">*</span></label>
+                                            <select  class="form-control" name="scanninguser" id="scanninguser" tabindex="1"></select>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label> QC User <span class="text-danger">*</span></label>
+                                        <select  class="form-control" name="qcuser" id="qcuser" tabindex="2"></select>
+                                    
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Batch <span class="text-danger">*</span></label>
+                                        <select  class="form-control" name="batchs" id="batchs" tabindex="3" onchange="receivedBatch(this.value)"></select>
+                                    
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    
+                                    <div class="col-lg-6 " >
+                                        <input type="text" name ="firtranfer" id="firtranfer" class="numberOnly form-control m-2"  placeholder="Enter  Cases count needs to be  allotment" tabindex="4" />
+                                       
+                                        <div id="selectablefir"  style="height:250px;overflow-y: scroll;"></div>
+                                    </div> 
+                                    <div  class="col-lg-6  " >
+                                        <input type="button" id="addmen1u" name="submitB1utton" class="savebtn btn btn-primary m-2" tabindex="5" value="Add" onclick="tranferFIR()"></button>
+                                        <input type="button" id="addmenu" name="submitButton" class="savebtn btn btn-primary m-2" tabindex="6" value="Reset" onclick="ResetFIR()"></button>
+                                        <div id="selectedfir" class="" style="height:250px;overflow-y: scroll;"></div>
+                                    </div>
+                                
+                                    
+                                      
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-9"></div>
+                        <div class="col-lg-3 py-8">
+                            <input type="button" id="commitBatchButton" name="commitBatchButton"
+                                class="savebtn btn btn-primary mr-2"  value="Assign Task"
+                                onclick="updateFIR()" tabindex="7">
+                            
+                        </div>
+                    </div>
+                        
+                </form>
+                
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white rounded">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Manage Case(s) allotment</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="mb-7">
+                            <div class="row align-items-center">
+                                <div class="col-lg-9 col-xl-8">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4 my-2 my-md-0">
+                                            <div class="input-icon">
+                                                <input type="text" class="form-control" placeholder="Search..."
+                                                    id="kt_datatable_search_query" />
+                                                <span><i class="flaticon2-search-1 text-muted"></i></span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="datatable datatable-bordered datatable-head-custom table-hover"  id="kt_datatable_allocatment"></div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div> 
+
+    </div>
+
+
+    <!-- delete Modal-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure want to Delete <strong id="ModalValue"></strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                        onclick="deletemenu()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/scannignTaskAssing.js"></script>
+{% endblock %}

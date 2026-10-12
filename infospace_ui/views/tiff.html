@@ -1,0 +1,38 @@
+
+
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container-fluid bg-white  mb-5">
+    <input type="file" id="fileInput" accept=".tif,.tiff" />
+    <br>
+    <canvas id="canvas"></canvas>
+</div>
+   
+
+    <script>
+        document.getElementById("fileInput").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function () {
+                const buffer = this.result;
+
+                // Load TIFF
+                const tiff = new Tiff({ buffer: buffer });
+
+                const canvas = tiff.toCanvas();
+                const mainCanvas = document.getElementById("canvas");
+
+                mainCanvas.width = canvas.width;
+                mainCanvas.height = canvas.height;
+
+                const ctx = mainCanvas.getContext("2d");
+                ctx.drawImage(canvas, 0, 0);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/tiff.js@1.0.0/tiff.js"></script>
+{% endblock %}

@@ -1,0 +1,414 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Batch Validation</span>
+                </h4>
+                <div class="row containbatch">
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted"> Batch ID </span>
+                            <input type="hidden" id="batchiddp" />
+                            <label class=" font-weight-bolder text-dark" id="batchname"></label>
+                        </div>
+                    </div>
+
+
+                    <div class="col-lg-2 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch creation date</span>
+                            <label class=" font-weight-bolder text-dark" id="batchcreationdate"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Creater </span>
+                            <label class=" font-weight-bolder text-dark" id="batchcreater"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Creator's Contat Number</span>
+                            <label class=" font-weight-bolder text-dark" id="usercontact"></label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row py-3 containbatch">
+
+
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Batch Creator's E Mail</span>
+                            <label class=" font-weight-bolder text-dark" id="usermail"></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 py-2">
+                        <div class="bg-secondary py-2 px-2">
+                            <span class="form-text text-muted">Scheduled delivery date</span>
+                            <label class=" font-weight-bolder text-dark" id="scheduleddate"></label>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 py-2">
+                        <div class="py-2 px-2">
+                            <input type="button" id="editcommitBatchButton" name="editcommitBatchButton"
+                                class="savebtn btn btn-primary mr-2" value="Edit Batch Details"
+                                onclick="editbatchcommitBatch()" tabindex="2"></button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-12 bg-white py-3 containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Batch validation - Progress status</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-3 py-2 ">
+                        <div class=" py-2 px-2 border  border-info rounded-lg  text-info">
+                            <span class="h5 font-weight-bolder  form-text ">Total Cases in batch</span>
+                            <label class="h6 font-weight-bolder "><span id="totalFIR"></span> <span>Cases</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 py-2">
+                        <div class="text-green py-2 px-2   rounded-lg" style="border:1px solid #45b945;">
+                            <span class="h5 font-weight-bolder  form-text ">Accepted Cases</span>
+                            <label class="h6 font-weight-bolder "><span id="acceptFIR"></span>
+                                <span>Cases</span></label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 py-2">
+                        <div class=" py-2 px-2  border  border-danger rounded-lg text-danger">
+                            <span class="h5 font-weight-bolder  form-text ">Rejected Cases</span>
+                            <label class="h6 font-weight-bolder"><span id="rejectFIR"></span> <span>Cases</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 bg-white containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Validate Case(s) in this batch</span>
+                </h4>
+                <div class="row">
+                    <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate" id="firForm">
+                        <div class="col-lg-12 ">
+                            <!-- <div class="table-bordered table-striped datatable datatable-bordered datatable-head-custom"
+                                    id="kt_datatable_fir"></div> -->
+
+                            <table class="table table-bordered table-hover table-checkable" id="kt_datatable"
+                                style="margin-top: 13px !important">
+                                <thead>
+                                    <tr>
+                                        <th style="width:50px">Acceptance Status</th>
+                                        <th style="width:160px">CNR</th>
+                                        <th style="width:100px">CaseType/CaseNo/Year</th>
+                                        <th style="width:80px">Establishment Code</th>
+                                        <th style="width:80px">Remarks</th>
+                                        <th style="width:250px">Digitization Team's Remarks</th>
+                                        <th style="width:55px">Actions</th>
+                                    </tr>
+                                </thead>
+
+
+                            </table>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 bg-white rounded rounded-top-0 containbatch">
+            <div class=" card-custom card-stretch gutter-b">
+                <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate"
+                    id="batchcommitForm">
+                    <div class="row">
+
+                        <div class="col-lg-6">
+
+                        </div>
+
+                        <div class="col-lg-3 py-8">
+                            <input type="button" id="commitBatchButton" name="commitBatchButton"
+                                class="savebtn btn btn-primary mr-2" value="Commit Batch" onclick="commitBatch()"
+                                tabindex="2"></button>
+                            <input type="button" id="cancleButton" name="cancleButton" class=" btn btn-warning mr-2"
+                                value="Cancel" onclick="cancleCommitBatch()" tabindex="3"></button>
+                        </div>
+
+
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white rounded">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Manage Batches</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <ul class="nav nav-tabs nav-tabs-line">
+                            <li class="nav-item">
+                                <a class="nav-link " data-toggle="tab" href="#delayedbatch"
+                                    onclick="getdelayedBatch(this)">Delayed for Receipt </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#pedingbatch"
+                                    onclick="getpendingBatch(this)">Pending for Receipt</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#deliveredbatch"
+                                    onclick="getdeliveryBatch()">Received Batches</a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content mt-5" id="myTabContent">
+                            <div class="tab-pane fade " id="delayedbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_delayed"></div>
+                            </div>
+                            <div class="tab-pane fade show active" id="pedingbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_pending"></div>
+                            </div>
+                            <div class="tab-pane fade" id="deliveredbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+                                <div class="datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_received"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- delete Modal-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure want to Delete <strong id="ModalValue"></strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                        onclick="deletemenu()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editBatchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document" style="max-width: 100% !important;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Batch details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate"
+                        id="batchdetailForm">
+                        <div class="row">
+
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">Document orientation</span>
+                                    <select class="form-control" name="orientation" id="orientation">
+                                        <option vlaue="Portrait">Portrait</option>
+                                        <option vlaue="Landscape">Landscape</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">Original or photocopy</span>
+                                    <select class="form-control" name="photocopy" id="photocopy">
+                                        <option vlaue="Original">Original</option>
+                                        <option vlaue="Photocopy">Photocopy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-4">
+                                <div class="bg-secondary ">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="comparison" name="comparison"
+                                            value="false" tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Comparison of source</label>
+
+                                </div>
+                                <div class="bg-secondary mt-3">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="legibility" name="legibility"
+                                            value="false" tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Legibility of text in scanned
+                                        document</label>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">Quality of images</span>
+                                    <select class="form-control" name="quality_image" id="quality_image">
+                                        <option vlaue="300 DPI">300 DPI</option>
+                                        <option vlaue="600 DPI">600</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">The name of the agent
+                                        associated</span>
+                                    <input type="text" name="agent_associated" id="agent_associated"
+                                        class="  form-control" placeholder="" tabindex="1" />
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-4">
+                                <div class="bg-secondary ">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="considerations" name="considerations"
+                                            value="false" tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Special considerations</label>
+
+                                </div>
+                                <div class="bg-secondary mt-3">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="edits_performed" name="edits_performed"
+                                            value="false" tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Edits performed </label>
+
+                                </div>
+                                <div class="bg-secondary mt-3">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="integrity" name="integrity"
+                                            value="false" tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Integrity of the final digitized record
+                                    </label>
+
+                                </div>
+                                <div class="bg-secondary mt-3">
+                                    <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input
+                                            type="checkbox" class="ckhform" id="gapbatch" name="gapbatch" value="false"
+                                            tabindex="1" /><span class="border-primary"
+                                            style="margin-right: 5px;"></span>Increment Batch
+                                    </label>
+                                    <input type="hidden" id="bundlenumber" name="bundlenumber">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">Capture Device</span>
+                                    <select class="form-control" name="capture_device" id="capture_device">
+                                        <option vlaue="Fujitsu Scanner">Fujitsu Scanner</option>
+                                        <option vlaue="Landscape">Landscape</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-3">
+                                <div class="bg-secondary ">
+                                    <span class="text-primary form-text px-2 py-1">Date of last calibration of
+                                        device</span>
+                                    <div class="input-group input-medium date date-picker" id="datePicker">
+                                        <input type="text" class="form-control" readonly="" id="date_last_calibration"
+                                            name="date_last_calibration">
+                                        <span class="input-group-btn">
+                                            <button class="btn default" type="button" tabindex="1">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class=" form-group col-lg-4">
+                                <button type="button" class="btn btn-danger font-weight-bold"
+                                    data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary font-weight-bold" data-dismiss="modal"
+                                    onclick="savebatchdetails()">Update</button>
+                            </div>
+
+                        </div>
+
+
+                </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<div style="display: none;" id="checkdiv">
+    <div class="checkbox-inline">
+        <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif1#ckid#" name="iif1#ckid#" value="#iif1val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 1</label>
+        <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif2#ckid#" name="iif2#ckid#" value="#iif2val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 2</label>
+        <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif3#ckid#" name="iif3#ckid#" value="#iif3val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 3</label>
+    </div>
+    <div class="checkbox-inline py-1">
+
+        <label class="checkbox " style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif4#ckid#" name="iif4#ckid#" value="#iif4val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 4</label>
+        <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif5#ckid#" name="iif5#ckid#" value="#iif5val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 5</label>
+        <label class="checkbox " style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif6#ckid#" name="iif6#ckid#" value="#iif6val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 6</label>
+    </div>
+
+    <div class="checkbox-inline py-1">
+        <label class="checkbox" style="font-size:11px;width: 54%;font-weight: bold;"><input type="checkbox"
+                class="ckhform" id="iif7#ckid#" name="iif7#ckid#" value="#iif7val#" tabindex="1" /><span
+                class="border-primary" style="margin-right: 5px;"></span>IFF 7</label>
+    </div>
+</div>
+</div>
+</div>
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/inwardbatch.js"></script>
+{% endblock %}

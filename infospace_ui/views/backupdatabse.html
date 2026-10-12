@@ -1,0 +1,93 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="row ">
+        
+
+        <div class="col-lg-12 bg-white py-3 ">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Database BackUp details</span>
+                    <input type="hidden" id="backupid">
+                </h4>
+                <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate" id="firForm">
+                    <div class="row">
+                        <div class=" form-group col-lg-3 ">
+                            <div class="bg-secondary">
+                                <span class="text-primary form-text px-2 py-1">Schedule<span
+                                        class="text-danger">*</span></span>
+                                <select class="form-control form-control-lg" id="Scheduletype" name="scheduletype" tabindex="1">
+                                    <option value="1">Every Day</option>
+                                    <option value="2">Every Week</option>
+                                    <option value="3">Every Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-2">
+                            <div class="bg-secondary">
+                                <span class="bg-secondary text-primary form-text px-2 py-1">Time<span
+                                        class="text-danger">*</span></span>
+                                        <input class="form-control" id="kt_timepicker_1" name="scheduletime" readonly placeholder="Select time" type="text" tabindex="1"/>
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-5">
+                            <div class="bg-secondary">
+                                <span class="bg-secondary text-primary form-text px-2 py-1">Store Path<span
+                                        class="text-danger">*</span></span>
+                                        <input type="text" name="storepath" id="storepath"
+                                        class="validatefir bg-secondary numberOnly form-control" placeholder="" tabindex="1" />
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-2 ">
+                            <div class=" py-4">
+                                <div class="col-lg-12 ">
+                                    <input type="button" id="addmenu" name="submitButton"
+                                        class="savebtn btn font-weight-bolder btn-primary mr-2" value="Schedule"
+                                        onclick="sumbitdatabse()" style="margin-bottom: 8px;width: 80px;"
+                                        tabindex="1"></button></div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white py-3 ">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark"> BackUp File details</span>
+                   
+                </h4>
+                    <div class="row">
+                        <div class=" form-group col-lg-5 ">
+                            <div class="bg-secondary">
+                                <span class="bg-secondary text-primary form-text px-2 py-1">File Name</span>
+                                <h4 class="bg-secondary   px-2 py-1 filenamelase" ></h4>
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-5">
+                            <div class="bg-secondary">
+                                <span class="bg-secondary text-primary form-text px-2 py-1">Date Time</span>
+                                <h4 class="bg-secondary   px-2 py-1 filenamelasedateTime" ></h4>
+                            </div>
+                        </div>
+                        <div class=" form-group col-lg-2">
+                            
+                        </div>
+                        
+                    </div>
+               
+            </div>
+        </div>
+    </div>
+
+
+    <!-- cancel Modal-->
+    
+</div>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/databasebackup.js"></script>
+
+{% endblock %}

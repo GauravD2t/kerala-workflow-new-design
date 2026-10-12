@@ -1,0 +1,166 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card card-custom card-stretch gutter-b">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        User 
+                     </h3>
+
+                </div>
+                <!--begin::Form-->
+                <form id="userForm" class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <div class="col-lg-3">
+                                <label> Employee ID <span class="text-danger">*</span></label>
+                                <input required type="text" name="employeeid" id="employeeid" class="numberOnly form-control"
+                                    placeholder="Enter Employee ID" tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>
+                            <div class="col-lg-3">
+                                <label> User ID <span class="text-danger">*</span></label>
+                                <input type="text" name="username" id="username" class="form-control"
+                                    placeholder="Enter User ID " tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>
+                            <div class="col-lg-3">
+                                <label> Password <span class="text-danger">*</span></label>
+                                <input type="text" name="password" id="password" class="form-control"
+                                    placeholder="Enter Password" tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>                            
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-3">
+                                <label> Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" id="name" class="form-control"
+                                    placeholder="Enter  Name" tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>
+                            <div class="col-lg-3">
+                                <label> Contact Number <span class="text-danger">*</span></label>
+                                <input type="text" name="contactnumber" id="contactnumber" class="numberOnly form-control"
+                                    placeholder="Enter Contact" tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>
+                            <div class="col-lg-3">
+                                <label> E Mail ID <span class="text-danger">*</span></label>
+                                <input type="text" name="email" id="email" class="form-control"
+                                    placeholder="Enter Mail" tabindex="1" aria-required="true" />
+                                <span class="form-text text-muted"></span>
+                            </div>                            
+                            <input type="hidden" value="{{type}}" name="usertype" id="usertype" tabindex="2"> 
+                        </div>                        
+                        <div class="form-group row">
+                            <div class="col-lg-3">
+                                <label> Role <span class="text-danger">*</span></label>
+                                <select class="form-control" name="role" id="role" tabindex="2" onchange="selectdefualtmenu(this.value)">
+                                    <option value> Select Role</option>
+                                    {% for x in roles %}
+                                    <option value="{{x.id}}">{{x.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-lg-8">
+                                <label> Menus <span class="text-danger">*</span></label>
+                                <select multiple class="form-control" name="menus" id="menus" tabindex="2">
+                                   
+                                    {% for x in menus %}
+                                    {% if x.roles.length>0 && x.roles[0].roletype == 2 %}
+                                    
+                                     <option name =" {{x.roles[0].id}}" value="{{x.id}}">{{x.menuname}}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>                             
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-3">
+                                <label> Department </label>
+                                <select class="form-control" name="department" id="departmentsearch" tabindex="2" multiple>
+                        
+                        
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row"> 
+                            <div class="col-sm-1 py-8">
+                                <input type="button" id="addmenu" name="submitButton" class="savebtn btn btn-primary mr-2" tabindex="3" value="Submit" ></button>
+                            </div> 
+                            <div class="col-sm-1 py-8">
+                                <input type="button" class="btn btn-primary mr-2" tabindex="4" id="resetform" value="Reset" onclick="resetData('userForm')"></button>
+                            </div> 
+                         </div>
+                    </div>
+                </form>
+                <!--end::Form-->
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card card-custom card-stretch gutter-b">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Users List
+                    </h3>
+
+                </div>
+                <div class="card-body">
+                    <div class="mb-7">
+                        <div class="row align-items-center">
+                            <div class="col-lg-9 col-xl-8">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4 my-2 my-md-0">
+                                        <div class="input-icon">
+                                            <input type="text" class="form-control" placeholder="Search..."
+                                                id="kt_datatable_search_query" />
+                                            <span><i class="flaticon2-search-1 text-muted"></i></span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class=" table-bordered datatable  datatable-bordered datatable-head-custom table-hover"
+                    id="kt_datatable"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Delete FIR</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure want to Delete <strong id="ModalValue"></strong>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                        onclick="deletemenu()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./template/assets/js/pages/features/miscellaneous/dual-listbox.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/digitizationcenteruser.js"></script>
+{% endblock %}

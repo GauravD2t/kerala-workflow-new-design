@@ -1,0 +1,196 @@
+{% extends 'layout/layout.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<div class=" container ">
+
+    <div class="d-flex flex-column flex-md-row">
+        <div class="flex-md-row-fluid ">
+            <div class="row">
+                <div class="col-lg-12 ">
+                    <div class="card card-custom gutter-b">
+                        <div class="card-header pt-5">
+                            <h2 class="">
+                                <span class="card-label font-weight-bolder text-dark">Quick Action</span>
+                                </h3>
+                        </div>
+                        <div class="card-body pt-4">
+                            <div class="row">
+                                <a href="/BatchCreate.dwf" class="btn btn-light-primary font-weight-bold mr-2"
+                                    role="button">Create Batch</a>
+                                <a href="/ReceiveBatch.dwf" class="btn btn-light-primary font-weight-bold mr-2"
+                                    role="button">Receive Batch</a>
+                                <a href="/InventoryReport.dwf" class="btn btn-light-primary font-weight-bold mr-2"
+                                    role="button">Generate Summary</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card card-custom gutter-b">
+                        <div class="card-header pt-5">
+                            <h2 class="">
+                                <span class="card-label font-weight-bolder text-dark">Status Summary</span>
+                                </h3>
+                        </div>
+                        <div class="card-body pt-4">
+                            <div class="row py-5">
+                                <div class="col-lg-6 col-xxl-6">
+                                    <div class="example-preview py-4">
+                                        <div class=" rounded-lg p-7" style="color:#4CAF50;background-color: #e3f3e3;">
+                                            <h4 class="  font-weight-bolder ">Batches Created</h3>
+                                                <h6 class="  font-weight-bolder "> <span id="totlacreatebatch">
+                                                        <div class=""></div>
+                                                    </span> Batches | <span id="totalfircreate">
+                                                        <div class="spinner spinner-sm "></div>
+                                                    </span> Cases</h5>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-xxl-6">
+                                    <div class="example-preview py-4">
+                                        <div class="bg-warning-o-50 rounded-lg p-7">
+                                            <h4 class=" text-warning font-weight-bolder ">Delivery Pending</h3>
+                                                <h6 class=" text-warning font-weight-bolder "> <span
+                                                        id="totlapendingbatch">
+                                                        <div class=""></div>
+                                                    </span> Batches | <span id="totalfirpending">
+                                                        <div class=""></div>
+                                                    </span> Cases</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row ">
+                                <div class="col-lg-6 col-xxl-6">
+                                    <div class="example-preview py-4">
+                                        <div class="bg-primary-o-50 rounded-lg p-7">
+                                            <h4 class=" text-primary font-weight-bolder ">Batches Delivered </h3>
+                                                <h6 class=" text-primary font-weight-bolder "> <span
+                                                        id="totladeliveredbatch">
+                                                        <div class=""></div>
+                                                    </span> Batches | <span id="totalfirdelivered">
+                                                        <div class=""></div>
+                                                    </span> Cases</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-xxl-6">
+                                    <div class="example-preview py-4">
+                                        <div class="bg-gray-200 rounded-lg p-7"
+                                            style="color:#8c8c8c;background-color: #d0c8c8;">
+                                            <h4 class="  font-weight-bolder ">Batches Received</h3>
+                                                <h6 class="  font-weight-bolder "> <span id="totlareceivedbatch">
+                                                        <div class=""></div>
+                                                    </span> Batches | <span id="totalfirreceived">
+                                                        <div class=""></div>
+                                                    </span> Cases</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-custom gutter-b">
+                        <div class="card-body pt-4">
+                            <div class="row ">
+                                <div class="col-lg-12">
+                                    <h5 class="  font-weight-bolder ">Your Digitization Center Contact</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12" style="color:#8c8c8c;">
+                                    <h6 id="centerhead">{{user.digitizationcenter.name}} (Center Head)</h6>
+                                    <h6 id="center-email">{{user.digitizationcenter.email}} | +91
+                                        {{user.digitizationcenter.contactnumber}}</h6>
+                                    <br>
+                                    <h6 id="center-address">{{user.digitizationcenter.address}} </h6>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-lg-6">
+                    <div class="card card-custom gutter-b">
+                        <div class="card-body pt-4">
+                            <div class="row ">
+                                <div class="col-lg-12">
+                                    <h6 class="  font-weight-bolder "> Batches - Delivery delayed</h6>
+                                    <h6 class="  font-weight-bolder " style="color:#8c8c8c;"> <span
+                                            id="totaldelayedbatch">
+                                            <div class=""></div>
+                                        </span> Batches | <span id="totaldelayedfir">
+                                            <div class=""></div>
+                                        </span> Cases</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <table class="table table-borderless">
+                                        <tbody id="delayedtbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="card card-custom gutter-b">
+                        <div class="card-body pt-4">
+                            <div class="row ">
+                                <div class="col-lg-12">
+                                    <h6 class="  font-weight-bolder "> Batches - Due for Receipt</h6>
+                                    <h6 class="  font-weight-bolder " style="color:#8c8c8c;"> <span
+                                            id="totalbatch_duereceipt">
+                                            <div class=""></div>
+                                        </span> Batches | <span id="totalfir_duereceipt">
+                                            <div class=""></div>
+                                        </span> Cases</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <table class="table table-borderless">
+                                        <tbody id="receipttbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card card-custom gutter-b">
+                        <div class="card-body pt-4">
+                            <div class="row ">
+                                <div class="col-lg-12">
+                                    <h6 class="  font-weight-bolder "> Batches - Due for Delivery</h6>
+                                    <h6 class="  font-weight-bolder " style="color:#8c8c8c;"> <span
+                                            id="totalbatch_duedelivery">
+                                            <div class=""></div>
+                                        </span> Batches | <span id="totalfir_duedelivery">
+                                            <div class=""></div>
+                                        </span> Cases</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <table class="table table-borderless">
+                                        <tbody id="deliverytbody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/policeStationDashboard.js"></script>
+{% endblock %}
