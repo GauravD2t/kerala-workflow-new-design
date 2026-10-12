@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "additional_subjects",
+  "info": {
+    "name": "additionalSubject"
+  },
+  "options": {
+    "increments": true,
+    "timestamps": true
+  },
+  "attributes": {
+    "case_detail": {
+      "via": "additional_subjects",
+      "model": "case-detail"
+    },
+    "subjectcode": {
+      "type": "integer"
+    }
+  }
+}
