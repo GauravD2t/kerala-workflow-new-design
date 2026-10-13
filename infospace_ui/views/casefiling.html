@@ -1,0 +1,791 @@
+{% extends 'layout/layout.html' %}
+{% block title %}Case Filing{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row sticky-top bg-white py-2" style="z-index: 10; border-bottom: 1px solid #EBEDF3;">
+        <div class="col-lg-4">
+            <input type="text" id="cf_cino" class="form-control" placeholder="Enter CINO number" />
+        </div>
+        <div class="col-lg-2">
+            <button type="button" class="btn btn-primary" onclick="searchCase()">Search</button>
+            <i class="fa fa-spin text-primary fa-spinner fa-lg" id="cf_search_spinner" style="display:none;"></i>
+        </div>
+        <div class="col-lg-4">
+            <span class="label label-inline font-weight-bold label-lg" id="cf_status_badge" style="display:none;"></span>
+        </div>
+        <div class="col-lg-2 text-right">
+            <button type="button" class="btn btn-success font-weight-bold" id="cf_save_top" onclick="saveAll()">Save All</button>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-lg-2">
+            <div class="nav flex-column nav-pills bg-white rounded p-2" id="cf_nav" role="tablist">
+                <a class="nav-link active" data-toggle="pill" href="#cf_tab_caseinfo">Case Info</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_parties">Parties</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_otherparty">Other Party</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_witness">Witness</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_victim">Victim</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_caveat">Caveat</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_actsfacts">Acts & Facts</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_crime">Crime</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_iafiling">IA Filing</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_history">History</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_documents">Documents</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_orders">Orders</a>
+                <a class="nav-link" data-toggle="pill" href="#cf_tab_lowercourt">Lower Court</a>
+            </div>
+        </div>
+        <div class="col-lg-10">
+            <div class="tab-content bg-white rounded p-3">
+
+                <!-- CASE INFO -->
+                <div class="tab-pane fade show active" id="cf_tab_caseinfo">
+                    <h5 class="mb-3"><b>Case Details</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>e-Filing No</label><input type="text" class="form-control" id="cf_cd_efilno"></div>
+                        <div class="col-lg-3"><label>Date of e-Filing</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateOfEfiling"></div>
+                        <div class="col-lg-3"><label>Filing No</label><input type="text" class="form-control" id="cf_cd_filNo"></div>
+                        <div class="col-lg-3"><label>Filing Year</label><input type="text" class="form-control" id="cf_cd_filYear"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Date of Filing</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateOfFiling"></div>
+                        <div class="col-lg-3"><label>Date of Scrutiny</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateOfScrutiny"></div>
+                        <div class="col-lg-3"><label>Registration No</label><input type="text" class="form-control" id="cf_cd_regNo"></div>
+                        <div class="col-lg-3"><label>Registration Year</label><input type="text" class="form-control" id="cf_cd_regYear"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Date of Registration</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dtRegis"></div>
+                        <div class="col-lg-3"><label>Case Type</label><select class="form-control" id="cf_cd_caseType" data-master="casetype" data-val="case_type" data-label="{type_name} - {full_form}"></select></div>
+                        <div class="col-lg-3"><label>Type Name</label><input type="text" class="form-control" id="cf_cd_typeName"></div>
+                        <div class="col-lg-3"><label>Status</label><select class="form-control" id="cf_cd_status"><option value="Draft">Draft</option><option value="Pending">Pending</option><option value="Disposed">Disposed</option></select></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Date of First List</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateFirstList"></div>
+                        <div class="col-lg-3"><label>Date of Next List</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateNextList"></div>
+                        <div class="col-lg-3"><label>Date of Last List</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateLastList"></div>
+                        <div class="col-lg-3"><label>Date of Decision</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateOfDecision"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Filing to Disposal Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateFilingDisp"></div>
+                        <div class="col-lg-3"><label>Filing to Disposal Date (Other)</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateFilingDispO"></div>
+                        <div class="col-lg-3"><label>Disposal Nature</label><input type="text" class="form-control" id="cf_cd_dispNature"></div>
+                        <div class="col-lg-3"><label>Court No</label><input type="text" class="form-control" id="cf_cd_courtNo"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Police Station</label><select class="form-control" id="cf_cd_policeStCode" data-master="police_stn" data-val="police_st_code" data-label="{police_st_name}"></select></div>
+                        <div class="col-lg-3"><label>Subject</label><select class="form-control" id="cf_cd_subject" data-master="subject" data-val="subject_code" data-label="{subject_name}"></select></div>
+                        <div class="col-lg-3"><label>Case No</label><input type="text" class="form-control" id="cf_cd_caseNo"></div>
+                        <div class="col-lg-3"><label>Main Case No</label><input type="text" class="form-control" id="cf_cd_mainCaseNo"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Main Matter CINO</label><input type="text" class="form-control" id="cf_cd_mainMatterCino"></div>
+                    </div>
+                    <hr>
+                    <h5 class="mb-3"><b>Additional Subjects</b></h5>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <select class="form-control" id="cf_as_input" data-master="subject" data-val="subject_code" data-label="{subject_name}"></select>
+                        </div>
+                        <div class="col-lg-2"><button type="button" class="btn btn-primary btn-sm" onclick="addSubjectChip()">+ Add</button></div>
+                    </div>
+                    <div class="mt-2" id="cf_as_chips"></div>
+                </div>
+
+                <!-- PARTIES -->
+                <div class="tab-pane fade" id="cf_tab_parties">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card card-custom border"><div class="card-body">
+                                <h5 class="mb-3"><b>Petitioner</b></h5>
+                                <div class="row">
+                                    <div class="col-lg-6"><label>Name</label><input type="text" class="form-control" id="cf_pet_name"></div>
+                                    <div class="col-lg-6"><label>Mobile Number</label><input type="text" class="form-control" id="cf_pet_mobileNumber"></div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-lg-12"><label>Address</label><textarea class="form-control" rows="2" id="cf_pet_address"></textarea></div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-lg-4"><label><input type="checkbox" id="cf_pet_isPartyInPerson"> Party In Person</label></div>
+                                    <div class="col-lg-4"><label><input type="checkbox" id="cf_pet_isHidden"> Hidden</label></div>
+                                    <div class="col-lg-4"><label>Legal Heir</label><input type="text" class="form-control" id="cf_pet_legalHeir"></div>
+                                </div>
+                                <h6 class="mt-3"><b>Advocate</b></h6>
+                                <div class="row">
+                                    <div class="col-lg-4"><label>Name</label><input type="text" class="form-control" id="cf_pet_advName"></div>
+                                    <div class="col-lg-4"><label>Code</label><input type="text" class="form-control" id="cf_pet_advCode"></div>
+                                    <div class="col-lg-4"><label>Reg No</label><input type="text" class="form-control" id="cf_pet_advReg"></div>
+                                </div>
+                            </div></div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card card-custom border"><div class="card-body">
+                                <h5 class="mb-3"><b>Respondent</b></h5>
+                                <div class="row">
+                                    <div class="col-lg-6"><label>Name</label><input type="text" class="form-control" id="cf_res_name"></div>
+                                    <div class="col-lg-6"><label>Mobile Number</label><input type="text" class="form-control" id="cf_res_mobileNumber"></div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-lg-12"><label>Address</label><textarea class="form-control" rows="2" id="cf_res_address"></textarea></div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-lg-4"><label><input type="checkbox" id="cf_res_isPartyInPerson"> Party In Person</label></div>
+                                    <div class="col-lg-4"><label><input type="checkbox" id="cf_res_isHidden"> Hidden</label></div>
+                                    <div class="col-lg-4"><label>Legal Heir</label><input type="text" class="form-control" id="cf_res_legalHeir"></div>
+                                </div>
+                                <h6 class="mt-3"><b>Advocate</b></h6>
+                                <div class="row">
+                                    <div class="col-lg-4"><label>Name</label><input type="text" class="form-control" id="cf_res_advName"></div>
+                                    <div class="col-lg-4"><label>Code</label><input type="text" class="form-control" id="cf_res_advCode"></div>
+                                    <div class="col-lg-4"><label>Reg No</label><input type="text" class="form-control" id="cf_res_advReg"></div>
+                                </div>
+                            </div></div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Extra Parties</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.extraParties.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>No</th><th>Type</th><th>Name</th><th>Mobile</th><th>Status</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_ep_rows"></tbody>
+                    </table>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Additional Advocates</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.additionalAdvocates.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Party No</th><th>Party Id</th><th>Type</th><th>Advocates</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_aa_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- OTHER PARTY -->
+                <div class="tab-pane fade" id="cf_tab_otherparty">
+                    <h5 class="mb-3"><b>Other Party</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>Other Party Id</label><input type="text" class="form-control" id="cf_op_otherPartyId"></div>
+                        <div class="col-lg-3"><label>Other Party No</label><input type="text" class="form-control" id="cf_op_otherPartyNo"></div>
+                        <div class="col-lg-3"><label>Organization</label><select class="form-control" id="cf_op_orgId" data-master="organization" data-val="orgid" data-label="{orgname}"></select></div>
+                        <div class="col-lg-3"><label>Party Name</label><input type="text" class="form-control" id="cf_op_partyName"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-6"><label>Address</label><textarea class="form-control" rows="2" id="cf_op_address"></textarea></div>
+                        <div class="col-lg-3"><label>Age</label><input type="text" class="form-control" id="cf_op_age"></div>
+                        <div class="col-lg-3"><label>Mobile</label><input type="text" class="form-control" id="cf_op_mobile"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Email</label><input type="text" class="form-control" id="cf_op_email"></div>
+                        <div class="col-lg-3"><label>Pincode</label><input type="text" class="form-control" id="cf_op_pincode"></div>
+                        <div class="col-lg-3"><label>State</label><select class="form-control" id="cf_op_stateId" data-master="state" data-val="state_id" data-label="{state}"></select></div>
+                        <div class="col-lg-3"><label>District</label><select class="form-control" id="cf_op_districtCode" data-master="district" data-val="dist_code" data-label="{dist_name}" data-filter-key="state_id" data-filter-from="cf_op_stateId"></select></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Taluka</label><select class="form-control" id="cf_op_talukCode" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}" data-filter-key="dist_code" data-filter-from="cf_op_districtCode"></select></div>
+                        <div class="col-lg-3"><label>Village</label><select class="form-control" id="cf_op_villageCode" data-master="village" data-val="village_code" data-label="{village_name}" data-filter-key="taluka_code" data-filter-from="cf_op_talukCode"></select></div>
+                        <div class="col-lg-3"><label>Hide Party</label><select class="form-control" id="cf_op_hideParty"><option value="N">N</option><option value="Y">Y</option></select></div>
+                        <div class="col-lg-3"><label>Display</label><input type="text" class="form-control" id="cf_op_display"></div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Advocates</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addAdvRow('cf_op_adv_rows')">+ Add Advocate</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Name</th><th>Code</th><th>Reg No</th><th style="width:60px;"></th></tr></thead>
+                        <tbody id="cf_op_adv_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- WITNESS -->
+                <div class="tab-pane fade" id="cf_tab_witness">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Witnesses</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.witnesses.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>No</th><th>Flag</th><th>Name</th><th>Age</th><th>Mobile</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_wit_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- VICTIM -->
+                <div class="tab-pane fade" id="cf_tab_victim">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Victims</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.victims.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>No</th><th>Name</th><th>Age</th><th>Mobile</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_vic_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- CAVEAT -->
+                <div class="tab-pane fade" id="cf_tab_caveat">
+                    <h5 class="mb-3"><b>Caveat</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>Caveat Number</label><input type="text" class="form-control" id="cf_cav_caveatNumber"></div>
+                        <div class="col-lg-3"><label>Caveat Filing No</label><input type="text" class="form-control" id="cf_cav_caveatfilNo"></div>
+                        <div class="col-lg-3"><label>Subject</label><select class="form-control" id="cf_cav_subject" data-master="subject" data-val="subject_code" data-label="{subject_name}"></select></div>
+                        <div class="col-lg-3"><label>Date of Registration</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cav_dtRegis"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Date of Filing</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cav_dtFiling"></div>
+                        <div class="col-lg-3"><label>Caveator Name</label><input type="text" class="form-control" id="cf_cav_caveatorName"></div>
+                        <div class="col-lg-3"><label>Caveator Org</label><input type="text" class="form-control" id="cf_cav_caveatorOrgName"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Caveatee Name</label><input type="text" class="form-control" id="cf_cav_caveateeeName"></div>
+                        <div class="col-lg-3"><label>Caveatee Org</label><input type="text" class="form-control" id="cf_cav_caveateeOrgName"></div>
+                    </div>
+                </div>
+
+                <!-- ACTS & FACTS -->
+                <div class="tab-pane fade" id="cf_tab_actsfacts">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Acts</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.acts.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Act</th><th>Section</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_act_rows"></tbody>
+                    </table>
+                    <hr>
+                    <h5 class="mb-3"><b>Fact Details</b></h5>
+                    <div class="row">
+                        <div class="col-lg-6"><label>Fact of Cause</label><textarea class="form-control" rows="2" id="cf_fact_factOfCause"></textarea></div>
+                        <div class="col-lg-3"><label>Date & Time of Fact</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_fact_dateTimeOfFact"></div>
+                        <div class="col-lg-3"><label>Issue Reported At</label><input type="text" class="form-control" id="cf_fact_issueReportedAt"></div>
+                    </div>
+                    <hr>
+                    <h5 class="mb-3"><b>Cause of Action</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>Date of Cause</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_coa_dateOfCause"></div>
+                        <div class="col-lg-3"><label>State</label><select class="form-control" id="cf_coa_state" data-master="state" data-val="state_id" data-label="{state}"></select></div>
+                        <div class="col-lg-3"><label>District</label><select class="form-control" id="cf_coa_district" data-master="district" data-val="dist_code" data-label="{dist_name}" data-filter-key="state_id" data-filter-from="cf_coa_state"></select></div>
+                        <div class="col-lg-3"><label>Taluka</label><select class="form-control" id="cf_coa_taluka" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}" data-filter-key="dist_code" data-filter-from="cf_coa_district"></select></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Village</label><select class="form-control" id="cf_coa_village" data-master="village" data-val="village_code" data-label="{village_name}" data-filter-key="taluka_code" data-filter-from="cf_coa_taluka"></select></div>
+                        <div class="col-lg-3"><label>Police Station</label><select class="form-control" id="cf_coa_policeStationCode" data-master="police_stn" data-val="police_st_code" data-label="{police_st_name}"></select></div>
+                    </div>
+                </div>
+
+                <!-- CRIME -->
+                <div class="tab-pane fade" id="cf_tab_crime">
+                    <h5 class="mb-3"><b>Crime Details</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>CR No</label><input type="text" class="form-control" id="cf_crime_crno"></div>
+                        <div class="col-lg-3"><label>FIR No</label><input type="text" class="form-control" id="cf_crime_firNo"></div>
+                        <div class="col-lg-3"><label>FIR Type</label><select class="form-control" id="cf_crime_firTypeCode" data-master="firtype" data-val="fir_type_code" data-label="{fir_type_name}"></select></div>
+                        <div class="col-lg-3"><label>FIR Year</label><input type="text" class="form-control" id="cf_crime_firYear"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>FIR Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_crime_firDate"></div>
+                        <div class="col-lg-3"><label>Police Station Name</label><input type="text" class="form-control" id="cf_crime_policeStName"></div>
+                        <div class="col-lg-3"><label>Police Station Code</label><input type="text" class="form-control" id="cf_crime_policeStCode"></div>
+                        <div class="col-lg-3"><label>Investigating Officer</label><input type="text" class="form-control" id="cf_crime_investofficer"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>State</label><input type="text" class="form-control" id="cf_crime_state"></div>
+                        <div class="col-lg-3"><label>District</label><input type="text" class="form-control" id="cf_crime_district"></div>
+                        <div class="col-lg-3"><label>Taluka</label><input type="text" class="form-control" id="cf_crime_taluka"></div>
+                        <div class="col-lg-3"><label>Rank</label><input type="text" class="form-control" id="cf_crime_rank"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Occurrence Date & Time</label><input type="text" class="form-control" placeholder="YYYY-MM-DD HH:mm" id="cf_crime_occurrenceDatetime"></div>
+                        <div class="col-lg-3"><label>Place of Occurrence</label><input type="text" class="form-control" id="cf_crime_placeOfOccurrence"></div>
+                        <div class="col-lg-3"><label>Chargesheet Filing Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_crime_dateOfFilingChargesheet"></div>
+                        <div class="col-lg-3"><label>Chargesheet Received Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_crime_chargesheetReceivedDate"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-6"><label>Details of Incident</label><textarea class="form-control" rows="2" id="cf_crime_detailsOfIncident"></textarea></div>
+                        <div class="col-lg-3"><label>Subsequent Doc Type</label><input type="text" class="form-control" id="cf_crime_subsequentDocType"></div>
+                        <div class="col-lg-3"><label>Subsequent Doc Received Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_crime_subsequentDocReceivedDate"></div>
+                    </div>
+                </div>
+
+                <!-- IA FILING -->
+                <div class="tab-pane fade" id="cf_tab_iafiling">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>IA Filings</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.iaFilings.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>IA No/Year</th><th>Type</th><th>Nature</th><th>Filing Date</th><th>Status</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_ia_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- HISTORY -->
+                <div class="tab-pane fade" id="cf_tab_history">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Case History</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.caseHistories.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Hearing Date</th><th>Next Date</th><th>Purpose</th><th>Disposal</th><th>Judge</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_ch_rows"></tbody>
+                    </table>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>IA History</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.iaHistories.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>IA No</th><th>Hearing Date</th><th>Next Date</th><th>Disposal</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_iah_rows"></tbody>
+                    </table>
+                    <hr>
+                    <h5 class="mb-3"><b>Proceedings Presence</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>Complainant Name</label><input type="text" class="form-control" id="cf_pp_complainantName"></div>
+                        <div class="col-lg-3"><label>Complainant Advocate</label><input type="text" class="form-control" id="cf_pp_complainantAdvocate"></div>
+                        <div class="col-lg-3"><label>Accused Name</label><input type="text" class="form-control" id="cf_pp_accusedName"></div>
+                        <div class="col-lg-3"><label>Accused Advocate</label><input type="text" class="form-control" id="cf_pp_accusedAdvocate"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Complainant Other Presentee</label><input type="text" class="form-control" id="cf_pp_complainantOtherPresentee"></div>
+                        <div class="col-lg-3"><label>Accused Other Presentee</label><input type="text" class="form-control" id="cf_pp_accusedOtherPresentee"></div>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTS -->
+                <div class="tab-pane fade" id="cf_tab_documents">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Documents</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.documents.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Order</th><th>Party Type</th><th>Name</th><th>Filed Date</th><th>Path</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_doc_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- ORDERS -->
+                <div class="tab-pane fade" id="cf_tab_orders">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><b>Orders</b></h5>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="LISTS.orderDetails.open()">+ Add</button>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead><tr><th>Order Date</th><th>Doc Type</th><th>IA No</th><th>Path</th><th style="width:90px;">Actions</th></tr></thead>
+                        <tbody id="cf_ord_rows"></tbody>
+                    </table>
+                </div>
+
+                <!-- LOWER COURT -->
+                <div class="tab-pane fade" id="cf_tab_lowercourt">
+                    <h5 class="mb-3"><b>Trial Court Detail</b></h5>
+                    <div class="row">
+                        <div class="col-lg-3"><label>Case Type</label><input type="text" class="form-control" id="cf_tcd_caseType"></div>
+                        <div class="col-lg-3"><label>Case Type No</label><input type="text" class="form-control" id="cf_tcd_caseTypeNo"></div>
+                        <div class="col-lg-3"><label>Case Number</label><input type="text" class="form-control" id="cf_tcd_caseNumber"></div>
+                        <div class="col-lg-3"><label>Case Year</label><input type="text" class="form-control" id="cf_tcd_caseYear"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Lower Court Name</label><input type="text" class="form-control" id="cf_tcd_lcourtName"></div>
+                        <div class="col-lg-3"><label>Court Code</label><input type="text" class="form-control" id="cf_tcd_courtCode"></div>
+                        <div class="col-lg-3"><label>Lower CNR Number</label><input type="text" class="form-control" id="cf_tcd_lcnrNumber"></div>
+                        <div class="col-lg-3"><label>Date of Decision</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_tcd_dateOfDecision"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>CC Applied Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_tcd_certifiedCopyAppliedDate"></div>
+                        <div class="col-lg-3"><label>CC Ready Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_tcd_certifiedCopyReadyDate"></div>
+                        <div class="col-lg-3"><label>CC Received Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_tcd_certifiedCopyReceivedDate"></div>
+                    </div>
+                    <hr>
+                    <h5 class="mb-3"><b>Transfer Detail</b></h5>
+                    <div class="row">
+                        <div class="col-lg-4"><label>Main Case Type</label><input type="text" class="form-control" id="cf_td_mainCaseType"></div>
+                        <div class="col-lg-4"><label>Main Case Number</label><input type="text" class="form-control" id="cf_td_mainCaseNumber"></div>
+                        <div class="col-lg-4"><label>Main Case Year</label><input type="text" class="form-control" id="cf_td_mainCaseYear"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Transferee Court Name</label><input type="text" class="form-control" id="cf_td_transfereeCourtName"></div>
+                        <div class="col-lg-3"><label>Transferee Court Code</label><input type="text" class="form-control" id="cf_td_transfereeCourtCode"></div>
+                        <div class="col-lg-3"><label>Transferee Court CNR</label><input type="text" class="form-control" id="cf_td_transfereeCourtCnr"></div>
+                        <div class="col-lg-3"><label>Transferee Last Posting</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_td_transfereeLastPosting"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Transferor Court Name</label><input type="text" class="form-control" id="cf_td_transferorCourtName"></div>
+                        <div class="col-lg-3"><label>Transferor Court Code</label><input type="text" class="form-control" id="cf_td_transferorCourtCode"></div>
+                        <div class="col-lg-3"><label>Transferor Court CNR</label><input type="text" class="form-control" id="cf_td_transferorCourtCnr"></div>
+                        <div class="col-lg-3"><label>Transferor Last Posting</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_td_transferorLastPosting"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="row sticky-bottom bg-white py-2 mt-3" style="border-top: 1px solid #EBEDF3;">
+        <div class="col-lg-12 text-right">
+            <button type="button" class="btn btn-light-primary font-weight-bold mr-2" onclick="resetAll()">Reset</button>
+            <button type="button" class="btn btn-success font-weight-bold" id="cf_save_btn" onclick="saveAll()">Save All</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Extra Party -->
+<div class="modal fade" id="extraPartyModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Extra Party</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>Party Type</label><select class="form-control" id="cfm_ep_partyType"><option value="1">Petitioner</option><option value="2">Respondent</option></select></div>
+            <div class="col-lg-3"><label>Party No</label><input type="text" class="form-control" id="cfm_ep_partyNo"></div>
+            <div class="col-lg-3"><label>Party Id</label><input type="text" class="form-control" id="cfm_ep_partyId"></div>
+            <div class="col-lg-3"><label><input type="checkbox" id="cfm_ep_isPartyInPerson"> Party In Person</label></div>
+        </div>
+        <h6 class="mt-3"><b>Personal Details</b></h6>
+        <div class="row">
+            <div class="col-lg-3"><label>First Name</label><input type="text" class="form-control" id="cfm_ep_firstName"></div>
+            <div class="col-lg-3"><label>Last Name</label><input type="text" class="form-control" id="cfm_ep_lastName"></div>
+            <div class="col-lg-3"><label>Rank</label><input type="text" class="form-control" id="cfm_ep_rank"></div>
+            <div class="col-lg-3"><label>Age</label><input type="text" class="form-control" id="cfm_ep_age"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Date of Birth</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ep_dateOfBirth"></div>
+            <div class="col-lg-3"><label>Gender</label><select class="form-control" id="cfm_ep_gender"><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+            <div class="col-lg-3"><label>Email</label><input type="text" class="form-control" id="cfm_ep_email"></div>
+            <div class="col-lg-3"><label>Mobile</label><input type="text" class="form-control" id="cfm_ep_mobile"></div>
+        </div>
+        <h6 class="mt-3"><b>Address</b></h6>
+        <div class="row">
+            <div class="col-lg-6"><label>Full Address</label><textarea class="form-control" rows="2" id="cfm_ep_fullAddress"></textarea></div>
+            <div class="col-lg-3"><label>Pincode</label><input type="text" class="form-control" id="cfm_ep_pincode"></div>
+            <div class="col-lg-3"><label>State</label><select class="form-control" id="cfm_ep_stateId" data-master="state" data-val="state_id" data-label="{state}"></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>District</label><select class="form-control" id="cfm_ep_districtCode" data-master="district" data-val="dist_code" data-label="{dist_name}" data-filter-key="state_id" data-filter-from="cfm_ep_stateId"></select></div>
+            <div class="col-lg-3"><label>Taluka</label><select class="form-control" id="cfm_ep_talukaCode" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}" data-filter-key="dist_code" data-filter-from="cfm_ep_districtCode"></select></div>
+            <div class="col-lg-3"><label>Village</label><select class="form-control" id="cfm_ep_villageCode" data-master="village" data-val="village_code" data-label="{village_name}" data-filter-key="taluka_code" data-filter-from="cfm_ep_talukaCode"></select></div>
+        </div>
+        <h6 class="mt-3"><b>Organization</b></h6>
+        <div class="row">
+            <div class="col-lg-4"><label>Organization Name</label><select class="form-control" id="cfm_ep_orgName" data-master="organization" data-val="orgname" data-label="{orgname}"></select></div>
+            <div class="col-lg-4"><label>Type</label><input type="text" class="form-control" id="cfm_ep_orgType"></div>
+        </div>
+        <h6 class="mt-3"><b>Advocate</b></h6>
+        <div class="row">
+            <div class="col-lg-4"><label>Name</label><input type="text" class="form-control" id="cfm_ep_advName"></div>
+            <div class="col-lg-4"><label>Code</label><input type="text" class="form-control" id="cfm_ep_advCode"></div>
+            <div class="col-lg-4"><label>Reg No</label><input type="text" class="form-control" id="cfm_ep_advReg"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-4"><label>Legal Heir</label><input type="text" class="form-control" id="cfm_ep_legalHeir"></div>
+            <div class="col-lg-4"><label><input type="checkbox" id="cfm_ep_isNameHidden"> Name Hidden</label></div>
+            <div class="col-lg-4"><label>Status</label><select class="form-control" id="cfm_ep_status"><option value="Y">Y - Active</option><option value="N">N - Inactive</option></select></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.extraParties.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Additional Advocate -->
+<div class="modal fade" id="additionalAdvocateModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Additional Advocates</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-4"><label>Party No</label><input type="text" class="form-control" id="cfm_aa_partyNo"></div>
+            <div class="col-lg-4"><label>Party Id</label><input type="text" class="form-control" id="cfm_aa_partyId"></div>
+            <div class="col-lg-4"><label>Party Type</label><select class="form-control" id="cfm_aa_partyType"><option value="1">Petitioner</option><option value="2">Respondent</option></select></div>
+        </div>
+        <div class="d-flex justify-content-between mt-3 mb-2">
+            <h6><b>Advocates</b></h6>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addAdvRow('cfm_aa_adv_rows')">+ Add</button>
+        </div>
+        <table class="table table-bordered">
+            <thead><tr><th>Name</th><th>Code</th><th>Reg No</th><th style="width:60px;"></th></tr></thead>
+            <tbody id="cfm_aa_adv_rows"></tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.additionalAdvocates.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Witness -->
+<div class="modal fade" id="witnessModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Witness</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>Party No</label><input type="text" class="form-control" id="cfm_wit_partyNo"></div>
+            <div class="col-lg-3"><label>Witness No</label><input type="text" class="form-control" id="cfm_wit_witnessNo"></div>
+            <div class="col-lg-3"><label>Witness Flag</label><select class="form-control" id="cfm_wit_witnessFlag"><option value="1">1 - Charge (CW)</option><option value="2">2 - Defence (DW)</option><option value="3">3 - Prosecution/Complainant (PW)</option><option value="4">4 - Court (Ct.W)</option></select></div>
+            <div class="col-lg-3"><label>Bench Witness Type</label><select class="form-control" id="cfm_wit_benchWitnessType"><option value="DW">DW</option><option value="PW">PW</option><option value="Ct.W">Ct.W</option></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Bench Witness No</label><input type="text" class="form-control" id="cfm_wit_benchWitnessNo"></div>
+            <div class="col-lg-3"><label>Witness Name</label><input type="text" class="form-control" id="cfm_wit_witnessName"></div>
+            <div class="col-lg-3"><label>Father Name</label><input type="text" class="form-control" id="cfm_wit_fatherName"></div>
+            <div class="col-lg-3"><label>Age</label><input type="text" class="form-control" id="cfm_wit_age"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-6"><label>Address</label><textarea class="form-control" rows="2" id="cfm_wit_address"></textarea></div>
+            <div class="col-lg-3"><label>Pincode</label><input type="text" class="form-control" id="cfm_wit_pincode"></div>
+            <div class="col-lg-3"><label>Hide Party</label><select class="form-control" id="cfm_wit_hideParty"><option value="N">N</option><option value="Y">Y</option></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>State</label><select class="form-control" id="cfm_wit_stateCode" data-master="state" data-val="state_id" data-label="{state}"></select></div>
+            <div class="col-lg-3"><label>District</label><select class="form-control" id="cfm_wit_districtCode" data-master="district" data-val="dist_code" data-label="{dist_name}" data-filter-key="state_id" data-filter-from="cfm_wit_stateCode"></select></div>
+            <div class="col-lg-3"><label>Taluka</label><select class="form-control" id="cfm_wit_talukCode" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}" data-filter-key="dist_code" data-filter-from="cfm_wit_districtCode"></select></div>
+            <div class="col-lg-3"><label>Village</label><select class="form-control" id="cfm_wit_villageCode" data-master="village" data-val="village_code" data-label="{village_name}" data-filter-key="taluka_code" data-filter-from="cfm_wit_talukCode"></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Mobile</label><input type="text" class="form-control" id="cfm_wit_mobile"></div>
+            <div class="col-lg-3"><label>Email</label><input type="text" class="form-control" id="cfm_wit_email"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-3 mb-2">
+            <h6><b>Advocates</b></h6>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addAdvRow('cfm_wit_adv_rows')">+ Add</button>
+        </div>
+        <table class="table table-bordered">
+            <thead><tr><th>Name</th><th>Code</th><th>Reg No</th><th style="width:60px;"></th></tr></thead>
+            <tbody id="cfm_wit_adv_rows"></tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.witnesses.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Victim -->
+<div class="modal fade" id="victimModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Victim</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-4"><label>Party No</label><input type="text" class="form-control" id="cfm_vic_partyNo"></div>
+            <div class="col-lg-4"><label>Victim Name</label><input type="text" class="form-control" id="cfm_vic_victimName"></div>
+            <div class="col-lg-4"><label>Age</label><input type="text" class="form-control" id="cfm_vic_age"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-6"><label>Address</label><textarea class="form-control" rows="2" id="cfm_vic_address"></textarea></div>
+            <div class="col-lg-3"><label>Pincode</label><input type="text" class="form-control" id="cfm_vic_pincode"></div>
+            <div class="col-lg-3"><label>Hide Party</label><select class="form-control" id="cfm_vic_hideParty"><option value="N">N</option><option value="Y">Y</option></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-4"><label>District</label><select class="form-control" id="cfm_vic_districtCode" data-master="district" data-val="dist_code" data-label="{dist_name}"></select></div>
+            <div class="col-lg-4"><label>Taluka</label><select class="form-control" id="cfm_vic_talukCode" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}"></select></div>
+            <div class="col-lg-4"><label>Village</label><select class="form-control" id="cfm_vic_villageCode" data-master="village" data-val="village_code" data-label="{village_name}"></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-4"><label>Mobile</label><input type="text" class="form-control" id="cfm_vic_mobile"></div>
+            <div class="col-lg-4"><label>Email</label><input type="text" class="form-control" id="cfm_vic_email"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-3 mb-2">
+            <h6><b>Advocates</b></h6>
+            <button type="button" class="btn btn-sm btn-primary" onclick="addAdvRow('cfm_vic_adv_rows')">+ Add</button>
+        </div>
+        <table class="table table-bordered">
+            <thead><tr><th>Name</th><th>Code</th><th>Reg No</th><th style="width:60px;"></th></tr></thead>
+            <tbody id="cfm_vic_adv_rows"></tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.victims.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Act -->
+<div class="modal fade" id="actModal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Act</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-6"><label>Act</label><select class="form-control" id="cfm_act_actcode" data-master="act" data-val="actcode" data-label="{actname}"></select></div>
+            <div class="col-lg-6"><label>Section</label><input type="text" class="form-control" id="cfm_act_section"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.acts.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- IA Filing -->
+<div class="modal fade" id="iaModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">IA Filing</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>IA Type</label><select class="form-control" id="cfm_ia_iaType" data-master="ia_casetype" data-val="ia_case_type" data-label="{ia_type_name}"></select></div>
+            <div class="col-lg-3"><label>IA Number</label><input type="text" class="form-control" id="cfm_ia_iaNumber"></div>
+            <div class="col-lg-3"><label>IA Year</label><input type="text" class="form-control" id="cfm_ia_iaYear"></div>
+            <div class="col-lg-3"><label>IA Nature</label><select class="form-control" id="cfm_ia_iaNature" data-master="ia_nature" data-val="iacls_code" data-label="{iacls_name}"></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Filing Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ia_filingDate"></div>
+            <div class="col-lg-3"><label>Applicant Name</label><input type="text" class="form-control" id="cfm_ia_applicantName"></div>
+            <div class="col-lg-3"><label>Applicant Advocate Code</label><input type="text" class="form-control" id="cfm_ia_applicantAdvocate"></div>
+            <div class="col-lg-3"><label>Respondent Name</label><input type="text" class="form-control" id="cfm_ia_respondentName"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Respondent Advocate Code</label><input type="text" class="form-control" id="cfm_ia_respondentAdvocate"></div>
+            <div class="col-lg-3"><label>Document Path</label><input type="text" class="form-control" id="cfm_ia_documentPath"></div>
+            <div class="col-lg-3"><label>Status</label><input type="text" class="form-control" id="cfm_ia_status"></div>
+            <div class="col-lg-3"><label>Date of Decision</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ia_dateOfDecision"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Next Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ia_nextdate"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.iaFilings.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Case History -->
+<div class="modal fade" id="caseHistoryModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Case History</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>Court No</label><input type="text" class="form-control" id="cfm_ch_courtNo"></div>
+            <div class="col-lg-3"><label>Judge Code</label><input type="text" class="form-control" id="cfm_ch_judgeCode"></div>
+            <div class="col-lg-3"><label>JO Code</label><input type="text" class="form-control" id="cfm_ch_jocode"></div>
+            <div class="col-lg-3"><label>Designation Code</label><input type="text" class="form-control" id="cfm_ch_desgCode"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Hearing Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_hearingDate"></div>
+            <div class="col-lg-3"><label>Next Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_nextdate"></div>
+            <div class="col-lg-3"><label>Purpose</label><select class="form-control" id="cfm_ch_purposeCode" data-master="purpose" data-val="purpose_code" data-label="{purpose_name}"></select></div>
+            <div class="col-lg-3"><label>Business On Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_businessOnDate"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-6"><label>Remarks</label><textarea class="form-control" rows="2" id="cfm_ch_remarks"></textarea></div>
+            <div class="col-lg-3"><label>Disposal</label><select class="form-control" id="cfm_ch_disposal"><option value="N">N</option><option value="Y">Y</option></select></div>
+            <div class="col-lg-3"><label>Decision Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_decisionDate"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Contested / Uncontested</label><input type="text" class="form-control" id="cfm_ch_contestedUnContested"></div>
+            <div class="col-lg-3"><label>Disposal Nature</label><select class="form-control" id="cfm_ch_disposalNature" data-master="disposal_nature" data-val="disp_type" data-label="{disp_name}"></select></div>
+            <div class="col-lg-3"><label>Dormant / SineDie</label><select class="form-control" id="cfm_ch_dormantSineDie"><option value="">-</option><option value="dormant">Dormant</option><option value="SineDie">SineDie</option></select></div>
+            <div class="col-lg-3"><label>Witness Count</label><input type="text" class="form-control" id="cfm_ch_witnessCount"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Admission Stage Disposed</label><input type="text" class="form-control" id="cfm_ch_admissionStageDisposed"></div>
+        </div>
+        <div class="mt-3">
+            <h6><b><input type="checkbox" id="cfm_ch_pdp_enable"> Post Disposal Proceedings</b></h6>
+            <div id="cfm_ch_pdp_block" style="display:none;">
+                <div class="row">
+                    <div class="col-lg-4"><label>Order Remark</label><input type="text" class="form-control" id="cfm_ch_pdp_orderRemark"></div>
+                    <div class="col-lg-4"><label>Next Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_pdp_nextDate"></div>
+                    <div class="col-lg-4"><label>Todays Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ch_pdp_todaysDate"></div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-lg-3"><label>Court No</label><input type="text" class="form-control" id="cfm_ch_pdp_courtNo"></div>
+                    <div class="col-lg-3"><label>Judge Code</label><input type="text" class="form-control" id="cfm_ch_pdp_judgeCode"></div>
+                    <div class="col-lg-3"><label>JO Code</label><input type="text" class="form-control" id="cfm_ch_pdp_jocode"></div>
+                    <div class="col-lg-3"><label>Designation Code</label><input type="text" class="form-control" id="cfm_ch_pdp_desgCode"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.caseHistories.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- IA History -->
+<div class="modal fade" id="iaHistoryModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">IA History</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>IA Number</label><input type="text" class="form-control" id="cfm_iah_iaNumber"></div>
+            <div class="col-lg-3"><label>Court No</label><input type="text" class="form-control" id="cfm_iah_courtNo"></div>
+            <div class="col-lg-3"><label>Judge Code</label><input type="text" class="form-control" id="cfm_iah_judgeCode"></div>
+            <div class="col-lg-3"><label>JO Code</label><input type="text" class="form-control" id="cfm_iah_jocode"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Designation Code</label><input type="text" class="form-control" id="cfm_iah_desgCode"></div>
+            <div class="col-lg-3"><label>Hearing Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_iah_hearingDate"></div>
+            <div class="col-lg-3"><label>Next Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_iah_nextdate"></div>
+            <div class="col-lg-3"><label>Purpose</label><select class="form-control" id="cfm_iah_purposeCode" data-master="purpose" data-val="purpose_code" data-label="{purpose_name}"></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Business On Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_iah_businessOnDate"></div>
+            <div class="col-lg-6"><label>Remarks</label><textarea class="form-control" rows="2" id="cfm_iah_remarks"></textarea></div>
+            <div class="col-lg-3"><label>Disposal</label><select class="form-control" id="cfm_iah_disposal"><option value="N">N</option><option value="Y">Y</option></select></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Decision Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_iah_decisionDate"></div>
+            <div class="col-lg-3"><label>Contested / Uncontested</label><input type="text" class="form-control" id="cfm_iah_contestedUnContested"></div>
+            <div class="col-lg-3"><label>Disposal Nature</label><select class="form-control" id="cfm_iah_disposalNature" data-master="disposal_nature" data-val="disp_type" data-label="{disp_name}"></select></div>
+            <div class="col-lg-3"><label>Dormant / SineDie</label><select class="form-control" id="cfm_iah_dormantSineDie"><option value="">-</option><option value="dormant">Dormant</option><option value="SineDie">SineDie</option></select></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.iaHistories.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Document -->
+<div class="modal fade" id="documentModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-xl" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Document</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-3"><label>Party No</label><input type="text" class="form-control" id="cfm_doc_partyNo"></div>
+            <div class="col-lg-3"><label>Party Type</label><select class="form-control" id="cfm_doc_partyType"><option value="Petitioner">Petitioner</option><option value="Respondent">Respondent</option><option value="Witness">Witness</option><option value="Victim">Victim</option><option value="Other Party">Other Party</option></select></div>
+            <div class="col-lg-3"><label>Document Type</label><select class="form-control" id="cfm_doc_documentType" data-master="docutype" data-val="docu_type" data-label="{docu_name}"></select></div>
+            <div class="col-lg-3"><label>Document Order</label><input type="text" class="form-control" id="cfm_doc_documentOrder"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-4"><label>Document Name</label><input type="text" class="form-control" id="cfm_doc_documentName"></div>
+            <div class="col-lg-4"><label>Document Title</label><input type="text" class="form-control" id="cfm_doc_documentTitle"></div>
+            <div class="col-lg-4"><label>Document Path</label><input type="text" class="form-control" id="cfm_doc_documentPath"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-6"><label>Description</label><textarea class="form-control" rows="2" id="cfm_doc_description"></textarea></div>
+            <div class="col-lg-6"><label>Remarks</label><textarea class="form-control" rows="2" id="cfm_doc_remarks"></textarea></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Advocate Reg</label><input type="text" class="form-control" id="cfm_doc_advReg"></div>
+            <div class="col-lg-3"><label>Advocate Code</label><input type="text" class="form-control" id="cfm_doc_advCode"></div>
+            <div class="col-lg-3"><label>Filed Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_doc_filedDate"></div>
+            <div class="col-lg-3"><label>File Size (bytes)</label><input type="text" class="form-control" id="cfm_doc_fileSize"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>File Extension</label><input type="text" class="form-control" id="cfm_doc_fileExtension"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.documents.save()">Save</button>
+    </div>
+</div></div></div>
+
+<!-- Order -->
+<div class="modal fade" id="orderModal" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Order</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-lg-4"><label>Document Type</label><select class="form-control" id="cfm_ord_documentType" data-master="docutype" data-val="docu_type" data-label="{docu_name}"></select></div>
+            <div class="col-lg-4"><label>Order Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cfm_ord_orderDate"></div>
+            <div class="col-lg-4"><label>Document Path</label><input type="text" class="form-control" id="cfm_ord_documentPath"></div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-lg-3"><label>Judge Code</label><input type="text" class="form-control" id="cfm_ord_judgeCode"></div>
+            <div class="col-lg-3"><label>JO Code</label><input type="text" class="form-control" id="cfm_ord_jocode"></div>
+            <div class="col-lg-3"><label>IA Number</label><input type="text" class="form-control" id="cfm_ord_iaNumber"></div>
+            <div class="col-lg-3"><label>IA Type</label><select class="form-control" id="cfm_ord_iaType" data-master="ia_casetype" data-val="ia_case_type" data-label="{ia_type_name}"></select></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success font-weight-bold" onclick="LISTS.orderDetails.save()">Save</button>
+    </div>
+</div></div></div>
+
+<script src="./template/assets/js/axios.min.js"></script>
+<script src="./template/assets/js/ccntsJS/caseFiling.js"></script>
+{% endblock %}

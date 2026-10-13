@@ -30,16 +30,7 @@ function getDateAsFORMAT(txtSinceValue) {
 
 	return today;
 }
-function callajax(projectname) {
-	var i = 0;
-	while (i <= 1500) {
-		pushtoSrever({ "text": '  Even after the decolonisation of Africa, the continent was unable to formulate, let alone implement its own agenda because of its deep political and economic vulnerabilities. This situation has changed in the last two decades, and today, Africa is witnessing political and economic resurgence. Its leaders realise that the time has come for African development to be owned and driven by the African people themselves. There is a new enthusiasm for the very idea of ‘Pan-Africanism’, and Agenda 2063 is a document that expresses this spirit. The African Union (AU) adopted the agenda in 2015 with the aim of having a roadmap for a strong, peaceful, integrated and prosperous Africa by 2063, 100 years after the establishment of AU’s predecessor, the Organization for African Unity (OAU). Despite the challenges, the African countries are committed to the agenda.  ', "limit": 5 }, "http://akb.d2t.co:5000/v1/projects/" + projectname + "/suggest", "POST", function (node) {
 
-			if (node.results.length != 5) console.log(node)
-		})
-		i++;
-	}
-}
 
 
 jQuery(document).ready(function () {

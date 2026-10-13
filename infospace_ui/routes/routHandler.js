@@ -21,6 +21,7 @@ function routHandler(app, db) {
   var Auditroute = require("./auditreportroute");
   var productiveReportroute = require("./productivyReportroute");
   var readyForVerify = require("./readyforverifyroute");
+  var CaseRoute = require("./CaseRoute");
   new readyForVerify(app, db);
   new Auditroute(app, db);
   new FIRChangeRoute(app, db);
@@ -43,6 +44,7 @@ function routHandler(app, db) {
   new DocumentVerifyroute(app, db);
   new firrejectroute(app, db);
   new productiveReportroute(app, db);
+  new CaseRoute(app, db);
   app.get("*", function (req, res) {
     res.render('404', { locals: res.locals });
   });

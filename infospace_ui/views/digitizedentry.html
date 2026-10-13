@@ -1,0 +1,143 @@
+{% extends 'layout/layout.html' %}
+{% block title %}Digitized Entry{% endblock %}
+{% block content %}
+<div class=" container ">
+    <div class="row ">
+        <div class="col-lg-12 bg-white rounded rounded-bottom-0" style="border-bottom: 1px solid #EBEDF3;">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Digitized Entry</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="btn-secondary py-2 px-2">
+                            <span class="text-primary form-text ">CINO <span class="text-danger"> *</span></span>
+                            <input type="text" tabindex="1" name="de_cino" id="de_cino"
+                                class="form-control" placeholder="Enter CINO number" />
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <input type="button" class=" btn  btn-primary mr-2" value="Search" tabindex="1"
+                            onclick="searchByCino();" style="width: 90px;">
+                        <i class="fa fa-spin text-primary fa-spinner fa-lg" id="de_search_spinner" style="display: none;"></i>
+                    </div>
+                    <div class="col-lg-4 text-right">
+                        <span class="label label-inline font-weight-bold label-lg" id="de_status_badge" style="display:none;"></span>
+                    </div>
+                </div>
+                <div class="metadatafir" id="de_form_area" style="display:none;">
+                    <div class="row py-3 px-3">
+                        <table class="table border">
+                            <thead>
+                                <tr>
+                                    <th class="p-1 bg-secondary" colspan="4">
+                                        <h4 class=" p-1"><b>Case Details</b></h4>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="w-25"><b>e-Filing No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" id="de_efilno"></td>
+                                    <td class="w-25"><b>Date of e-Filing</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateOfEfiling"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Filing No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_filNo"></td>
+                                    <td class="w-25"><b>Filing Year</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_filYear"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Date of Filing</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateOfFiling"></td>
+                                    <td class="w-25"><b>Date of Scrutiny</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateOfScrutiny"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Registration No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_regNo"></td>
+                                    <td class="w-25"><b>Registration Year</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_regYear"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Date of Registration</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dtRegis"></td>
+                                    <td class="w-25"><b>Case Type</b></td>
+                                    <td class="w-25">
+                                        <select class="form-control" id="de_caseType"></select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Type Name</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" id="de_typeName"></td>
+                                    <td class="w-25"><b>Status</b></td>
+                                    <td class="w-25">
+                                        <select class="form-control" id="de_status">
+                                            <option value="Draft">Draft</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Disposed">Disposed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Date of First List</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateFirstList"></td>
+                                    <td class="w-25"><b>Date of Next List</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateNextList"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Date of Last List</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateLastList"></td>
+                                    <td class="w-25"><b>Date of Decision</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateOfDecision"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Filing to Disposal Date</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateFilingDisp"></td>
+                                    <td class="w-25"><b>Filing to Disposal Date (Other)</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" placeholder="YYYY-MM-DD" id="de_dateFilingDispO"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Disposal Nature</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_dispNature"></td>
+                                    <td class="w-25"><b>Court No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_courtNo"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Police Station Code</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100 numberOnly" id="de_policeStCode"></td>
+                                    <td class="w-25"><b>Subject</b></td>
+                                    <td class="w-25">
+                                        <select class="form-control" id="de_subject"></select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Case No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" id="de_caseNo"></td>
+                                    <td class="w-25"><b>Main Case No</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" id="de_mainCaseNo"></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-25"><b>Main Matter CINO</b></td>
+                                    <td class="w-25"><input type="text" tabindex="1" class="w-100" id="de_mainMatterCino"></td>
+                                    <td class="w-25"></td>
+                                    <td class="w-25"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row py-2 px-3">
+                        <div class="col-lg-12 text-right">
+                            <input type="button" class="btn btn-light-primary font-weight-bold mr-2" value="Reset" onclick="resetEntryForm();">
+                            <input type="button" class="btn btn-success font-weight-bold" value="Save" id="de_save_btn" onclick="saveEntry();">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./template/assets/js/axios.min.js"></script>
+<script src="./template/assets/js/ccntsJS/digitizedEntry.js"></script>
+{% endblock %}
