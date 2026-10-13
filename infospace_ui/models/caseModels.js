@@ -27,7 +27,8 @@ module.exports = function (sequelize, DataTypes) {
         subject: { type: DataTypes.INTEGER },
         caseNo: { type: DataTypes.STRING },
         mainCaseNo: { type: DataTypes.STRING },
-        mainMatterCino: { type: DataTypes.STRING }
+        mainMatterCino: { type: DataTypes.STRING },
+        fir: { type: DataTypes.INTEGER }
     }, { tableName: 'case_filing_details' });
 
     models.AdditionalSubject = sequelize.define('additional_subject', {

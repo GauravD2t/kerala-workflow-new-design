@@ -1,8 +1,47 @@
 var db = require('../models');
 var CaseService = require('../service/CaseService');
 var axios = require('axios');
+var httpService = require('../service/httpService.js');
 var env = process.env.NODE_ENV || 'development';
 var config = require('../config/config.js')[env];
+
+function createFir(req, caseDetails) {
+    return new Promise(function (resolve, reject) {
+        var firBody = {
+            inwardstatus: 1,
+            imagestatus: -1,
+            returnstatus: 0,
+            firvalidate: false,
+            qcreject: false,
+            isupload: false,
+            readyforverify: false,
+            readyforupload: false,
+            secondverify: false,
+            thirdverify: false,
+            batch: req.session.batch.id,
+            crn: caseDetails.cino,
+            casetype: caseDetails.caseType != null ? String(caseDetails.caseType) : null,
+            caseno: caseDetails.caseNo,
+            year: caseDetails.regYear,
+            pagecount: 0
+        };
+        if (req.body.fir && typeof req.body.fir === 'object') {
+            Object.assign(firBody, req.body.fir);
+            firBody.batch = req.session.batch.id;
+            firBody.crn = firBody.crn || caseDetails.cino;
+        }
+        httpService.post("/firs", firBody, function (node) {
+            try {
+                var fir = JSON.parse(node.data);
+                if (!fir || !fir.id) return reject(new Error('FIR creation failed'));
+                resolve(fir);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
+}
+
 
 function CaseController() {
 }
@@ -38,8 +77,16 @@ CaseController.prototype.save = async function (req, res) {
         if (!payload.caseDetails || !payload.caseDetails.cino) {
             return res.send({ status: false, error: 'caseDetails.cino is required' });
         }
+        var fir = null;
+        if (req.session.batch != null) {
+            fir = await createFir(req, payload.caseDetails);
+            payload.caseDetails.fir = fir.id;
+            
+        }
         var detail = await CaseService.saveCase(payload);
-        res.send({ status: true, data: detail });
+        var responseData = detail.toJSON ? detail.toJSON() : detail;
+        responseData.fir = fir ? fir.id : payload.caseDetails.fir || null;
+        res.send({ status: true, data: responseData });
     } catch (err) {
         console.error('CaseController.save error:', err);
         res.send({ status: false, error: err.message });
@@ -118,7 +165,7 @@ CaseController.prototype.caseFilingPage = function (req, res) {
         if (node1.status != false) {
             //Already Exirts
             req.session.batch = { id: node1.id };
-            res.render('casefiling', { title: 'Batch Management – Create Batch', batch: node1, locals: res.locals, estcode: escode });
+            res.render('casefiling', { title: 'Batch Management – Create Batch', batch: node1, locals: res.locals });
         } else {
             //create batch
             req.body.created_by_d2 = user.user.id;
