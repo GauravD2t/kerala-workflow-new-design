@@ -19,40 +19,15 @@ function FIRController() {
 }
 FIRController.prototype.firdPage = function (req, res) {
 
-    AxiosUtilkr.getToken()
-        .then(tokenResponse => {
+   
             try {
-                //console.log("localStoragelocalStorage:::::", localStorage.getItem("access_token").trim())
-                let requestStr = "state_code=32|dist_code=598";
-                const requestToken = crypto.createHmac('sha256', secretKey).update(requestStr).digest('hex');
-                let encrypted_request_str = AxiosUtilkr.encrypt(requestStr);
-
-                // URL encode the encrypted string
-                encrypted_request_str = querystring.escape(encrypted_request_str);
-
-                const headers = {
-                    'Authorization': localStorage.getItem("access_token").trim()
-                };
-                // console.log("headers......", headers);
-                const url = `https://delhigw.napix.gov.in/nic/ecourts/dc-court-complex-api/courtComplex?dept_id=${dept_id}&request_str=${encrypted_request_str}&request_token=${requestToken}&version=${version}`;
-                //const url = `https://delhigw.napix.gov.in/nic/ecourts/dc-district-api/district?dept_id=${dept_id}&request_str=${encrypted_request_str}&request_token=${requestToken}&version=${version}`;
-                axios.get(url, { headers })
-                    .then(response => {
-                        //console.log("responseresponse>>>>", response)
-                        //console.log(">>>>status>>>>>>>>>", AxiosUtilkr.decrypt(response))
-                        const result = response.data;
-                        // console.log(result)
-                        //console.log(">>>>>>>>>>>", JSON.parse(AxiosUtilkr.decrypt(result.response_str)));
-                        let escode = getEstablishmentCodes(JSON.parse(AxiosUtilkr.decrypt(result.response_str)));
-
-                        //  console.log("escode...", escode)
-                        let user = req.session.user;
+                let user = req.session.user;
                         httpService.get("/batchesfindOnebycreatedby?created_by_d2=" + parseInt(user.user.id) + "&batchstatus=" + BatchStatusEnum.batchstatus.createbatch, req.body, function (node1) {
                             node1 = JSON.parse(node1)
                             if (node1.status != false) {
                                 //Already Exirts
                                 req.session.batch = { id: node1.id };
-                                res.render('fir', { title: 'Batch Management – Create Batch', batch: node1, locals: res.locals, estcode: escode });
+                                res.render('fir', { title: 'Batch Management – Create Batch', batch: node1, locals: res.locals });
                             } else {
                                 //create batch
                                 req.body.created_by_d2 = user.user.id;
@@ -63,20 +38,13 @@ FIRController.prototype.firdPage = function (req, res) {
                                     returnnode = JSON.parse(returnnode.data)
                                     if (returnnode != null) {
                                         req.session.batch = { id: returnnode.id };
-                                        res.render('fir', { title: 'Batch Management – Create Batch', batch: returnnode, locals: res.locals, estcode: escode });
+                                        res.render('fir', { title: 'Batch Management – Create Batch', batch: returnnode, locals: res.locals });
                                     } else {
-                                        res.render('fir', { title: 'Batch Management – Create Batch', batch: null, locals: res.locals, estcode: escode });
+                                        res.render('fir', { title: 'Batch Management – Create Batch', batch: null, locals: res.locals });
                                     }
                                 });
                             }
                         })
-
-                    })
-                    .catch(error => {
-
-                        console.error("Error occurred:", error);
-                        res.send({ status: false })
-                    });
 
             } catch (err) {
                 res.send({ status: false })
@@ -84,9 +52,7 @@ FIRController.prototype.firdPage = function (req, res) {
                 // localStorage.clear();
 
             }
-        }).catch(error => {
-
-        });
+        
 
 }
 FIRController.prototype.getAllfir = (req, res) => {
