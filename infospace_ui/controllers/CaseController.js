@@ -111,7 +111,33 @@ CaseController.prototype.digitizedEntryPage = function (req, res) {
 };
 
 CaseController.prototype.caseFilingPage = function (req, res) {
-    res.render('casefiling', { title: 'Case Filing', locals: res.locals });
+
+    let user = req.session.user;
+    httpService.get("/batchesfindOnebycreatedby?created_by_d2=" + parseInt(user.user.id) + "&batchstatus=" + BatchStatusEnum.batchstatus.createbatch, req.body, function (node1) {
+        node1 = JSON.parse(node1)
+        if (node1.status != false) {
+            //Already Exirts
+            req.session.batch = { id: node1.id };
+            res.render('casefiling', { title: 'Batch Management – Create Batch', batch: node1, locals: res.locals, estcode: escode });
+        } else {
+            //create batch
+            req.body.created_by_d2 = user.user.id;
+            req.body.islock = true;
+            req.body.bundlenumber = "";
+            req.body.batchstatus = BatchStatusEnum.batchstatus.createbatch;
+            httpService.post("/batches", req.body, function (returnnode) {
+                returnnode = JSON.parse(returnnode.data)
+                if (returnnode != null) {
+                    req.session.batch = { id: returnnode.id };
+                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: returnnode, locals: res.locals, estcode: escode });
+                } else {
+                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: null, locals: res.locals, estcode: escode });
+                }
+            });
+        }
+    })
+
+
 };
 
 CaseController.prototype.digitizedEntry = async function (req, res) {
