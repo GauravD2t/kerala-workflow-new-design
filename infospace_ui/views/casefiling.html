@@ -10,8 +10,12 @@
             <button type="button" class="btn btn-primary" onclick="searchCase()">Search</button>
             <i class="fa fa-spin text-primary fa-spinner fa-lg" id="cf_search_spinner" style="display:none;"></i>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
             <span class="label label-inline font-weight-bold label-lg" id="cf_status_badge" style="display:none;"></span>
+        </div>
+        <div class="col-lg-1">
+            <button type="button" class="btn btn-light-primary font-weight-bold" id="cf_sync_btn" onclick="syncAllMasters()">Sync Masters</button>
+            <i class="fa fa-spin text-primary fa-spinner fa-lg" id="cf_sync_spinner" style="display:none;"></i>
         </div>
         <div class="col-lg-2 text-right">
             <button type="button" class="btn btn-success font-weight-bold" id="cf_save_top" onclick="saveAll()">Save All</button>

@@ -572,7 +572,7 @@ function searchCase() {
     var cino = $('#cf_cino').val().trim();
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     $('#cf_search_spinner').show();
-    axios.get('/api/digitization/digitizedEntry', { params: { cino: cino } })
+    axios.get('/api/digitization/fetchCase', { params: { cino: cino } })
         .then(function (res) {
             if (res.data.success && res.data.data) {
                 currentCaseId = res.data.data.id;
@@ -761,6 +761,39 @@ function clearAll(clearCino) {
 function resetAll() {
     clearAll(true);
     toastr.info('Form cleared');
+}
+
+/* ================= master sync ================= */
+
+function syncAllMasters() {
+    $('#cf_sync_btn').prop('disabled', true);
+    $('#cf_sync_spinner').show();
+    axios.post('/api/digitization/master/sync')
+        .then(function (res) {
+            if (res.data.status) {
+                var total = res.data.results.length;
+                var ok = total - res.data.failed;
+                var counts = res.data.results
+                    .filter(function (r) { return r.success; })
+                    .map(function (r) { return r.master + ' (' + r.count + ')'; })
+                    .join(', ');
+                toastr.success('Masters synced: ' + ok + '/' + total + ' — ' + counts);
+                res.data.results
+                    .filter(function (r) { return !r.success; })
+                    .forEach(function (r) { toastr.error('Sync failed: ' + r.master + ' — ' + r.error); });
+                initMasterSelects();
+            } else {
+                toastr.error(res.data.error || 'Master sync failed');
+            }
+        })
+        .catch(function (err) {
+            console.error('syncAllMasters error:', err);
+            toastr.error('Master sync failed');
+        })
+        .finally(function () {
+            $('#cf_sync_btn').prop('disabled', false);
+            $('#cf_sync_spinner').hide();
+        });
 }
 
 /* ================= batch section ================= */

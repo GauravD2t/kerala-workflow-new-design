@@ -1,9 +1,7 @@
 var db = require('../models');
 var CaseService = require('../service/CaseService');
-var axios = require('axios');
+var DigitizationApiService = require('../service/DigitizationApiService');
 var httpService = require('../service/httpService.js');
-var env = process.env.NODE_ENV || 'development';
-var config = require('../config/config.js')[env];
 
 function createFir(req, caseDetails) {
     return new Promise(function (resolve, reject) {
@@ -46,25 +44,19 @@ function createFir(req, caseDetails) {
 function CaseController() {
 }
 
-var MASTERS = {
-    state: { model: 'State', attrs: ['state_id', 'state'] },
-    district: { model: 'District', attrs: ['dist_code', 'dist_name'] },
-    taluka: { model: 'Taluka', attrs: ['dist_code', 'taluka_code', 'taluka_name'] },
-    village: { model: 'Village', attrs: ['dist_code', 'taluka_code', 'village_code', 'village_name'] },
-    casetype: { model: 'CaseType', attrs: ['case_type', 'type_name', 'full_form'] },
-    ia_casetype: { model: 'IaCaseType', attrs: ['ia_case_type', 'ia_type_name', 'ia_full_form'] },
-    purpose: { model: 'Purpose', attrs: ['purpose_code', 'purpose_name'] },
-    act: { model: 'ActMaster', attrs: ['actcode', 'actname'] },
-    ia_nature: { model: 'IaNature', attrs: ['iacls_code', 'iacls_name'] },
-    docutype: { model: 'DocumentType', attrs: ['docu_type', 'docu_name'] },
-    police_stn: { model: 'PoliceStationMaster', attrs: ['police_st_code', 'police_st_name'] },
-    firtype: { model: 'FirType', attrs: ['fir_type_code', 'fir_type_name'] },
-    subject: { model: 'Subject', attrs: ['subject_code', 'subject_name'] },
-    advocate: { model: 'Advocate', attrs: ['adv_code', 'adv_name', 'adv_reg'] },
-    organization: { model: 'Organization', attrs: ['orgid', 'orgname'] },
-    courtdetails: { model: 'CourtMaster', attrs: ['court_no', 'judge_code', 'from_dt', 'to_dt', 'jocode', 'desg_code', 'judge_name'] },
-    disposal_nature: { model: 'DisposalNature', attrs: ['disp_type', 'disp_name'] }
-};
+var MASTERS = DigitizationApiService.MASTER_RESOURCES;
+
+function filterRows(rows, query) {
+    var keys = Object.keys(query).filter(function (k) {
+        return query[k] !== undefined && query[k] !== '';
+    });
+    if (!keys.length) return rows;
+    return rows.filter(function (row) {
+        return keys.every(function (k) {
+            return row[k] !== undefined && String(row[k]) === String(query[k]);
+        });
+    });
+}
 
 function parsePayload(req) {
     if (typeof req.body.data === 'string') return JSON.parse(req.body.data);
@@ -128,27 +120,48 @@ CaseController.prototype.delete = async function (req, res) {
 
 CaseController.prototype.master = async function (req, res) {
     var masterName = req.params.master;
-    try {
-        var response = await axios.get(config.masterApiBaseUrl + 'api/digitization/master/' + masterName, {
-            params: req.query,
-            timeout: 15000
-        });
-        return res.send(response.data);
-    } catch (proxyErr) {
-        console.warn('Master proxy failed (' + masterName + '):', proxyErr.message, '— falling back to local table');
+    if (MASTERS.indexOf(masterName) === -1) {
+        return res.send({ success: false, error: 'Unknown master: ' + masterName });
     }
-
     try {
-        var m = MASTERS[masterName];
-        if (!m) return res.send({ success: false, error: 'Unknown master: ' + masterName });
-        var filters = {};
-        ['dist_code', 'taluka_code', 'state_id', 'case_type'].forEach(function (f) {
-            if (req.query[f] !== undefined) filters[f] = req.query[f];
-        });
-        var data = await db[m.model].findAll({ attributes: m.attrs, where: filters, raw: true });
-        res.send({ success: true, data: data });
+        var cached = await db.MasterCache.findOne({ where: { master_name: masterName } });
+        if (cached && Array.isArray(cached.data) && cached.data.length) {
+            return res.send({ success: true, data: filterRows(cached.data, req.query), source: 'cache', synced_at: cached.synced_at });
+        }
+        var live = await DigitizationApiService.fetchMaster(masterName);
+        if (live && live.success && Array.isArray(live.data)) {
+            await db.MasterCache.findOrCreate({
+                where: { master_name: masterName },
+                defaults: { data: live.data, synced_at: new Date() }
+            });
+            return res.send({ success: true, data: filterRows(live.data, req.query), source: 'live' });
+        }
+        res.send({ success: true, data: [] });
     } catch (err) {
         console.error('CaseController.master error:', err);
+        res.send({ success: false, error: err.message });
+    }
+};
+
+CaseController.prototype.syncMasters = async function (req, res) {
+    try {
+        var results = await DigitizationApiService.syncAllMasters(db);
+        var failed = results.filter(function (r) { return !r.success; }).length;
+        res.send({ status: true, failed: failed, results: results });
+    } catch (err) {
+        console.error('CaseController.syncMasters error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
+
+CaseController.prototype.fetchCaseByCino = async function (req, res) {
+    try {
+        var cino = req.query.cino;
+        if (!cino) return res.send({ success: false, error: 'cino query param is required' });
+        var data = await DigitizationApiService.fetchCaseByCino(cino);
+        res.send(data);
+    } catch (err) {
+        console.error('CaseController.fetchCaseByCino error:', err);
         res.send({ success: false, error: err.message });
     }
 };
