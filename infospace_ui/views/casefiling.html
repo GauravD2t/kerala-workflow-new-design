@@ -420,6 +420,120 @@
             </div>
         </div>
     </div>
+    <div class="row mt-3">
+        <div class="col-lg-12 bg-white adddivfir">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Files(s) added in this batch (<span id="firCounts">0</span>)</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <div class="mb-7">
+                            <div class="row align-items-center">
+                                <div class="col-lg-9 col-xl-8">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4 my-2 my-md-0">
+                                            <div class="input-icon">
+                                                <input type="text" tabindex="1" class="form-control" placeholder="Search..."
+                                                    id="kt_datatable_search_query" />
+                                                <span><i class="flaticon2-search-1 text-muted"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class=" table-bordered datatable  datatable-bordered datatable-head-custom table-hover"
+                            id="kt_datatable"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 bg-white rounded rounded-top-0 ">
+            <div class=" card-custom card-stretch gutter-b">
+                <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate"
+                    id="batchcommitForm">
+                    <div class="row">
+                        <div class="col-lg-2">
+
+                        </div>
+                        <div class="col-lg-3">
+                            <span class="form-text text-muted">Department <span class="text-danger">*</span></span>
+                            <select class="form-control" name="departmentsearch" id="departmentsearch" tabindex="1">
+
+                            </select>
+                        </div>
+                        <div class="col-lg-3">
+                            <span class="form-text text-muted">Batch delivery date <span
+                                    class="text-danger">*</span></span>
+
+                            <div class="input-group input-medium date date-picker" id="datePicker">
+                                <input type="text" tabindex="1" class="form-control" readonly="" id="deliveryschedule"
+                                    name="deliveryschedule">
+                                <span class="input-group-btn">
+                                    <button class="btn default" type="button" tabindex="1">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 py-8">
+                            <input type="button" id="commitBatchButton" name="commitBatchButton" style="width: 115px;"
+                                class="form-control btn btn-light-primary font-weight-bolder mr-2" tabindex="1"
+                                value="Commit Batch" onclick="cfCommitBatch()" disabled></button>
+                        </div>
+
+
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-12 py-4 bg-secondary"></div>
+        <div class="col-lg-12 bg-white rounded">
+            <div class=" card-custom card-stretch gutter-b">
+                <h4 class=" py-2 px-2 ">
+                    <span class="font-weight-bolder text-dark">Manage Batches</span>
+                </h4>
+                <div class="row">
+                    <div class="col-lg-12 ">
+                        <ul class="nav nav-tabs nav-tabs-line">
+                            <li class="nav-item">
+                                <a class="nav-link " data-toggle="tab" href="#delayedbatch"
+                                    onclick="getdelayedBatch(this)">Delayed Batches</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#pedingbatch"
+                                    onclick="getpendingBatch(this)">Pending for Delivery</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#deliveredbatch"
+                                    onclick="getdeliveryBatch()">Delivered Batches</a>
+                            </li>
+
+                        </ul>
+                        <div class="tab-content mt-5" id="myTabContent">
+                            <div class="tab-pane fade " id="delayedbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+                                <div class=" datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_delayed"></div>
+                            </div>
+                            <div class="tab-pane fade show active" id="pedingbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+                                <div class=" datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_pending"></div>
+                            </div>
+                            <div class="tab-pane fade" id="deliveredbatch" role="tabpanel"
+                                aria-labelledby="kt_tab_pane_2">
+                                <div class=" datatable datatable-bordered datatable-head-custom table-hover"
+                                    id="kt_datatable_delivered"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row sticky-bottom bg-white py-2 mt-3" style="border-top: 1px solid #EBEDF3;">
         <div class="col-lg-12 text-right">
             <button type="button" class="btn btn-light-primary font-weight-bold mr-2" onclick="resetAll()">Reset</button>
@@ -786,6 +900,32 @@
     </div>
 </div></div></div>
 <script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<!-- Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i aria-hidden="true" class="ki ki-close"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure want to Delete <strong id="ModalValue"></strong>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light-primary font-weight-bold"
+                    data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                    onclick="cfDeleteFir()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+<link href="./template/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
 <script src="./template/assets/js/axios.min.js"></script>
 <script src="./template/assets/js/ccntsJS/caseFiling.js"></script>
 {% endblock %}

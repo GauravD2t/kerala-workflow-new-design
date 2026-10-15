@@ -723,6 +723,7 @@ function saveAll() {
                 currentCaseId = res.data.data.id || currentCaseId;
                 showStatusBadge(payload.caseDetails.status || 'Draft');
                 toastr.success('Case saved successfully.');
+                cfLoadBatchFirs();
             } else {
                 toastr.error(res.data.error || 'Save failed');
             }
@@ -761,3 +762,307 @@ function resetAll() {
     clearAll(true);
     toastr.info('Form cleared');
 }
+
+/* ================= batch section ================= */
+
+var cfBatchDatatable = null;
+var cfDeleteFirId = null;
+
+function cfGetDate() {
+    var dateObj = new Date();
+    var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    var day = String(dateObj.getDate()).padStart(2, '0');
+    return day + "/" + month + "/" + dateObj.getFullYear();
+}
+
+function cfFormatDate(value, format) {
+    if (typeof moment !== 'undefined' && value) {
+        return moment.utc(value).format(format || "DD/MM/YYYY");
+    }
+    return value || '';
+}
+
+function cfToggleBatchButtons(count) {
+    var disabled = !count || count === 0;
+    $('#commitBatchButton').attr("disabled", disabled);
+}
+
+function cfRenderBatchTable(dataJSONArray) {
+    dataJSONArray = dataJSONArray || [];
+    $('#firCounts').html(dataJSONArray.length);
+    cfToggleBatchButtons(dataJSONArray.length);
+    if (cfBatchDatatable) {
+        cfBatchDatatable.destroy();
+        cfBatchDatatable = null;
+    }
+    cfBatchDatatable = $('#kt_datatable').KTDatatable({
+        data: {
+            type: 'local',
+            source: dataJSONArray,
+            pageSize: 10,
+        },
+        layout: {
+            scroll: true,
+            height: 450,
+            footer: false,
+        },
+        sortable: false,
+        pagination: true,
+        search: {
+            input: $('#kt_datatable_search_query'),
+            key: 'generalSearch',
+            placeholder: 'Search Case'
+        },
+        columns: [{
+            field: 'crn',
+            title: 'CNR',
+            width: 125,
+        }, {
+            field: 'year',
+            width: 140,
+            title: 'CaseNo',
+            template: function (row) {
+                return row.casetype + "_" + row.caseno + "_" + row.year;
+            }
+        }, {
+            field: 'est_code',
+            title: 'Establishment Name',
+            width: 110,
+        }, {
+            field: 'remarks',
+            title: 'Remarks',
+            width: 200,
+        }, {
+            field: 'Actions',
+            title: 'Actions',
+            sortable: false,
+            width: 100,
+            overflow: 'visible',
+            autoHide: false,
+            template: function (row) {
+                return '<a onclick="popupCFDelete(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="deletebtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Delete"><i class="flaticon-delete text-danger icon-nm"></i></a>';
+            },
+        }],
+    });
+}
+
+function cfLoadBatchFirs() {
+    axios.get('/FIRGetAll.dwf')
+        .then(function (res) {
+            cfRenderBatchTable(res.data && res.data.status ? res.data.data : []);
+        })
+        .catch(function (err) {
+            console.error('cfLoadBatchFirs error:', err);
+            cfRenderBatchTable([]);
+        });
+}
+
+function popupCFDelete(id, crn) {
+    cfDeleteFirId = id;
+    $('#ModalValue').text(crn || id);
+    $('#deleteModal').modal('show');
+}
+
+function cfDeleteFir() {
+    if (!cfDeleteFirId) return;
+    axios.delete('/firDelete.dwf/' + cfDeleteFirId)
+        .then(function (res) {
+            if (res.data && res.data.status) {
+                toastr.success('File deleted successfully.');
+                cfLoadBatchFirs();
+            } else {
+                toastr.error('Problem in deleting file!');
+            }
+        })
+        .catch(function (err) {
+            console.error('cfDeleteFir error:', err);
+            toastr.error('Problem in deleting file!');
+        });
+}
+
+function cfCommitBatch() {
+    var deliveryDate = $('#deliveryschedule').val();
+    var department = $('#departmentsearch').val();
+    if (!department) { toastr.warning('Select department'); return; }
+    if (!deliveryDate) { toastr.warning('Select batch delivery date'); return; }
+
+    var formdata = {
+        departmentsearch: department,
+        deliveryschedule: deliveryDate
+    };
+
+    axios.put('/batchCommitUpdate.dwf/', formdata)
+        .then(function (res) {
+            if (res.data && res.data.data != null) {
+                toastr.success('Batch committed successfully.');
+                location.reload();
+            } else {
+                toastr.error('Problem in updating data.');
+            }
+        })
+        .catch(function (err) {
+            console.error('cfCommitBatch error:', err);
+            toastr.error('Problem in updating data.');
+        });
+}
+
+function cfSubTableInit(e) {
+    $('<div/>').attr('id', 'child_data_local_' + e.data.id).appendTo(e.detailCell).KTDatatable({
+        data: {
+            type: 'local',
+            source: e.data.firs,
+            pageSize: 5,
+        },
+        layout: {
+            scroll: true,
+            height: 300,
+            footer: false,
+        },
+        sortable: false,
+        columns: [{
+            field: 'inwardstatus',
+            title: 'Acceptance Status',
+            template: function (row) {
+                var status = {
+                    0: { 'title': 'Pending', 'class': 'bg-warning-o-50 text-warning' },
+                    1: { 'title': 'Accepted', 'class': 'text-green' },
+                    2: { 'title': 'Rejected', 'class': 'bg-danger-o-50 text-danger' },
+                };
+                var s = status[row.inwardstatus] || status[0];
+                return '<span class="label ' + s.class + ' label-inline font-weight-bold label-lg">' + s.title + '</span>';
+            }
+        }, {
+            field: 'crn',
+            title: 'CNR',
+        }, {
+            field: 'year',
+            title: 'CaseNo',
+            template: function (row) {
+                return row.casetype + "_" + row.caseno + "_" + row.year;
+            }
+        }, {
+            field: 'est_code',
+            title: 'Establishment Name',
+        }, {
+            field: 'remarks',
+            title: 'Remarks',
+        }],
+    });
+}
+
+function cfMakeBatchDatatable(elId, url) {
+    var columns = [{
+        field: 'id',
+        title: '',
+        sortable: false,
+        width: 30,
+        textAlign: 'center',
+    }, {
+        field: 'bundlenumber',
+        title: 'Batch ID',
+        width: 150,
+    }, {
+        field: 'Total Cases',
+        title: 'Total Cases',
+        sortable: false,
+        width: 90,
+        template: function (row) {
+            return (row.firs || []).length;
+        }
+    }, {
+        field: 'created_at_d2',
+        title: 'Creation Date',
+        width: 160,
+        sortable: false,
+        template: function (row) {
+            if (typeof moment !== 'undefined') {
+                return moment(row.created_at_d2).format("DD/MM/YYYY hh:mm A");
+            }
+            return row.created_at_d2 || '';
+        }
+    }, {
+        field: 'deliveryschedule',
+        title: 'Scheduled Delivery date',
+        width: 150,
+        template: function (row) {
+            return cfFormatDate(row.deliveryschedule);
+        }
+    }];
+
+    $('#' + elId).KTDatatable({
+        data: {
+            type: 'remote',
+            source: {
+                read: {
+                    url: url,
+                    method: 'GET',
+                    map: function (raw) {
+                        var dataSet = raw;
+                        if (typeof raw.data !== 'undefined') {
+                            dataSet = raw.data;
+                        }
+                        return dataSet;
+                    },
+                },
+            },
+            pageSize: 10,
+            serverPaging: true,
+            serverFiltering: false,
+            serverSorting: true,
+            saveState: false,
+        },
+        layout: {
+            scroll: true,
+            height: null,
+            footer: false,
+            icons: {
+                rowDetail: {
+                    expand: 'fa fa-minus',
+                    collapse: 'fa fa-plus'
+                }
+            }
+        },
+        sortable: false,
+        filterable: false,
+        pagination: true,
+        detail: {
+            title: 'Load sub table',
+            content: cfSubTableInit,
+        },
+        columns: columns,
+    });
+}
+
+var cfDelayedDatatableInit = function () {
+    cfMakeBatchDatatable('kt_datatable_delayed', '/batchesfindAllbyCreatedby.dwf/1');
+};
+var cfPendingDatatableInit = function () {
+    cfMakeBatchDatatable('kt_datatable_pending', '/batchesfindAllbyCreatedby.dwf/2');
+};
+var cfDeliveredDatatableInit = function () {
+    cfMakeBatchDatatable('kt_datatable_delivered', '/batchesfindAllbyCreatedby.dwf/3');
+};
+
+function getdelayedBatch() {
+    setTimeout(function () { cfDelayedDatatableInit(); }, 200);
+}
+function getpendingBatch() {
+    setTimeout(function () { cfPendingDatatableInit(); }, 200);
+}
+function getdeliveryBatch() {
+    setTimeout(function () { cfDeliveredDatatableInit(); }, 200);
+}
+
+jQuery(document).ready(function () {
+    if ($.fn.datepicker) {
+        $('#datePicker').datepicker({
+            format: "dd/mm/yyyy",
+            todayBtn: "linked",
+            todayHighlight: true,
+            autoclose: true
+        });
+    }
+    $('#deliveryschedule').val(cfGetDate());
+    cfLoadBatchFirs();
+    getpendingBatch();
+});

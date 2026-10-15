@@ -176,9 +176,9 @@ CaseController.prototype.caseFilingPage = function (req, res) {
                 returnnode = JSON.parse(returnnode.data)
                 if (returnnode != null) {
                     req.session.batch = { id: returnnode.id };
-                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: returnnode, locals: res.locals, estcode: escode });
+                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: returnnode, locals: res.locals });
                 } else {
-                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: null, locals: res.locals, estcode: escode });
+                    res.render('casefiling', { title: 'Batch Management – Create Batch', batch: null, locals: res.locals });
                 }
             });
         }
