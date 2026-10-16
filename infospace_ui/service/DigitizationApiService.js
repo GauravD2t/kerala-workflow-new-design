@@ -35,7 +35,7 @@ async function getToken(forceRefresh) {
     var res = await axios.post(config.digitizationApi.baseUrl + 'api/tokenRequest', {
         username: config.digitizationApi.username,
         password: config.digitizationApi.password
-    }, { timeout: 15000 });
+    }, { timeout: 30000 });
     tokenCache = { token: res.data.token, fetchedAt: Date.now() };
     return tokenCache.token;
 }

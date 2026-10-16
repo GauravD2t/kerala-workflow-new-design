@@ -568,25 +568,99 @@ function fillParty(prefix, item) {
 
 /* ---------------- search / populate / save ---------------- */
 
+function firstOrNull(v) {
+    if (Array.isArray(v)) return v.length ? v[0] : null;
+    return v || null;
+}
+
+function asArray(v) {
+    if (Array.isArray(v)) return v;
+    return v ? [v] : [];
+}
+
+function populateFromExternal(data) {
+    data = data || {};
+
+    fillPrefix('cf_cd_', CASE_FIELDS, data.caseDetails || {});
+
+    additionalSubjects = asArray(data.additionalSubjects).map(function (r) {
+        return String(r.subjectcode !== undefined ? r.subjectcode : r.subject_code);
+    }).filter(function (x) { return x !== 'undefined' && x !== 'null'; });
+    renderSubjectChips();
+
+    var mains = data.mainparties || {};
+    fillParty('cf_pet_', firstOrNull(mains.petitioner));
+    fillParty('cf_res_', firstOrNull(mains.respondent));
+
+    LISTS.extraParties.setItems(asArray(data.extraParties));
+    LISTS.additionalAdvocates.setItems(asArray(data.additionalAdvocates));
+    LISTS.witnesses.setItems(asArray(data.witness));
+    LISTS.victims.setItems(asArray(data.victims));
+
+    fillPrefix('cf_cav_', CAV_FIELDS, firstOrNull(data.caveat) || {});
+
+    LISTS.acts.setItems(asArray(data.act));
+
+    fillPrefix('cf_fact_', FACT_FIELDS, firstOrNull(data.factDetails) || {});
+    fillPrefix('cf_coa_', COA_FIELDS, firstOrNull(data.causeofaction) || {});
+    fillPrefix('cf_crime_', CRIME_FIELDS, data.crimeDetails || {});
+
+    LISTS.iaFilings.setItems(asArray(data.iaFiling));
+    LISTS.caseHistories.setItems(asArray(data.caseHistory));
+    LISTS.iaHistories.setItems(asArray(data.iaHistory));
+
+    fillPrefix('cf_pp_', PP_FIELDS, firstOrNull(data.proceedingsPresence) || {});
+
+    LISTS.documents.setItems(asArray(data.documents));
+    LISTS.orderDetails.setItems(asArray(data.orderDetails));
+
+    fillPrefix('cf_tcd_', TCD_FIELDS, firstOrNull(data.trialCourtDetails) || {});
+    fillPrefix('cf_td_', TD_FIELDS, firstOrNull(data.transferDetails) || {});
+
+    var op = firstOrNull(data.otherParties);
+    if (op) {
+        fillPrefix('cf_op_', OP_FIELDS, op);
+        fillAdvRows('cf_op_adv_rows', op.advocates);
+    } else {
+        fillPrefix('cf_op_', OP_FIELDS, {});
+        fillAdvRows('cf_op_adv_rows', []);
+    }
+}
+
 function searchCase() {
     var cino = $('#cf_cino').val().trim();
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     $('#cf_search_spinner').show();
-    axios.get('/api/digitization/fetchCase', { params: { cino: cino } })
+
+    axios.get('/api/digitization/digitizedEntry', { params: { cino: cino } })
         .then(function (res) {
             if (res.data.success && res.data.data) {
                 currentCaseId = res.data.data.id;
+                clearAll(false);
                 populateAll(res.data.data.caseDetails);
                 showStatusBadge(res.data.data.status);
-                toastr.success('Record loaded');
-            } else {
-                toastr.info(res.data.error === 'Record not found'
-                    ? 'Record not found. Fill in the tabs and Save All to create a new entry.'
-                    : (res.data.error || 'Search failed'));
-                clearAll(false);
+                toastr.success('Local record loaded');
+                return null;
             }
+            return axios.get('/api/digitization/fetchCase', { params: { cino: cino } })
+                .then(function (ext) {
+                    if (ext.data.success && ext.data.data && typeof ext.data.data === 'object') {
+                        currentCaseId = null;
+                        clearAll(false);
+                        populateFromExternal(ext.data.data);
+                        showStatusBadge((ext.data.data.caseDetails || {}).status || 'From CMS');
+                        toastr.success('Case fetched from CMS. Review and Save All to digitize.');
+                    } else {
+                        currentCaseId = null;
+                        clearAll(false);
+                        toastr.info('Record not found in local DB or CMS. Fill in the tabs and Save All to create a new entry.');
+                    }
+                });
         })
-        .catch(function (err) { console.error('searchCase error:', err); toastr.error('Search failed'); })
+        .catch(function (err) {
+            console.error('searchCase error:', err);
+            toastr.error('Search failed: ' + (err.message || 'unknown error'));
+        })
         .finally(function () { $('#cf_search_spinner').hide(); });
 }
 
