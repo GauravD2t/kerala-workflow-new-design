@@ -578,46 +578,70 @@ function asArray(v) {
     return v ? [v] : [];
 }
 
+function isFilled(v) {
+    if (v === null || v === undefined || v === '') return false;
+    if (typeof v === 'object') {
+        return Object.keys(v).some(function (k) { return isFilled(v[k]); });
+    }
+    return true;
+}
+
+function nonEmptyItems(list) {
+    return asArray(list).filter(function (it) {
+        return Object.keys(it || {}).some(function (k) { return isFilled(it[k]); });
+    });
+}
+
+function normalizeHistoryItem(it) {
+    if (it.nextdate === undefined && it.nextDate !== undefined) it.nextdate = it.nextDate;
+    if (it.contestedUnContested === undefined && it.contestedUncontested !== undefined) {
+        it.contestedUnContested = it.contestedUncontested;
+    }
+    return it;
+}
+
 function populateFromExternal(data) {
     data = data || {};
 
     fillPrefix('cf_cd_', CASE_FIELDS, data.caseDetails || {});
 
     additionalSubjects = asArray(data.additionalSubjects).map(function (r) {
-        return String(r.subjectcode !== undefined ? r.subjectcode : r.subject_code);
-    }).filter(function (x) { return x !== 'undefined' && x !== 'null'; });
+        var code = r.subjectcode !== undefined ? r.subjectcode
+            : (r.subject_code !== undefined ? r.subject_code : r.subjectCode);
+        return code === null || code === undefined ? null : String(code);
+    }).filter(function (x) { return x !== null; });
     renderSubjectChips();
 
     var mains = data.mainparties || {};
     fillParty('cf_pet_', firstOrNull(mains.petitioner));
     fillParty('cf_res_', firstOrNull(mains.respondent));
 
-    LISTS.extraParties.setItems(asArray(data.extraParties));
-    LISTS.additionalAdvocates.setItems(asArray(data.additionalAdvocates));
-    LISTS.witnesses.setItems(asArray(data.witness));
-    LISTS.victims.setItems(asArray(data.victims));
+    LISTS.extraParties.setItems(nonEmptyItems(data.extraParties));
+    LISTS.additionalAdvocates.setItems(nonEmptyItems(data.additionalAdvocates));
+    LISTS.witnesses.setItems(nonEmptyItems(data.witness));
+    LISTS.victims.setItems(nonEmptyItems(data.victims));
 
-    fillPrefix('cf_cav_', CAV_FIELDS, firstOrNull(data.caveat) || {});
+    fillPrefix('cf_cav_', CAV_FIELDS, firstOrNull(nonEmptyItems(data.caveat)) || {});
 
-    LISTS.acts.setItems(asArray(data.act));
+    LISTS.acts.setItems(nonEmptyItems(data.act));
 
-    fillPrefix('cf_fact_', FACT_FIELDS, firstOrNull(data.factDetails) || {});
-    fillPrefix('cf_coa_', COA_FIELDS, firstOrNull(data.causeofaction) || {});
-    fillPrefix('cf_crime_', CRIME_FIELDS, data.crimeDetails || {});
+    fillPrefix('cf_fact_', FACT_FIELDS, firstOrNull(nonEmptyItems(data.factDetails)) || {});
+    fillPrefix('cf_coa_', COA_FIELDS, firstOrNull(nonEmptyItems(data.causeofaction)) || {});
+    fillPrefix('cf_crime_', CRIME_FIELDS, firstOrNull(nonEmptyItems(data.crimeDetails)) || {});
 
-    LISTS.iaFilings.setItems(asArray(data.iaFiling));
-    LISTS.caseHistories.setItems(asArray(data.caseHistory));
-    LISTS.iaHistories.setItems(asArray(data.iaHistory));
+    LISTS.iaFilings.setItems(nonEmptyItems(data.iaFiling));
+    LISTS.caseHistories.setItems(nonEmptyItems(data.caseHistory).map(normalizeHistoryItem));
+    LISTS.iaHistories.setItems(nonEmptyItems(data.iaHistory).map(normalizeHistoryItem));
 
-    fillPrefix('cf_pp_', PP_FIELDS, firstOrNull(data.proceedingsPresence) || {});
+    fillPrefix('cf_pp_', PP_FIELDS, firstOrNull(nonEmptyItems(data.proceedingsPresence)) || {});
 
-    LISTS.documents.setItems(asArray(data.documents));
-    LISTS.orderDetails.setItems(asArray(data.orderDetails));
+    LISTS.documents.setItems(nonEmptyItems(data.documents));
+    LISTS.orderDetails.setItems(nonEmptyItems(data.orderDetails));
 
-    fillPrefix('cf_tcd_', TCD_FIELDS, firstOrNull(data.trialCourtDetails) || {});
-    fillPrefix('cf_td_', TD_FIELDS, firstOrNull(data.transferDetails) || {});
+    fillPrefix('cf_tcd_', TCD_FIELDS, firstOrNull(nonEmptyItems(data.trialCourtDetails)) || {});
+    fillPrefix('cf_td_', TD_FIELDS, firstOrNull(nonEmptyItems(data.transferDetails)) || {});
 
-    var op = firstOrNull(data.otherParties);
+    var op = firstOrNull(nonEmptyItems(data.otherParties));
     if (op) {
         fillPrefix('cf_op_', OP_FIELDS, op);
         fillAdvRows('cf_op_adv_rows', op.advocates);
