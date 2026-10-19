@@ -184,6 +184,14 @@ function fillModalFlat(cfg, item) {
     });
 }
 
+function stripRowMeta(row) {
+    var out = {};
+    Object.keys(row || {}).forEach(function (k) {
+        if (['id', 'case_detail_id', 'createdAt', 'updatedAt'].indexOf(k) === -1) out[k] = row[k];
+    });
+    return out;
+}
+
 function makeListManager(cfg) {
     var items = [];
 
@@ -223,7 +231,7 @@ function makeListManager(cfg) {
         },
         getItems: function () { return items.slice(); },
         setItems: function (arr, alreadyShaped) {
-            items = (arr || []).map(alreadyShaped ? function (x) { return x; } : (cfg.unbuild || function (x) { return x; }));
+            items = (arr || []).map(alreadyShaped ? function (x) { return x; } : (cfg.unbuild || stripRowMeta));
             renderRows();
         },
         clear: function () { items = []; renderRows(); }
@@ -673,8 +681,8 @@ function searchCase() {
         data: { cino: cino },
         success: function (res) {
             if (res.success && res.data) {
-                currentCaseId = res.data.id;
                 clearAll(false);
+                currentCaseId = res.data.id;
                 populateAll(res.data.caseDetails);
                 showStatusBadge(res.data.status);
                 toastr.success('Local record loaded');
@@ -689,14 +697,14 @@ function searchCase() {
                 data: { cino: cino },
                 success: function (ext) {
                     if (ext.success && ext.data && typeof ext.data === 'object') {
-                        currentCaseId = null;
                         clearAll(false);
+                        currentCaseId = null;
                         populateFromExternal(ext.data);
                         showStatusBadge((ext.data.caseDetails || {}).status || 'From CMS');
                         toastr.success('Case fetched from CMS. Review and Save All to digitize.');
                     } else {
-                        currentCaseId = null;
                         clearAll(false);
+                        currentCaseId = null;
                         toastr.info('Record not found in local DB or CMS. Fill in the tabs and Save All to create a new entry.');
                     }
                     $('#cf_search_spinner').hide();
