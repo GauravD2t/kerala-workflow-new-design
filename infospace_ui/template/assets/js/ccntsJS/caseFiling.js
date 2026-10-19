@@ -33,7 +33,7 @@ function loadSelect($el, params, done) {
                     $el.append('<option value="' + row[valKey] + '">' + renderLabel(labelTpl, row) + '</option>');
                 });
             }
-            if (current !== undefined) { $el.val(current); $el.removeData('keep'); }
+            if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
             if (done) done();
         })
         .catch(function (err) { console.error('master load failed:', master, err); if (done) done(); });
@@ -170,6 +170,9 @@ function fillModalFlat(cfg, item) {
         if (cfg.bool && cfg.bool.indexOf(f) !== -1) {
             el.checked = !!val;
         } else {
+            if (val !== null && val !== undefined && String(el.value) !== String(val)) {
+                $(el).data('keep', val);
+            }
             el.value = (val === null || val === undefined) ? '' : val;
         }
     });
@@ -213,8 +216,8 @@ function makeListManager(cfg) {
             renderRows();
         },
         getItems: function () { return items.slice(); },
-        setItems: function (arr) {
-            items = (arr || []).map(cfg.unbuild || function (x) { return x; });
+        setItems: function (arr, alreadyShaped) {
+            items = (arr || []).map(alreadyShaped ? function (x) { return x; } : (cfg.unbuild || function (x) { return x; }));
             renderRows();
         },
         clear: function () { items = []; renderRows(); }
@@ -616,7 +619,7 @@ function populateFromExternal(data) {
     fillParty('cf_pet_', firstOrNull(mains.petitioner));
     fillParty('cf_res_', firstOrNull(mains.respondent));
 
-    LISTS.extraParties.setItems(nonEmptyItems(data.extraParties));
+    LISTS.extraParties.setItems(nonEmptyItems(data.extraParties), true);
     LISTS.additionalAdvocates.setItems(nonEmptyItems(data.additionalAdvocates));
     LISTS.witnesses.setItems(nonEmptyItems(data.witness));
     LISTS.victims.setItems(nonEmptyItems(data.victims));
