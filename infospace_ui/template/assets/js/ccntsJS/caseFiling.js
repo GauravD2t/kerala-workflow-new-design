@@ -668,10 +668,27 @@ function populateFromExternal(data) {
     }
 }
 
-function searchCase() {
+function checkFirBundleNotice(cino) {
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/checkFirBundle',
+        data: { cino: cino },
+        success: function (res) {
+            if (res.status && res.data && res.data.bundlenumber) {
+                toastr.warning(cino + ' file already exists in batch ' + res.data.bundlenumber);
+            }
+        },
+        error: function (err) { console.error('checkFirBundle error:', err); }
+    });
+}
+
+function searchCase(forEdit) {
     var cino = $('#cf_cino').val().trim();
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     $('#cf_search_spinner').show();
+    checkFirBundleNotice(cino);
 
     $.ajax({
         async: true,
@@ -682,9 +699,10 @@ function searchCase() {
         success: function (res) {
             if (res.success && res.data) {
                 clearAll(false);
-                currentCaseId = res.data.id;
+                currentCaseId = forEdit ? res.data.id : null;
                 populateAll(res.data.caseDetails);
                 showStatusBadge(res.data.status);
+                updateSaveButtons(!!forEdit);
                 toastr.success('Local record loaded');
                 $('#cf_search_spinner').hide();
                 return;
@@ -724,8 +742,12 @@ function searchCase() {
     });
 }
 
-function showStatusBadge(status) {
-    var badge = $('#cf_status_badge');
+function updateSaveButtons(editing) {
+    $('#cf_save_btn, #cf_save_top').text(editing ? 'Update' : 'Save');
+    $('#cf_reset_btn').text(editing ? 'Cancel' : 'Reset');
+}
+
+function showStatusBadge(status) {    var badge = $('#cf_status_badge');
     if (!status) { badge.hide(); return; }
     var cls = status === 'Disposed' ? 'label-light-danger' : (status === 'Pending' ? 'label-light-warning' : 'label-light-info');
     badge.removeClass('label-light-info label-light-warning label-light-danger').addClass(cls)
@@ -845,6 +867,33 @@ function buildPayload() {
 function saveAll() {
     var payload = buildPayload();
     if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); return; }
+
+    if (!currentCaseId) {
+        $('#cf_save_btn, #cf_save_top').prop('disabled', true);
+        $.ajax({
+            async: true,
+            type: 'GET',
+            dataType: 'json',
+            url: '/api/digitization/checkFirBundle',
+            data: { cino: payload.caseDetails.cino },
+            success: function (res) {
+                if (res.status && res.data && res.data.bundlenumber) {
+                    toastr.warning(payload.caseDetails.cino + ' file already exists in batch ' + res.data.bundlenumber + '. A new file will be created for this CINO.');
+                }
+                doSave(payload);
+            },
+            error: function (err) {
+                console.error('saveAll bundle check error:', err);
+                doSave(payload);
+            }
+        });
+        return;
+    }
+
+    doSave(payload);
+}
+
+function doSave(payload) {
     $('#cf_save_btn, #cf_save_top').prop('disabled', true);
 
     $.ajax({
@@ -856,10 +905,9 @@ function saveAll() {
         data: JSON.stringify(payload),
         success: function (res) {
             if (res.status) {
-                currentCaseId = res.data.id || currentCaseId;
-                showStatusBadge(payload.caseDetails.status || 'Draft');
-                toastr.success('Case saved successfully.');
+                toastr.success(currentCaseId ? 'Case updated successfully.' : 'Case saved successfully.');
                 cfLoadBatchFirs();
+                clearAll(true);
             } else {
                 toastr.error(res.error || 'Save failed');
             }
@@ -878,6 +926,7 @@ function saveAll() {
 function clearAll(clearCino) {
     if (clearCino !== false) $('#cf_cino').val('');
     currentCaseId = null;
+    updateSaveButtons(false);
     showStatusBadge(null);
     fillPrefix('cf_cd_', CASE_FIELDS, {});
     additionalSubjects = [];
@@ -1004,14 +1053,6 @@ function cfRenderBatchTable(dataJSONArray) {
                 return row.casetype + "_" + row.caseno + "_" + row.year;
             }
         }, {
-            field: 'est_code',
-            title: 'Establishment Name',
-            width: 110,
-        }, {
-            field: 'remarks',
-            title: 'Remarks',
-            width: 200,
-        }, {
             field: 'Actions',
             title: 'Actions',
             sortable: false,
@@ -1019,7 +1060,8 @@ function cfRenderBatchTable(dataJSONArray) {
             overflow: 'visible',
             autoHide: false,
             template: function (row) {
-                return '<a onclick="popupCFDelete(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="deletebtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Delete"><i class="flaticon-delete text-danger icon-nm"></i></a>';
+                return '<a onclick="cfEditFirFromTable(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="editbtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Edit"><i class="flaticon-edit text-primary icon-nm"></i></a>' +
+                    '<a onclick="popupCFDelete(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="deletebtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Delete"><i class="flaticon-delete text-danger icon-nm"></i></a>';
             },
         }],
     });
@@ -1037,6 +1079,35 @@ function cfLoadBatchFirs() {
         error: function (err) {
             console.error('cfLoadBatchFirs error:', err);
             cfRenderBatchTable([]);
+        }
+    });
+}
+
+function cfEditFirFromTable(firId, crn) {
+    if (!firId && !crn) { toastr.warning('No file reference found'); return; }
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/digitizedEntryByFir',
+        data: { firId: firId },
+        success: function (res) {
+            if (res.success && res.data) {
+                clearAll(false);
+                currentCaseId = res.data.id;
+                $('#cf_cino').val(res.data.cino || crn || '');
+                populateAll(res.data.caseDetails);
+                showStatusBadge(res.data.status);
+                updateSaveButtons(true);
+                toastr.success('File loaded for editing');
+            }  else {
+                toastr.info('No digitized details found for this file');
+            }
+            $('html, body').animate({ scrollTop: 0 }, 300);
+        },
+        error: function (err) {
+            console.error('cfEditFirFromTable error:', err);
+            toastr.error('Failed to load file details');
         }
     });
 }
@@ -1136,12 +1207,6 @@ function cfSubTableInit(e) {
             template: function (row) {
                 return row.casetype + "_" + row.caseno + "_" + row.year;
             }
-        }, {
-            field: 'est_code',
-            title: 'Establishment Name',
-        }, {
-            field: 'remarks',
-            title: 'Remarks',
         }],
     });
 }

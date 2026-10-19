@@ -18,9 +18,9 @@ function createFir(req, caseDetails) {
             thirdverify: false,
             batch: req.session.batch.id,
             crn: caseDetails.cino,
-            casetype: caseDetails.caseType != null ? String(caseDetails.caseType) : null,
-            caseno: caseDetails.caseNo,
-            year: caseDetails.regYear,
+            casetype: caseDetails.typeName != null ? String(caseDetails.typeName) : null,
+            caseno: caseDetails.filNo != null ? String(caseDetails.filNo) : null,
+            year: caseDetails.regYear != null ? caseDetails.regYear: null,
             pagecount: 0
         };
         if (req.body.fir && typeof req.body.fir === 'object') {
@@ -28,6 +28,7 @@ function createFir(req, caseDetails) {
             firBody.batch = req.session.batch.id;
             firBody.crn = firBody.crn || caseDetails.cino;
         }
+        console.log('firBody.........', firBody);
         httpService.post("/firs", firBody, function (node) {
             try {
                 var fir = JSON.parse(node.data);
@@ -40,6 +41,19 @@ function createFir(req, caseDetails) {
     });
 }
 
+
+function findFirByCrn(cino) {
+    return new Promise(function (resolve) {
+        httpService.get(encodeURI("/firs?crn_eq=" + cino), {}, function (node) {
+            try {
+                node = JSON.parse(node);
+                resolve(Array.isArray(node) && node.length ? node[0] : null);
+            } catch (e) {
+                resolve(null);
+            }
+        });
+    });
+}
 
 function CaseController() {
 }
@@ -198,6 +212,46 @@ CaseController.prototype.caseFilingPage = function (req, res) {
     })
 
 
+};
+
+CaseController.prototype.checkFirBundle = async function (req, res) {
+    try {
+        var cino = req.query.cino;
+        if (!cino) return res.send({ status: false, error: 'cino query param is required' });
+        var fir = await findFirByCrn(cino);
+        res.send({
+            status: true,
+            data: {
+                firId: fir ? fir.id : null,
+                bundlenumber: (fir && fir.batch && fir.batch.bundlenumber) ? fir.batch.bundlenumber : null
+            }
+        });
+    } catch (err) {
+        console.error('CaseController.checkFirBundle error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
+
+CaseController.prototype.digitizedEntryByFir = async function (req, res) {
+    try {
+        var firId = req.query.firId;
+        if (!firId) return res.send({ success: false, error: 'firId query param is required' });
+        var detail = await CaseService.getCaseByFir(parseInt(firId, 10));
+        if (!detail) return res.send({ success: false, error: 'Record not found' });
+        var json = detail.toJSON();
+        res.send({
+            success: true,
+            data: {
+                id: json.id,
+                cino: json.cino,
+                status: json.status,
+                caseDetails: json
+            }
+        });
+    } catch (err) {
+        console.error('CaseController.digitizedEntryByFir error:', err);
+        res.send({ success: false, error: err.message });
+    }
 };
 
 CaseController.prototype.digitizedEntry = async function (req, res) {

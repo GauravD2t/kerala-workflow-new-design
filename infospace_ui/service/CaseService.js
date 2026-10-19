@@ -177,11 +177,12 @@ CaseService.prototype.getCase = async function (id) {
 
 CaseService.prototype.getCaseByCino = async function (cino) {
     var includes = db.CASE_CHILDREN.map(function (name) { return { model: db[name] }; });
-    return db.CaseDetail.findOne({ where: { cino: cino }, include: includes });
+    return db.CaseDetail.findOne({ where: { cino: cino }, include: includes, order: [['id', 'DESC']] });
 };
 
 CaseService.prototype.getCaseByFir = async function (firId) {
-    return db.CaseDetail.findOne({ where: { fir: firId } });
+    var includes = db.CASE_CHILDREN.map(function (name) { return { model: db[name] }; });
+    return db.CaseDetail.findOne({ where: { fir: firId }, include: includes, order: [['id', 'DESC']] });
 };
 
 CaseService.prototype.deleteCase = async function (id) {

@@ -12,6 +12,8 @@ function CaseRoute(app, db) {
     app.route("/digitizedEntry.dwf").get(authfilter.isvaildUrl, CaseController.digitizedEntryPage);
     app.route("/caseFiling.dwf").get(authfilter.isvaildUrl, CaseController.caseFilingPage);
     app.route("/api/digitization/digitizedEntry").get(CaseController.digitizedEntry);
+    app.route("/api/digitization/digitizedEntryByFir").get(CaseController.digitizedEntryByFir);
+    app.route("/api/digitization/checkFirBundle").get(CaseController.checkFirBundle);
     app.route("/api/digitization/fetchCase").get(CaseController.fetchCaseByCino);
 }
 module.exports = CaseRoute
