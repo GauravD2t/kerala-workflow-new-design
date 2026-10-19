@@ -6,6 +6,7 @@ const AsiosUtil = require("../service/AxiosUtil")
 var LocalStorage = require('node-localstorage').LocalStorage;
 const localStorage = new LocalStorage('./scratch');
 var CIPAService = require("../service/CIPAService");
+var CaseService = require("../service/CaseService.js");
 const crypto = require('crypto');
 const axios = require('axios');
 var AxiosUtilKerala = require("../service/AxiosKeralaUtil");
@@ -112,15 +113,20 @@ FIRController.prototype.save = (req, res) => {
     }
 }
 FIRController.prototype.delete = (req, res) => {
-    var deletequesy = "delete from metadatavalues where fir = " + req.params.id;
-    CIPAService.DeleteeexecuteSQL(deletequesy, function (data111) {
-        httpService.delete("/firs/" + req.params.id, "", function (node) {
-            res.send({ status: true, data: JSON.parse(node) });
-
+    var firId = req.params.id;
+    CaseService.getCaseByFir(firId)
+        .then(function (detail) {
+            if (!detail) return null;
+            return CaseService.deleteCase(detail.id);
         })
-        
-    })
-    
+        .catch(function (err) {
+            console.error('firDelete: case details delete failed:', err);
+        })
+        .then(function () {
+            httpService.delete("/firs/" + firId, "", function (node) {
+                res.send({ status: true, data: node ? JSON.parse(node) : null });
+            })
+        })
     // res.send({ status: true});
 }
 FIRController.prototype.delteFRIbyBatch = (req, res) => {

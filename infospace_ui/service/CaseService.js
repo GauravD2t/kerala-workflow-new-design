@@ -180,6 +180,10 @@ CaseService.prototype.getCaseByCino = async function (cino) {
     return db.CaseDetail.findOne({ where: { cino: cino }, include: includes });
 };
 
+CaseService.prototype.getCaseByFir = async function (firId) {
+    return db.CaseDetail.findOne({ where: { fir: firId } });
+};
+
 CaseService.prototype.deleteCase = async function (id) {
     return db.sequelize.transaction(async function (t) {
         for (var i = 0; i < db.CASE_CHILDREN.length; i++) {

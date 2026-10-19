@@ -22,21 +22,27 @@ function renderLabel(template, row) {
 
 function loadSelect($el, params, done) {
     var master = $el.data('master');
-    axios.get('/api/digitization/master/' + master, { params: params || {} })
-        .then(function (res) {
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/master/' + master,
+        data: params || {},
+        success: function (res) {
             var valKey = $el.data('val');
             var labelTpl = String($el.data('label'));
             var current = $el.data('keep');
             $el.empty().append('<option value="">Select</option>');
-            if (res.data.success && res.data.data) {
-                res.data.data.forEach(function (row) {
+            if (res.success && res.data) {
+                res.data.forEach(function (row) {
                     $el.append('<option value="' + row[valKey] + '">' + renderLabel(labelTpl, row) + '</option>');
                 });
             }
             if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
             if (done) done();
-        })
-        .catch(function (err) { console.error('master load failed:', master, err); if (done) done(); });
+        },
+        error: function (err) { console.error('master load failed:', master, err); if (done) done(); }
+    });
 }
 
 function initMasterSelects() {
@@ -659,36 +665,55 @@ function searchCase() {
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     $('#cf_search_spinner').show();
 
-    axios.get('/api/digitization/digitizedEntry', { params: { cino: cino } })
-        .then(function (res) {
-            if (res.data.success && res.data.data) {
-                currentCaseId = res.data.data.id;
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/digitizedEntry',
+        data: { cino: cino },
+        success: function (res) {
+            if (res.success && res.data) {
+                currentCaseId = res.data.id;
                 clearAll(false);
-                populateAll(res.data.data.caseDetails);
-                showStatusBadge(res.data.data.status);
+                populateAll(res.data.caseDetails);
+                showStatusBadge(res.data.status);
                 toastr.success('Local record loaded');
-                return null;
+                $('#cf_search_spinner').hide();
+                return;
             }
-            return axios.get('/api/digitization/fetchCase', { params: { cino: cino } })
-                .then(function (ext) {
-                    if (ext.data.success && ext.data.data && typeof ext.data.data === 'object') {
+            $.ajax({
+                async: true,
+                type: 'GET',
+                dataType: 'json',
+                url: '/api/digitization/fetchCase',
+                data: { cino: cino },
+                success: function (ext) {
+                    if (ext.success && ext.data && typeof ext.data === 'object') {
                         currentCaseId = null;
                         clearAll(false);
-                        populateFromExternal(ext.data.data);
-                        showStatusBadge((ext.data.data.caseDetails || {}).status || 'From CMS');
+                        populateFromExternal(ext.data);
+                        showStatusBadge((ext.data.caseDetails || {}).status || 'From CMS');
                         toastr.success('Case fetched from CMS. Review and Save All to digitize.');
                     } else {
                         currentCaseId = null;
                         clearAll(false);
                         toastr.info('Record not found in local DB or CMS. Fill in the tabs and Save All to create a new entry.');
                     }
-                });
-        })
-        .catch(function (err) {
+                    $('#cf_search_spinner').hide();
+                },
+                error: function (err) {
+                    console.error('searchCase error:', err);
+                    toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
+                    $('#cf_search_spinner').hide();
+                }
+            });
+        },
+        error: function (err) {
             console.error('searchCase error:', err);
-            toastr.error('Search failed: ' + (err.message || 'unknown error'));
-        })
-        .finally(function () { $('#cf_search_spinner').hide(); });
+            toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
+            $('#cf_search_spinner').hide();
+        }
+    });
 }
 
 function showStatusBadge(status) {
@@ -814,23 +839,30 @@ function saveAll() {
     if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); return; }
     $('#cf_save_btn, #cf_save_top').prop('disabled', true);
 
-    var request = currentCaseId
-        ? axios.put('/caseUpdate.dwf/' + currentCaseId, payload)
-        : axios.post('/caseSave.dwf', payload);
-
-    request
-        .then(function (res) {
-            if (res.data.status) {
-                currentCaseId = res.data.data.id || currentCaseId;
+    $.ajax({
+        async: true,
+        type: currentCaseId ? 'PUT' : 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        url: currentCaseId ? '/caseUpdate.dwf/' + currentCaseId : '/caseSave.dwf',
+        data: JSON.stringify(payload),
+        success: function (res) {
+            if (res.status) {
+                currentCaseId = res.data.id || currentCaseId;
                 showStatusBadge(payload.caseDetails.status || 'Draft');
                 toastr.success('Case saved successfully.');
                 cfLoadBatchFirs();
             } else {
-                toastr.error(res.data.error || 'Save failed');
+                toastr.error(res.error || 'Save failed');
             }
-        })
-        .catch(function (err) { console.error('saveAll error:', err); toastr.error('Save failed'); })
-        .finally(function () { $('#cf_save_btn, #cf_save_top').prop('disabled', false); });
+            $('#cf_save_btn, #cf_save_top').prop('disabled', false);
+        },
+        error: function (err) {
+            console.error('saveAll error:', err);
+            toastr.error('Save failed');
+            $('#cf_save_btn, #cf_save_top').prop('disabled', false);
+        }
+    });
 }
 
 /* ---------------- reset ---------------- */
@@ -869,32 +901,37 @@ function resetAll() {
 function syncAllMasters() {
     $('#cf_sync_btn').prop('disabled', true);
     $('#cf_sync_spinner').show();
-    axios.post('/api/digitization/master/sync')
-        .then(function (res) {
-            if (res.data.status) {
-                var total = res.data.results.length;
-                var ok = total - res.data.failed;
-                var counts = res.data.results
+    $.ajax({
+        async: true,
+        type: 'POST',
+        dataType: 'json',
+        url: '/api/digitization/master/sync',
+        success: function (res) {
+            if (res.status) {
+                var total = res.results.length;
+                var ok = total - res.failed;
+                var counts = res.results
                     .filter(function (r) { return r.success; })
                     .map(function (r) { return r.master + ' (' + r.count + ')'; })
                     .join(', ');
                 toastr.success('Masters synced: ' + ok + '/' + total + ' — ' + counts);
-                res.data.results
+                res.results
                     .filter(function (r) { return !r.success; })
                     .forEach(function (r) { toastr.error('Sync failed: ' + r.master + ' — ' + r.error); });
                 initMasterSelects();
             } else {
-                toastr.error(res.data.error || 'Master sync failed');
+                toastr.error(res.error || 'Master sync failed');
             }
-        })
-        .catch(function (err) {
-            console.error('syncAllMasters error:', err);
-            toastr.error('Master sync failed');
-        })
-        .finally(function () {
             $('#cf_sync_btn').prop('disabled', false);
             $('#cf_sync_spinner').hide();
-        });
+        },
+        error: function (err) {
+            console.error('syncAllMasters error:', err);
+            toastr.error('Master sync failed');
+            $('#cf_sync_btn').prop('disabled', false);
+            $('#cf_sync_spinner').hide();
+        }
+    });
 }
 
 /* ================= batch section ================= */
@@ -981,14 +1018,19 @@ function cfRenderBatchTable(dataJSONArray) {
 }
 
 function cfLoadBatchFirs() {
-    axios.get('/FIRGetAll.dwf')
-        .then(function (res) {
-            cfRenderBatchTable(res.data && res.data.status ? res.data.data : []);
-        })
-        .catch(function (err) {
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/FIRGetAll.dwf',
+        success: function (res) {
+            cfRenderBatchTable(res && res.status ? res.data : []);
+        },
+        error: function (err) {
             console.error('cfLoadBatchFirs error:', err);
             cfRenderBatchTable([]);
-        });
+        }
+    });
 }
 
 function popupCFDelete(id, crn) {
@@ -999,19 +1041,24 @@ function popupCFDelete(id, crn) {
 
 function cfDeleteFir() {
     if (!cfDeleteFirId) return;
-    axios.delete('/firDelete.dwf/' + cfDeleteFirId)
-        .then(function (res) {
-            if (res.data && res.data.status) {
+    $.ajax({
+        async: true,
+        type: 'DELETE',
+        dataType: 'json',
+        url: '/firDelete.dwf/' + cfDeleteFirId,
+        success: function (res) {
+            if (res && res.status) {
                 toastr.success('File deleted successfully.');
                 cfLoadBatchFirs();
             } else {
                 toastr.error('Problem in deleting file!');
             }
-        })
-        .catch(function (err) {
+        },
+        error: function (err) {
             console.error('cfDeleteFir error:', err);
             toastr.error('Problem in deleting file!');
-        });
+        }
+    });
 }
 
 function cfCommitBatch() {
@@ -1025,19 +1072,26 @@ function cfCommitBatch() {
         deliveryschedule: deliveryDate
     };
 
-    axios.put('/batchCommitUpdate.dwf/', formdata)
-        .then(function (res) {
-            if (res.data && res.data.data != null) {
+    $.ajax({
+        async: true,
+        type: 'PUT',
+        dataType: 'json',
+        contentType: 'application/json',
+        url: '/batchCommitUpdate.dwf/',
+        data: JSON.stringify(formdata),
+        success: function (res) {
+            if (res && res.data != null) {
                 toastr.success('Batch committed successfully.');
                 location.reload();
             } else {
                 toastr.error('Problem in updating data.');
             }
-        })
-        .catch(function (err) {
+        },
+        error: function (err) {
             console.error('cfCommitBatch error:', err);
             toastr.error('Problem in updating data.');
-        });
+        }
+    });
 }
 
 function cfSubTableInit(e) {
