@@ -516,7 +516,7 @@ function renderSubjectChips() {
     additionalSubjects.forEach(function (code, i) {
         var label = $('#cf_as_input option[value="' + code + '"]').text() || code;
         html += '<span class="label label-inline label-light-primary font-weight-bold mr-2 p-3">' + label +
-            ' <a href="javascript:void(0)" onclick="removeSubjectChip(' + i + ')">x</a></span>';
+            '<a href="javascript:void(0)" class="cf-chip-x" onclick="removeSubjectChip(' + i + ')">x</a></span>';
     });
     $('#cf_as_chips').html(html);
 }
@@ -1061,7 +1061,7 @@ function cfRenderBatchTable(dataJSONArray) {
             autoHide: false,
             template: function (row) {
                 return '<a onclick="cfEditFirFromTable(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="editbtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Edit"><i class="flaticon-edit text-primary icon-nm"></i></a>' +
-                    '<a onclick="popupCFDelete(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="deletebtn btn btn-icon btn-light btn-hover-primary btn-sm" title="Delete"><i class="flaticon-delete text-danger icon-nm"></i></a>';
+                    '<a onclick="popupCFDelete(' + row.id + ', \'' + (row.crn || '') + '\')" href="javascript:;" class="deletebtn btn btn-icon btn-light btn-hover-primary btn-sm ml-4" title="Delete"><i class="flaticon-delete text-danger icon-nm"></i></a>';
             },
         }],
     });
