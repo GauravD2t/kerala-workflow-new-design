@@ -207,7 +207,7 @@ ScanningSoftwareController.prototype.getFileListForDataEntryByBatchID = function
 /// Classfication Entry
 ScanningSoftwareController.prototype.getBatchesNameForClassificationStage = function (req, res) {
     console.log("getBatchesNameForClassificationStage")
-    query = 'WITH user_locked_batches AS ( SELECT DISTINCT f.batch FROM firs f  WHERE (f.classification_by = ' + req.session.user.user.id +'   or f.classification_by is null)  AND f.islock = true AND f.imagestatus = 3) SELECT DISTINCT b.id, b.bundlenumber FROM batches b JOIN firs f ON f.batch = b.id WHERE ( EXISTS (SELECT 1 FROM user_locked_batches ulb WHERE ulb.batch = b.id) ) OR ( NOT EXISTS (SELECT 1 FROM user_locked_batches)  AND f.imagestatus = 3  AND (f.islock = false OR f.islock IS NULL) ) ORDER BY b.bundlenumber'
+    query = 'WITH user_locked_batches AS ( SELECT DISTINCT f.batch FROM firs f  WHERE (f.classification_by = ' + req.session.user.user.id +'   or f.classification_by is null)  AND f.islock = true AND f.imagestatus = 2) SELECT DISTINCT b.id, b.bundlenumber FROM batches b JOIN firs f ON f.batch = b.id WHERE ( EXISTS (SELECT 1 FROM user_locked_batches ulb WHERE ulb.batch = b.id) ) OR ( NOT EXISTS (SELECT 1 FROM user_locked_batches)  AND f.imagestatus = 2  AND (f.islock = false OR f.islock IS NULL) ) ORDER BY b.bundlenumber'
     CIPAService.executeSQL(query, function (batchdata) {
         var resultbat = batchdata[0];
         res.send({ status: true, data: resultbat });
@@ -216,7 +216,7 @@ ScanningSoftwareController.prototype.getBatchesNameForClassificationStage = func
 
 ScanningSoftwareController.prototype.getFileListForClassificationByBatchID = function (req, res) {
     console.log("getFileListForClassificationByBatchID")
-    httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&verify_by_null=true&inwardstatus=1&imagestatus=3&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
+    httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&verify_by_null=true&inwardstatus=1&imagestatus=2&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
         allbatch = JSON.parse(allbatch)
         ////console.log(allbatch.statusCode)
         if (allbatch.statusCode != 403) {
@@ -233,7 +233,7 @@ ScanningSoftwareController.prototype.getFileListForClassificationByBatchID = fun
 /// Classfication Reject Entry
 ScanningSoftwareController.prototype.getBatchesNameForRejectClassificationStage = function (req, res) {
     console.log("getBatchesNameForClassificationStage")
-    query = 'SELECT DISTINCT b.id, bundlenumber FROM firs f JOIN batches b ON b.id = f.batch WHERE imagestatus=3 and verify_by is not null order by bundlenumber'
+    query = 'SELECT DISTINCT b.id, bundlenumber FROM firs f JOIN batches b ON b.id = f.batch WHERE imagestatus=2 and verify_by is not null order by bundlenumber'
     CIPAService.executeSQL(query, function (batchdata) {
         var resultbat = batchdata[0];
         res.send({ status: true, data: resultbat });
@@ -242,7 +242,7 @@ ScanningSoftwareController.prototype.getBatchesNameForRejectClassificationStage 
 
 ScanningSoftwareController.prototype.getFileListForRejectClassificationByBatchID = function (req, res) {
     console.log("getFileListForClassificationByBatchID")
-    httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&verify_by_null=false&inwardstatus=1&imagestatus=3&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
+    httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&verify_by_null=false&inwardstatus=1&imagestatus=2&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
         allbatch = JSON.parse(allbatch)
         ////console.log(allbatch.statusCode)
         if (allbatch.statusCode != 403) {

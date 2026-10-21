@@ -26,10 +26,10 @@ webserviceController.prototype.loginservice = function (req, res) {
     httpService.post("/auth/local", req.body, function (user) {
         if (user.statusCode == 200) {
             req.session.user = JSON.parse(user.data);
-            const AxiosUtil = new AsiosUtil();
-            AxiosUtil.postxForm("/api/authn/login", { "password": dspacepassword, "user": 'support@d2t.co' }).then(function (loginResponce) {
-                localStorage.setItem("authorization", loginResponce.headers['authorization'])
-            });
+            // const AxiosUtil = new AsiosUtil();
+            // AxiosUtil.postxForm("/api/authn/login", { "password": dspacepassword, "user": 'support@d2t.co' }).then(function (loginResponce) {
+            //     localStorage.setItem("authorization", loginResponce.headers['authorization'])
+            // });
 
 
 
