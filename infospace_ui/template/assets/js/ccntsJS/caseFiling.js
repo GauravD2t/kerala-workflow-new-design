@@ -236,8 +236,8 @@ function makeListManager(cfg) {
                 html += '<td>' + (col(item, i) === null || col(item, i) === undefined ? '' : col(item, i)) + '</td>';
             });
             html += '<td>' +
-                '<button type="button" class="btn btn-sm btn-light-primary" onclick="LISTS.' + cfg.listKey + '.open(' + i + ')">Edit</button> ' +
-                '<button type="button" class="btn btn-sm btn-light-danger" onclick="LISTS.' + cfg.listKey + '.remove(' + i + ')">Del</button>' +
+                '<a href="javascript:;" class="mr-5" title="Edit" onclick="LISTS.' + cfg.listKey + '.open(' + i + ')"><i class="flaticon-edit text-primary icon-nm"></i></a>' +
+                '<a href="javascript:;" title="Delete" onclick="LISTS.' + cfg.listKey + '.remove(' + i + ')"><i class="flaticon-delete text-danger icon-nm"></i></a>' +
                 '</td></tr>';
         });
         $('#' + cfg.tbodyId).html(html);
