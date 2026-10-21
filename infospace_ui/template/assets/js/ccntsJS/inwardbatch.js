@@ -74,12 +74,6 @@ var ReceivedDatatable = function () {
                         return row.casetype + "_" + row.caseno + "_" + row.year;
                     }
                 }, {
-                    field: 'est_code',
-                    title: 'Establishment Name',
-                }, {
-                    field: 'firremarks',
-                    title: 'Remarks',
-                }, {
                     field: 'firinwardremarks',
                     title: "Digitization Team's remarks",
 
@@ -283,12 +277,6 @@ var DelayedReceiptDatatable = function () {
                         return row.casetype + "_" + row.caseno + "_" + row.year;
                     }
                 }, {
-                    field: 'est_code',
-                    title: 'Establishment Name',
-                }, {
-                    field: 'firremarks',
-                    title: 'Remarks',
-                }, {
                     field: 'firinwardremarks',
                     title: "Digitization Team's remarks",
                 }],
@@ -440,12 +428,6 @@ var PandingReceiptDatatable = function () {
                     template: function (row) {
                         return row.casetype + "_" + row.caseno + "_" + row.year;
                     }
-                }, {
-                    field: 'est_code',
-                    title: 'Establishment Name',
-                }, {
-                    field: 'firremarks',
-                    title: 'Remarks',
                 }, {
                     field: 'firinwardremarks',
                     title: "Digitization Team's remarks",
@@ -671,20 +653,8 @@ var KTDatatablesDataSourceAjaxClient = function () {
                         return '<div class=" form-group"><label  id="casetypeno' + full.id + '"  class="form-control"  >' + full.casetype + '_' + full.caseno + '_' + full.year + ' </label> <input type="hidden" tabindex="' + tabindex + '" name="casetype' + full.id + '" id="casetype' + full.id + '"  class="   form-control" value="' + full.casetype + '"orignalvalue="' + full.casetype + '"><input type="hidden" tabindex="' + tabindex + '" name="caseno' + full.id + '" id="caseno' + full.id + '"  class="   form-control" value="' + full.caseno + '"orignalvalue="' + full.caseno + '"><input type="hidden" tabindex="' + tabindex + '" name="year' + full.id + '" id="year' + full.id + '" onfocusout="yearvalidate(this)" onpaste=="numberOnly(this)"  onkeyup="numberOnly(this)"  class=" year numberOnly form-control" maxlength="4" value="' + full.year + '" ></div>';
                     }
                 },
-                {
-                    data: 'est_code',
-                    render: function (data, type, full, meta) {
-                        //var est_code = full.est_code == 0 || full.est_code == null ? "" : full.est_code;
-                        return '<div class=" form-group"><input type="text" tabindex="' + tabindex + '" name="est_code' + full.id + '" id="est_code' + full.id + '" class="  form-control"  value="' + full.est_code + '"></div>';
-
-                    }
-                },
-                {
-                    data: 'remarks',
-                    render: function (data, type, full, meta) {
-                        return full.remarks;
-                    }
-                },
+               
+                
 
                 {
                     data: 'firinwardremarks',
@@ -698,7 +668,7 @@ var KTDatatablesDataSourceAjaxClient = function () {
             ],
             columnDefs: [
                 {
-                    aTargets: [6],
+                    aTargets: [4],
                     title: 'Actions',
                     orderable: false,
                     render: function (data, type, full, meta) {
@@ -855,8 +825,7 @@ function updateFIR(firid) {
                 crn: $('#crn' + firid).val(),
                 firinwardremarks: $("#firinwardremarks" + firid).val(),
                 inwardstatus: $('#inwardstatus' + firid).val(),
-                itemid: $('#itemid' + firid).val(),
-                est_code: $('#est_code' + firid).val(),
+                
                 year: $('#year' + firid).val(),
                 casetype: $('#casetype' + firid).val(),
                 caseno: $('#caseno' + firid).val(),
