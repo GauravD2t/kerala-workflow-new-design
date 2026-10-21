@@ -270,6 +270,12 @@ function makeListManager(cfg) {
 
 /* ---------------- list configs ---------------- */
 
+function masterLabel(selectId, val) {
+    if (val === null || val === undefined || val === '') return '';
+    var $opt = $('#' + selectId + ' option[value="' + val + '"]');
+    return $opt.length ? $opt.text() : val;
+}
+
 function partyTypeLabel(v) {
     if (String(v) === '1') return 'Petitioner';
     if (String(v) === '2') return 'Respondent';
@@ -413,7 +419,7 @@ var LISTS = {
         fields: ['actcode', 'section'],
         num: ['actcode'],
         cols: [
-            function (it) { return it.actcode; },
+            function (it) { return masterLabel('cfm_act_actcode', it.actcode); },
             function (it) { return it.section; }
         ]
     }),
@@ -425,8 +431,8 @@ var LISTS = {
         num: ['iaType', 'iaYear', 'iaNature', 'applicantAdvocate', 'respondentAdvocate'],
         cols: [
             function (it) { return (it.iaNumber || '') + '/' + (it.iaYear || ''); },
-            function (it) { return it.iaType; },
-            function (it) { return it.iaNature; },
+            function (it) { return masterLabel('cfm_ia_iaType', it.iaType); },
+            function (it) { return masterLabel('cfm_ia_iaNature', it.iaNature); },
             function (it) { return it.filingDate; },
             function (it) { return it.status; }
         ]
@@ -463,7 +469,7 @@ var LISTS = {
         cols: [
             function (it) { return it.hearingDate; },
             function (it) { return it.nextdate; },
-            function (it) { return it.purposeCode; },
+            function (it) { return masterLabel('cfm_ch_purposeCode', it.purposeCode); },
             function (it) { return it.disposal; },
             function (it) { return it.judgeCode; }
         ]
@@ -503,7 +509,7 @@ var LISTS = {
         num: ['documentType', 'judgeCode', 'iaType'],
         cols: [
             function (it) { return it.orderDate; },
-            function (it) { return it.documentType; },
+            function (it) { return masterLabel('cfm_ord_documentType', it.documentType); },
             function (it) { return it.iaNumber; },
             function (it) { return it.documentPath; }
         ]

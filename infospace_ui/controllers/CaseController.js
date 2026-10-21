@@ -19,7 +19,7 @@ function createFir(req, caseDetails) {
             batch: req.session.batch.id,
             crn: caseDetails.cino,
             casetype: caseDetails.typeName != null ? String(caseDetails.typeName) : null,
-            caseno: caseDetails.filNo != null ? String(caseDetails.filNo) : null,
+            caseno: caseDetails.regNo != null ? String(caseDetails.regNo) : null,
             year: caseDetails.regYear != null ? caseDetails.regYear: null,
             pagecount: 0
         };
