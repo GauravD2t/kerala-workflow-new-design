@@ -83,6 +83,7 @@ function explodeAdditionalAdvocates(groups) {
     (groups || []).forEach(function (g) {
         (g.advocates || []).forEach(function (a) {
             rows.push({
+                id: a.id,
                 partyNo: g.partyNo,
                 partyId: g.partyId,
                 partyType: g.partyType,
@@ -140,6 +141,66 @@ CaseService.prototype.saveCase = async function (payload) {
     });
 };
 
+function stripChildMeta(item) {
+    var data = Object.assign({}, item);
+    delete data.id;
+    delete data.case_detail_id;
+    delete data.createdAt;
+    delete data.updatedAt;
+    return data;
+}
+
+var CHILD_MATCH_KEYS = {
+    MainParty: 'partytype',
+    AdditionalSubject: 'subjectcode',
+    Caveat: 'single',
+    OtherParty: 'single',
+    FactDetail: 'single',
+    CauseOfAction: 'single',
+    ProceedingsPresence: 'single',
+    TrialCourtDetail: 'single',
+    CrimeDetail: 'single',
+    TransferDetail: 'single'
+};
+
+async function syncChildRows(modelName, items, caseId, t, matchKey) {
+    var Model = db[modelName];
+    var existing = await Model.findAll({ where: { case_detail_id: caseId }, transaction: t });
+    var byId = {}, byKey = {};
+    existing.forEach(function (r) {
+        byId[r.id] = r;
+        if (matchKey && matchKey !== 'single') {
+            var v = r.get(matchKey);
+            if (v !== null && v !== undefined && !byKey['k_' + v]) byKey['k_' + v] = r;
+        }
+    });
+    var seen = {};
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i] || {};
+        var rid = (item.id !== null && item.id !== undefined && item.id !== '') ? parseInt(item.id, 10) : null;
+        var data = stripChildMeta(item);
+        data.case_detail_id = caseId;
+        var target = null;
+        if (rid && byId[rid]) {
+            target = byId[rid];
+        } else if (matchKey && matchKey !== 'single' && item[matchKey] !== null && item[matchKey] !== undefined) {
+            target = byKey['k_' + item[matchKey]] || null;
+        } else if (matchKey === 'single' && existing.length && !seen[existing[0].id]) {
+            target = existing[0];
+        }
+        if (target && !seen[target.id]) {
+            await target.update(data, { transaction: t });
+            seen[target.id] = true;
+        } else {
+            var created = await Model.create(data, { transaction: t });
+            seen[created.id] = true;
+        }
+    }
+    for (var j = 0; j < existing.length; j++) {
+        if (!seen[existing[j].id]) await existing[j].destroy({ transaction: t });
+    }
+}
+
 CaseService.prototype.updateCase = async function (id, payload) {
     return db.sequelize.transaction(async function (t) {
         var detail = await db.CaseDetail.findById(id, { transaction: t });
@@ -147,24 +208,9 @@ CaseService.prototype.updateCase = async function (id, payload) {
 
         await detail.update(payload.caseDetails, { transaction: t });
 
-        var allChildren = ['MainParty', 'ExtraParty', 'AdditionalAdvocate']
-            .concat(Object.keys(LIST_CHILDREN).map(function (k) { return LIST_CHILDREN[k]; }))
-            .concat(Object.keys(SINGLE_CHILDREN).map(function (k) { return SINGLE_CHILDREN[k]; }));
-
-        for (var i = 0; i < allChildren.length; i++) {
-            await db[allChildren[i]].destroy({ where: { case_detail_id: detail.id }, transaction: t });
-        }
-
-        var fk = { case_detail_id: detail.id };
         var childRows = buildChildRows(payload);
         for (var modelName in childRows) {
-            var items = childRows[modelName];
-            if (items.length) {
-                await db[modelName].bulkCreate(
-                    items.map(function (item) { return Object.assign({}, item, fk); }),
-                    { transaction: t }
-                );
-            }
+            await syncChildRows(modelName, childRows[modelName], detail.id, t, CHILD_MATCH_KEYS[modelName]);
         }
         return detail;
     });

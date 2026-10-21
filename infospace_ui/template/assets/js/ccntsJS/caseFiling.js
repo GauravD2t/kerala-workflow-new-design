@@ -153,7 +153,7 @@ function hasAnyValue(prefix, fields, boolFields) {
 
 function addAdvRow(tbodyId, data) {
     data = data || {};
-    var row = '<tr>' +
+    var row = '<tr' + (data.id ? ' data-adrid="' + data.id + '"' : '') + '>' +
         '<td><input type="text" class="form-control form-control-sm adv-name" value="' + (data.name || '') + '"></td>' +
         '<td><input type="text" class="form-control form-control-sm adv-code" value="' + (data.code || '') + '"></td>' +
         '<td><input type="text" class="form-control form-control-sm adv-reg" value="' + (data.regNo || '') + '"></td>' +
@@ -168,8 +168,11 @@ function collectAdvRows(tbodyId) {
         var name = $(this).find('.adv-name').val();
         var code = $(this).find('.adv-code').val();
         var regNo = $(this).find('.adv-reg').val();
+        var rid = parseInt($(this).attr('data-adrid'), 10);
         if (name || code || regNo) {
-            out.push({ name: name || null, code: code ? parseInt(code, 10) : null, regNo: regNo || null });
+            var entry = { name: name || null, code: code ? parseInt(code, 10) : null, regNo: regNo || null };
+            if (!isNaN(rid)) entry.id = rid;
+            out.push(entry);
         }
     });
     return out;
@@ -217,7 +220,7 @@ function fillModalFlat(cfg, item) {
 function stripRowMeta(row) {
     var out = {};
     Object.keys(row || {}).forEach(function (k) {
-        if (['id', 'case_detail_id', 'createdAt', 'updatedAt'].indexOf(k) === -1) out[k] = row[k];
+        if (['case_detail_id', 'createdAt', 'updatedAt'].indexOf(k) === -1) out[k] = row[k];
     });
     return out;
 }
@@ -251,6 +254,7 @@ function makeListManager(cfg) {
             var item = cfg.build ? cfg.build(flat) : flat;
             if (cfg.validate && !cfg.validate(item)) return;
             var idx = $(cfg.modalId).data('edit-index');
+            if (idx !== -1 && idx !== undefined && items[idx] && items[idx].id && !item.id) item.id = items[idx].id;
             if (idx === -1 || idx === undefined) { items.push(item); } else { items[idx] = item; }
             $(cfg.modalId).modal('hide');
             renderRows();
@@ -807,7 +811,7 @@ function populateAll(json) {
     (json.additional_advocates || []).forEach(function (r) {
         var key = r.partyNo + '_' + r.partyId + '_' + r.partyType;
         if (!aa[key]) aa[key] = { partyNo: r.partyNo, partyId: r.partyId, partyType: r.partyType, advocates: [] };
-        aa[key].advocates.push({ name: r.advName, code: r.advCode, regNo: r.advReg });
+        aa[key].advocates.push({ id: r.id, name: r.advName, code: r.advCode, regNo: r.advReg });
     });
     LISTS.additionalAdvocates.setItems(Object.keys(aa).map(function (k) { return aa[k]; }));
 
