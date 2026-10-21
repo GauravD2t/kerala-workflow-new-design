@@ -10,7 +10,7 @@ var db = require('../models');
 var textutil = require('../util/textutil');
 var httpService = require('../service/httpService.js')
 var path = require('path')
-this.db = null
+
 const AsiosUtil = require("../service/AxiosUtil")
 var LocalStorage = require('node-localstorage').LocalStorage;
 const localStorage = new LocalStorage('./scratch');
@@ -23,7 +23,9 @@ webserviceController.prototype.home = function (req, res) {
     res.render('login', { title: 'Home' });
 }
 webserviceController.prototype.loginservice = function (req, res) {
+    
     req.body.jwtkey = null;
+    
     httpService.post("/auth/local", req.body, function (user) {
         if (user.statusCode == 200) {
             req.session.user = JSON.parse(user.data);
@@ -470,11 +472,11 @@ webserviceController.prototype.saveClassficationFile = function (req, res) {
     console.log("req.body.crnid::" + req.body.crnid)
     console.log(" req.body.parent::" + req.body.parent)
     console.log("req.body.issubchild::" + req.body.issubchild)
-    var parent = (req.body.parent == null || req.body.parent == undefined) ? 0 : req.body.parent;
+    var parent = 0;
     var crnid = (req.body.crnid == null || req.body.crnid == undefined || req.body.crnid == "") ? null : req.body.crnid;
-    if (req.body.documentdesc=="" || req.body.documentdesc==null || req.body.documentdesc==undefined) {
-        req.body.documentdesc = req.body.documenttypename.split(">>")[req.body.documenttypename.split(">>").length - 1].trim();
-    }
+    // if (req.body.documentdesc=="" || req.body.documentdesc==null || req.body.documentdesc==undefined) {
+    //     req.body.documentdesc = req.body.documenttypename.split(">>")[req.body.documenttypename.split(">>").length - 1].trim();
+    // }
     var body = "";
     if (parent == 0) {
         var body = { jwtkey: req.body.jwtkey, documenttype: req.body.documenttype, documentdate: req.body.documentdate, documentdesc: req.body.documentdesc, documentremark: req.body.documentremark, fir: crnid, imagename: req.body.imagename, issubchild: req.body.issubchild, documenttypename: req.body.documenttypename, firstsign: false, secondsign: false }
@@ -614,6 +616,12 @@ webserviceController.prototype.updateImageClassficationByID = function (req, res
 
 
 webserviceController.prototype.updatePDFPathClassficationByID = function (req, res) {
+  try {
+        if( req.body.id=='' ||  req.body.id == undefined || req.body.id == null){
+            res.send({ status: false, message: "File ID is required" });
+            return;
+        }
+  
     if (req.body.pagecount == undefined || req.body.pagecount == null) {
         console.log("pagecount::" + req.body.pagecount)
 
@@ -631,7 +639,13 @@ webserviceController.prototype.updatePDFPathClassficationByID = function (req, r
         } else {
             req.body.pagecount = 0;
         }
-        var body = { jwtkey: req.body.jwtkey, ocrpdfpath: req.body.ocrpdfpath, isupload: false, pagecount: req.body.pagecount }
+        var body = {
+                jwtkey: req.body.jwtkey,
+                ocrpdfpath: req.body.ocrpdfpath,
+                isupload: false,
+                pagecount: req.body.pagecount,
+                filesize: req.body.filesize
+            }
         httpService.put("/classficationfiles/" + req.body.id, body, function (node) {
             node = JSON.parse(node)
             //quesry = "select count(*) from classficationfiles where fir in (select fir from classficationfiles where id=" + req.body.id + ") and  (ocrpdfpath is null or ocrpdfpath='') ";
@@ -711,7 +725,9 @@ WHERE f.id = (
             })
         })
     }
-
+ } catch (e) {
+        res.send({ status: false, message: "Error occurred while updating PDF path classification by ID" });
+    }
 
 
 
@@ -1291,7 +1307,7 @@ async function getbatchByFire(firs) {
             firobj = {
                 id: elm.id, firserialnumber: caestype + "_" + elm.caseno + "_" + elm.year, itemid: elm.itemid, caseno: elm.crn,
                 pagecount: elm.pagecount, firremarks: elm.firremarks,
-                metadatavalues: elm.metadatavalues,
+                metadatavalues: [],
                 verify_by: elm.verify_by != null ? elm.verify_by.name : elm.verify_by,
                 verifyremarks: elm.verifyremarks,
             }
@@ -1302,7 +1318,7 @@ async function getbatchByFire(firs) {
             firobj = {
                 id: elm.id, firserialnumber: caestype + "_" + elm.caseno + "_" + elm.year, caseno: elm.crn, itemid: elm.itemid,
                 pagecount: elm.pagecount, firremarks: elm.firremarks,
-                metadatavalues: elm.metadatavalues,
+                metadatavalues: [],
                 verify_by: elm.verify_by != null ? elm.verify_by.name : elm.verify_by,
                 verifyremarks: elm.verifyremarks
             }

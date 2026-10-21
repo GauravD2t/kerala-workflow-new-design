@@ -351,7 +351,7 @@ async function getbatchByFire(firs, currentuser) {
             firobj = {
                 id: elm.id, firserialnumber: caestype + "_" + elm.caseno + "_" + elm.year , itemid: elm.itemid, caseno: elm.crn,
                 pagecount: elm.pagecount, firremarks: elm.firremarks,
-                metadatavalues: elm.metadatavalues == null ? [] : elm.metadatavalues,
+                metadatavalues: [],
                 verify_by: elm.verify_by != null ? elm.verify_by.name : elm.verify_by,
                 verifyremarks: elm.verifyremarks,
                 lang: "",
