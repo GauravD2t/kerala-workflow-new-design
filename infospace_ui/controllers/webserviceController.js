@@ -6,6 +6,7 @@
 
 
 var BatchNoGenrate = require('../util/batchNumberGenrate.js')
+var db = require('../models');
 var textutil = require('../util/textutil');
 var httpService = require('../service/httpService.js')
 var path = require('path')
@@ -282,28 +283,15 @@ webserviceController.prototype.getDocumenttype = function (req, res) {
     }
 
 }
-webserviceController.prototype.getAllnodehierarchyforScanning = function (req, res) {
-    let user = req.session.user;
+webserviceController.prototype.getAllnodehierarchyforScanning = async function (req, res) {
     try {
-        const AxiosUtil = new AsiosUtil();
-        AxiosUtil.get("api/documenttypetree/documenttypetrees/search/getAllnodehierarchyforScanning?", { page: 0, size: 4999, query: req.body.query }).then(function (loginResponce) {
-            res.send({ status: true, data: loginResponce.data });
-        });
+        var cached = await db.MasterCache.findOne({ where: { master_name: 'docutype' } });
+        var data = (cached && Array.isArray(cached.data)) ? cached.data : [];
+        res.send({ status: true, data: data });
     } catch (err) {
-        if (err.statuscode == 401) {
-            AxiosUtil.postxForm("/api/authn/login", { "password": dspacepassword, "user": 'support@d2t.co' }).then(function (loginResponce) {
-
-                localStorage.setItem("authorization", loginResponce.headers['authorization'])
-
-                AxiosUtil.get("api/documenttypetree/documenttypetrees/search/getAllnodehierarchyforScanning?", { page: 0, size: 4999, query: req.body.query }).then(function (loginResponce1) {
-                    res.send({ status: true, data: loginResponce1.data });
-                });
-            });
-
-        }
+        console.error('getAllnodehierarchyforScanning error:', err);
         res.send({ status: false, data: [] });
     }
-
 }
 
 webserviceController.prototype.getIssubchildNodeByparentID = function (req, res) {
