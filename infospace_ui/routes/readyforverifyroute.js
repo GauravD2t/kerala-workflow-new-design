@@ -3,7 +3,7 @@ function ReadyForVerifyRoute(app, db) {
     var readyforverifycontroller = require('../controllers/readyforverifycontroller');
     app.route("/readyforverify.dwf").get(authfilter.isvaildUrl, readyforverifycontroller.readyforverify);
     app.route("/getbstchesforvirfyReady.dwf").get(readyforverifycontroller.getbstchesforvirfyReady);
-    app.route("/findFIrsbybathcReadyforVerify.dwf").post(readyforverifycontroller.findFIrsbybathcReadyforVerify);
+    app.route("/findFIrsbybathcReadyforVerify.dwf").get(readyforverifycontroller.findFIrsbybathcReadyforVerify);
     app.route("/bulkReadyForVerify.dwf").post(readyforverifycontroller.bulkReadyForVerify);
     app.route("/bulkReadyForVerifyReject.dwf").post(readyforverifycontroller.bulkReadyForVerifyReject);
     app.route("/getmetadatabffile.dwf").get(readyforverifycontroller.getmetadatabffile);

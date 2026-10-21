@@ -25,7 +25,7 @@ ReadyForverifyController.prototype.getbstchesforvirfyReady = function (req, res)
 ReadyForverifyController.prototype.findFIrsbybathcReadyforVerify = function (req, res) {
     // console.log("===============", req.body.selectedBatch)
     // console.log("****************", req.body.selectedBatch.toString())
-    var query = "select * from firs where imagestatus=5 and readyforverify=false and batch in(" + req.body.selectedBatch + " ) ";
+    var query = "select * from firs where imagestatus=5 and readyforverify=false and batch in(" + req.query.batch + " ) ";
 
     CIPAService.executeSQL(query, function (batchdata) {
         var resultbat = batchdata[0];
@@ -39,7 +39,7 @@ ReadyForverifyController.prototype.bulkReadyForVerify = async function (req, res
 if(req.session.user.user.id==89 || req.session.user.user.id=='89'){
             res.send({ status: false });
 }else{
-      var deletequery = "update firs set first_verify_at='" + moment().format() + "',first_verify_by=" + req.session.user.user.id + ",readyforverify=true where id in (" + req.body.selectedfile.toString() + ")";
+      var deletequery = "update firs set imagestatus=" + req.body.imagestatus + ",first_verify_at='" + moment().format() + "',first_verify_by=" + req.session.user.user.id + ",readyforverify=true where id in (" + req.body.selectedfile.toString() + ")";
     console.log(deletequery)
     CIPAService.UpdateexecuteSQL(deletequery, function (data) {
         if (data != null) {

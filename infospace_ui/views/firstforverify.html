@@ -4,148 +4,125 @@
 
 
 <div class=" container-fluid bg-white  mb-5">
-    <!-- <div class="row ">
-        <div class="col-12">
-            <a href="/documentverifySinglepageVerify.dwf" class="btn btn-primary m-3" target="_blank">Single File Verify
-                By
-                Search</a>
+   <div class="row batchsection ">
+        <div class="col-lg-3 mt-5">
+
+            <label class="font-weight-bolder">Select Batch</label>
+            <select class="bs-select form-control input-small" id="batches" onchange="findfirs(this.value)">
+                <option>Select Batch</option>
+            </select>
+
         </div>
-    </div> -->
-    <div class="row ">
-        <div class="col-3 mt-3" style="border-right:2px solid #000 ;">
-            <div class="col-12 mt-2">
-                <label class="font-weight-bolder">Select Batch</label>
-                <select class="bs-select form-control input-small" id="batches" onchange="findfirs(this.value)">
-                    <option>Select Batch</option>
-                </select>
+        <div class="col-lg-9 mt-5">
+            <table class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <td>Batch No</td>
+                        <td>File</td>
+                        <td>Pages</td>
+                      
+                        
+                    </tr>
+                </thead>
+                <tbody class="searchcasenotable">
+
+                </tbody>
+                </table>
+        </div>
+
+    </div>
+    
+     <div class="row filesection" style="display: none;">
+        <div id="fullscreendiv" class="col-3 mt-3 " >
+
+            <div class="col-12 mt-3 d-flex" style="border-bottom:2px solid #000 ">
+               
+                
             </div>
-            <div class="col-12 mt-3" style="border-top:2px solid #000 ;height: 600px;;overflow-y: scroll;">
-                <div class="row mt-3" id="bulkdiv" style="display: none;">
-                    <div class="col-6">
-                        <div class="form-check">
-                            <label class="form-check-label">
-                                <input type="checkbox" id="iif1" class="form-check-input" onclick="selectAll()"
-                                    value="false">Select All
-                            </label>
-                        </div>
-                    </div>
-
-                </div>
-                <label class="font-weight-bolder mt-3"> File List</label>
-                <ul class="list-group" id="firlist" style="cursor: pointer;">
-
-                </ul>
-
+            <div class="col-12 mt-3" style="height: 600px;;overflow-y: scroll;">
+            
+            <table class="table">
+               
+                <tbody id="casedetailstable">
+            
+                </tbody>
+            </table>
+            
             </div>
         </div>
-        <div class="col-3 mt-5" style="height: 700px;overflow: scroll;">
-            <div id="kt_tree_1" class="tree-demo"></div>
+        <div id= "pdfdiv" class="col-6">
+        
+            <iframe id="pdfiream" src="" width="100%" height="650vh"></iframe>
         </div>
-        <div class="col-6">
-            <div class="row m-4">
+        <div class="col-3 mt-5" >
+            <div class="row mb-3">
+                <div class="col-2"><button class="btn  btn-info" title="Full screnn" onclick="fullscreen()">
+                    <i class="fas fa-expand changeicon"></i>
+                   
+                    </button></div>
+                <div class="col-2"><button class="btn  btn-danger" title="Close File" onclick="closefile()">
+                        <i class="fa fa-times fa-lg"></i>
+                    </button></div>
+                
+                <div class="col-8"><button class="btn btn-primary w-100" onclick="bulkVerify(5)"> Approve</button>
+                </div>
+            
+            </div>
+           
+            <div class="row col-12  remakrsshow mt-4  mb-5 " >
+                <h6>Reject Remarks : <p class="text-danger remakrsdata"></p></h6>
+            </div>
+            <div class="row border viewfile">
 
-                <div class="col-4 mb-3"><button class="btn btn-primary w-100" onclick="bulkVerify(6)"> Approve</button>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12  mb-3">
+                    <textarea class="form-control" id="verifyTextarea" placeholder="Enter Reject Remarks " rows="10" spellcheck="true"></textarea>
                 </div>
-                <div class="col-4 mb-3 "><button class="btn btn-primary w-100" onclick="viewMetadataByFile()"> View
-                        MeataData</button>
-                </div>
-                <div class="col-4 mb-3"><button class="btn btn-danger w-100" onclick="rejectScannDocumentModal(0)">
+                <div class="col-6"><button class="btn btn-warning w-100" onclick="submitRemarksmenu(1)">
                         Reject
                         Scan</button>
                 </div>
-                <iframe id="pdfiream" src="" width="100%" height="650vh"></iframe>
+                <div class="col-6"><button class="btn btn-danger w-100" onclick="submitRemarksmenu(3)">
+                        Reject
+                        Classification</button></div>
+               
+            
             </div>
+            
         </div>
-
-        <div class="modal fade" id="rejectRemarksModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Reject Remarks</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <i aria-hidden="true" class="ki ki-close"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <textarea class="form-control" id="verifyTextarea" placeholder="Enter Remarks " rows="5"
-                            spellcheck="false"></textarea>
-                        <input type="hidden" id="modalimagestatus" />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light-primary font-weight-bold"
-                            data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger font-weight-bold"
-                            onclick="submitRemarksmenu()">Submit</button>
-                    </div>
+       
+    </div>
+     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Classification</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
                 </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edit Classification</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <i aria-hidden="true" class="ki ki-close"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-6">
-                                <label class="font-weight-bolder">Date</label>
-                                <input type="text" name="modaldate" id="modaldate" class="   form-control"
-                                    placeholder="Enter date DD-MM-YYYY formate" tabindex="1" />
-                            </div>
-                            <div class="col-6">
-                                <label class="font-weight-bolder">Remarks</label>
-                                <input type="text" name="modalremark" id="modalremark" class="   form-control"
-                                    placeholder="Enter descripition" tabindex="1" />
-                            </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="font-weight-bolder">Date</label>
+                            <input type="text" name="modaldate" id="modaldate" class="   form-control"
+                                placeholder="Enter date DD-MM-YYYY formate" tabindex="1" />
+                        </div>
+                        <div class="col-6">
+                            <label class="font-weight-bolder">Remarks</label>
+                            <input type="text" name="modalremark" id="modalremark" class="   form-control"
+                                placeholder="Enter descripition" tabindex="1" />
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light-primary font-weight-bold"
-                            data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
-                            onclick="updateClassfication()">Update</button>
-                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="viewmeatadata" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Edit Metadata</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <i aria-hidden="true" class="ki ki-close"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row py-3 px-3 metadatafir">
-                            <table class="table border">
-                                <thead>
-                                    <tr>
-                                        <th class="p-1 bg-secondary" colspan="4">
-                                            <h4 class=" p-1"><b>Case Details</b></h4>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="casedetailstable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light-primary font-weight-bold"
-                            data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger font-weight-bold"
-                            onclick="updateMetadata()">Update</button>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold"
+                        data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
+                        onclick="updateClassfication()">Update</button>
                 </div>
             </div>
         </div>

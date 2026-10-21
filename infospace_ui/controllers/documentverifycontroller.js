@@ -626,17 +626,12 @@ async function uploadTodms1(req) {
 
     }
 }
-DocumentverifyController.prototype.getdocumentclassficationByfir = function (req, res) {
-    httpService.get(encodeURI("/classficationfiles?fir=" + req.query.fir + "&_limit=-1&_sort=id:asc"), req.body, function (node1) {
-        files = JSON.parse(node1);
-        for (var i = 0;i < files.length;i++) {
-            files[i].child.sort(function (a, b) {
-                return a.id - b.id;
-            }
-            );
-        }
-        res.send({ status: true, data: files });
-    })
+DocumentverifyController.prototype.getdocumentclassficationByfir = async function (req, res) {
+    let sendtoSign = "select  cf.* from classficationfiles cf  where   cf.fir in (" + req.query.fir + ")  ";
+    //console.log(sendtoSign)
+    let dataPDF = await CIPAService.executeSQLOnlyDatawithwait(sendtoSign);
+    
+    res.send({ status: true, data: dataPDF });
 }
 
 DocumentverifyController.prototype.findfilefromSeachInVerify = function (req, res) {

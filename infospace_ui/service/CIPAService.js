@@ -32,6 +32,11 @@ CIPAService.prototype.executeSQLOnlyData = function (SQL, callback) {
     })
 
 }
+CIPAService.prototype.executeSQLOnlyDatawithwait = async function (SQL, callback) {
+    return await connection.sequelize.query(SQL, { type: connection.sequelize.QueryTypes.SELECT });
+
+
+}
 CIPAService.prototype.UpdateexecuteSQL = function (SQL, callback) {
 
     connection.sequelize.query(SQL, {
