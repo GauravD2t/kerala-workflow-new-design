@@ -10,9 +10,39 @@ var CASE_NUM = ['filNo', 'filYear', 'regNo', 'regYear', 'caseType', 'dispNature'
 $(document).ready(function () {
     initMasterSelects();
     initCascades();
+    initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
 });
+
+function initDatePickers() {
+    $(document).on('input', 'input[placeholder="YYYY-MM-DD"]', function () {
+        var digits = this.value.replace(/\D/g, '').slice(0, 8);
+        var out = digits.slice(0, 4);
+        if (digits.length > 4) out += '-' + digits.slice(4, 6);
+        if (digits.length > 6) out += '-' + digits.slice(6, 8);
+        this.value = out;
+    });
+    $(document).on('blur', 'input[placeholder="YYYY-MM-DD"]', function () {
+        var $el = $(this);
+        $el.removeClass('is-invalid');
+        if ($el.val() !== '' && !isValidYmd($el.val())) {
+            $el.addClass('is-invalid');
+            $el.val('');
+            alert('Invalid date. Please enter a valid date in YYYY-MM-DD format.');
+        }
+    });
+}
+
+function isValidYmd(value) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!m) return false;
+    var year = parseInt(m[1], 10), month = parseInt(m[2], 10), day = parseInt(m[3], 10);
+    if (year < 1900 || year > 2100) return false;
+    if (month < 1 || month > 12) return false;
+    var daysInMonth = [31, (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return day >= 1 && day <= daysInMonth[month - 1];
+}
 
 /* ---------------- master dropdowns ---------------- */
 
