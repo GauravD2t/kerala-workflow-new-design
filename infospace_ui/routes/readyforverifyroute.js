@@ -6,6 +6,7 @@ function ReadyForVerifyRoute(app, db) {
     app.route("/findFIrsbybathcReadyforVerify.dwf").get(readyforverifycontroller.findFIrsbybathcReadyforVerify);
     app.route("/bulkReadyForVerify.dwf").post(readyforverifycontroller.bulkReadyForVerify);
     app.route("/bulkReadyForVerifyReject.dwf").post(readyforverifycontroller.bulkReadyForVerifyReject);
+    app.route("/verifyCaseUpdate.dwf/:id").post(readyforverifycontroller.updateCaseDetail);
     app.route("/getmetadatabffile.dwf").get(readyforverifycontroller.getmetadatabffile);
 
     app.route("/readyforUpload.dwf").get(authfilter.isvaildUrl, readyforverifycontroller.readyforUpload);

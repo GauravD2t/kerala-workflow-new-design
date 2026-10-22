@@ -2,143 +2,168 @@
 {% block title %}{% endblock %}
 {% block content %}
 
+<div class="container-fluid">
 
-<div class=" container-fluid bg-white  mb-5">
-   <div class="row batchsection ">
-        <div class="col-lg-3 mt-5">
-
-            <label class="font-weight-bolder">Select Batch</label>
-            <select class="bs-select form-control input-small" id="batches" onchange="findfirs(this.value)">
-                <option>Select Batch</option>
-            </select>
-
+    <!-- ============ BATCH / FILE SELECTION ============ -->
+    <div class="card card-custom batchsection">
+        <div class="card-header border-0 py-5">
+            <h3 class="card-title font-weight-bolder text-dark">
+                <i class="fas fa-clipboard-check text-primary mr-2"></i>First Verification
+            </h3>
         </div>
-        <div class="col-lg-9 mt-5">
-            <table class="table table-striped table-bordered" style="width:100%">
-                <thead>
-                    <tr>
-                        <td>Batch No</td>
-                        <td>File</td>
-                        <td>Pages</td>
-                      
-                        
-                    </tr>
-                </thead>
-                <tbody class="searchcasenotable">
-
-                </tbody>
+        <div class="card-body pt-0">
+            <div class="row">
+                <div class="col-lg-3">
+                    <label class="font-weight-bolder text-muted">Batch</label>
+                    <select class="form-control" id="batches"></select>
+                </div>
+            </div>
+            <div class="mt-8" id="firTableWrap" style="display:none;">
+                <table class="table table-hover" id="firTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Batch No</th>
+                            <th>File</th>
+                            <th>CRN</th>
+                            <th>Pages</th>
+                            <th style="width:110px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="searchcasenotable"></tbody>
                 </table>
+            </div>
+            <div class="mt-8 py-10 text-center text-muted font-weight-bold" id="firEmpty" style="display:none;">
+                <i class="far fa-folder-open icon-2x mb-3 d-block"></i>
+                No ready-for-verify files in this batch
+            </div>
         </div>
-
     </div>
-    
-     <div class="row filesection" style="display: none;">
-        <div id="fullscreendiv" class="col-3 mt-3 " >
 
-            <div class="col-12 mt-3 d-flex" style="border-bottom:2px solid #000 ">
-               
-                
-            </div>
-            <div class="col-12 mt-3" style="height: 600px;;overflow-y: scroll;">
-            
-            <table class="table">
-               
-                <tbody id="casedetailstable">
-            
-                </tbody>
-            </table>
-            
-            </div>
-        </div>
-        <div id= "pdfdiv" class="col-6">
-        
-            <iframe id="pdfiream" src="" width="100%" height="650vh"></iframe>
-        </div>
-        <div class="col-3 mt-5" >
-            <div class="row mb-3">
-                <div class="col-2"><button class="btn  btn-info" title="Full screnn" onclick="fullscreen()">
-                    <i class="fas fa-expand changeicon"></i>
-                   
-                    </button></div>
-                <div class="col-2"><button class="btn  btn-danger" title="Close File" onclick="closefile()">
-                        <i class="fa fa-times fa-lg"></i>
-                    </button></div>
-                
-                <div class="col-8"><button class="btn btn-primary w-100" onclick="bulkVerify(5)"> Approve</button>
-                </div>
-            
-            </div>
-           
-            <div class="row col-12  remakrsshow mt-4  mb-5 " >
-                <h6>Reject Remarks : <p class="text-danger remakrsdata"></p></h6>
-            </div>
-            <div class="row border viewfile">
+    <!-- ============ VERIFICATION WORKSPACE ============ -->
+    <div class="filesection" style="display:none;">
 
-            </div>
-            
-            <div class="row mt-4">
-                <div class="col-12  mb-3">
-                    <textarea class="form-control" id="verifyTextarea" placeholder="Enter Reject Remarks " rows="10" spellcheck="true"></textarea>
+        <!-- File header bar -->
+        <div class="card card-custom mb-5">
+            <div class="card-body py-3 d-flex align-items-center flex-wrap">
+                <span class="symbol symbol-45 symbol-light-primary mr-3">
+                    <span class="symbol-label"><i class="fas fa-file-alt text-primary icon-lg"></i></span>
+                </span>
+                <div class="mr-6">
+                    <div class="font-weight-bolder font-size-h5 text-dark" id="fvFileTitle">-</div>
+                    <div class="text-muted font-size-sm">
+                        CRN: <span class="font-weight-bold" id="fvCrn">-</span>
+                        <span class="mx-1">|</span> Pages: <span class="font-weight-bold" id="fvPages">-</span>
+                    </div>
                 </div>
-                <div class="col-6"><button class="btn btn-warning w-100" onclick="submitRemarksmenu(1)">
-                        Reject
-                        Scan</button>
+                <div class="remakrsshow mr-4" style="display:none;">
+                    <span class="label label-xl label-inline label-light-danger font-weight-bold"
+                          data-toggle="tooltip" data-placement="bottom" id="fvPrevRemarks">
+                        Previous reject remarks
+                    </span>
                 </div>
-                <div class="col-6"><button class="btn btn-danger w-100" onclick="submitRemarksmenu(3)">
-                        Reject
-                        Classification</button></div>
-               
-            
+                <div class="flex-grow-1"></div>
+                <button type="button" class="btn btn-light-danger btn-sm font-weight-bold" onclick="closefile()">
+                    <i class="fas fa-arrow-left"></i> Back to list
+                </button>
             </div>
-            
         </div>
-       
-    </div>
-     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Edit Classification</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i aria-hidden="true" class="ki ki-close"></i>
-                    </button>
+
+        <div class="row">
+            <!-- Documents + Verify actions -->
+            <div class="col-lg-3" id="docPanel">
+                <div class="card card-custom">
+                    <div class="card-header border-0 pt-5 pb-3">
+                        <h3 class="card-title font-weight-bolder text-dark">
+                            <i class="fas fa-file-pdf text-primary mr-2"></i>Documents
+                        </h3>
+                    </div>
+                    <div class="card-body pt-0 px-3" style="max-height:38vh; overflow-y:auto;">
+                        <div id="docList" class="navi navi-hover"></div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="font-weight-bolder">Date</label>
-                            <input type="text" name="modaldate" id="modaldate" class="   form-control"
-                                placeholder="Enter date DD-MM-YYYY formate" tabindex="1" />
+
+                <div class="card card-custom mt-5">
+                    <div class="card-header border-0 pt-5 pb-3">
+                        <h3 class="card-title font-weight-bolder text-dark">
+                            <i class="fas fa-check-double text-primary mr-2"></i>Verify
+                        </h3>
+                    </div>
+                    <div class="card-body pt-2">
+                        <button type="button" class="btn btn-success btn-block font-weight-bold mb-4" onclick="approveFile()">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <textarea class="form-control mb-3" id="verifyTextarea" rows="3"
+                                  placeholder="Reject remarks (required to reject)"></textarea>
+                        <button type="button" class="btn btn-warning btn-block font-weight-bold mb-2" onclick="rejectFile(1)">
+                            <i class="fas fa-undo"></i> Reject to Scan
+                        </button>
+                        <button type="button" class="btn btn-danger btn-block font-weight-bold" onclick="rejectFile(3)">
+                            <i class="fas fa-undo"></i> Reject to Classification
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF viewer -->
+            <div class="col-lg-5" id="pdfdiv">
+                <div class="card card-custom card-stretch">
+                    <div class="card-header border-0 pt-5 pb-3">
+                        <h3 class="card-title font-weight-bolder text-dark" id="pdfTitle">
+                            <i class="far fa-file-pdf text-primary mr-2"></i>Document Preview
+                        </h3>
+                        <div class="card-toolbar">
+                            <button type="button" class="btn btn-sm btn-icon btn-light-primary" title="Expand / Reset" onclick="toggleExpand()">
+                                <i class="fas fa-expand changeicon"></i>
+                            </button>
                         </div>
-                        <div class="col-6">
-                            <label class="font-weight-bolder">Remarks</label>
-                            <input type="text" name="modalremark" id="modalremark" class="   form-control"
-                                placeholder="Enter descripition" tabindex="1" />
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="border rounded bg-light-secondary text-center" id="pdfPlaceholder">
+                            <div class="py-20 text-muted font-weight-bold">
+                                <i class="far fa-file-pdf icon-3x mb-3 d-block"></i>
+                                Select a document to preview
+                            </div>
+                            <iframe id="pdfiream" src="" width="100%" style="height:72vh; border:0; display:none;"></iframe>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light-primary font-weight-bold"
-                        data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger font-weight-bold" data-dismiss="modal"
-                        onclick="updateClassfication()">Update</button>
+            </div>
+
+            <!-- Case details editor -->
+            <div class="col-lg-4" id="casePanel">
+                <div class="card card-custom card-stretch">
+                    <div class="card-header border-0 pt-5 pb-3">
+                        <h3 class="card-title font-weight-bolder text-dark">
+                            <i class="fas fa-edit text-primary mr-2"></i>Case Details
+                        </h3>
+                        <div class="card-toolbar">
+                            <span class="label label-lg label-light-primary label-inline font-weight-bold" id="fvCaseStatus"></span>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 pb-2">
+                        <div id="fvNoCase" class="py-10 text-center text-muted font-weight-bold" style="display:none;">
+                            No digitized case details found for this file
+                        </div>
+                        <div id="fvCaseWrap" style="height:66vh; overflow-y:auto; display:none;">
+                            <div id="fvParties" class="mb-4"></div>
+                            <div class="row pr-2" id="fvCaseFields"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-right py-3" id="fvCaseFooter" style="display:none;">
+                        <span class="text-danger font-size-sm font-weight-bold mr-3" id="fvUnsaved" style="display:none;">
+                            <i class="fas fa-exclamation-circle"></i> Unsaved changes
+                        </span>
+                        <button type="button" class="btn btn-primary font-weight-bold" onclick="saveCaseDetail()">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <script>
-        var toggler = document.getElementsByClassName("caret");
-        var i;
+</div>
 
-        for (i = 0; i < toggler.length; i++) {
-            toggler[i].addEventListener("click", function () {
-                this.parentElement.querySelector(".nested").classList.toggle("active");
-                this.classList.toggle("caret-down");
-            });
-        }
-    </script>
-    <script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-    <script src="./template/assets/js/ccntsJS/common.js"></script>
-    <script src="./template/assets/js/ccntsJS/firstyforverify.js"></script>
-    {% endblock %}
+<script src="./template/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="./template/assets/js/ccntsJS/common.js"></script>
+<script src="./template/assets/js/ccntsJS/firstyforverify.js"></script>
+{% endblock %}

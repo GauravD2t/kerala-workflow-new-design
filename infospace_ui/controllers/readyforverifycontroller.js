@@ -1,4 +1,5 @@
 var httpService = require('../service/httpService.js')
+var db = require('../models');
 var moment = require('moment');
 var fs = require('fs');
 const path = require('path');
@@ -13,7 +14,14 @@ ReadyForverifyController.prototype.readyforverify = function (req, res) {
 }
 ReadyForverifyController.prototype.getbstchesforvirfyReady = function (req, res) {
 
-    query = 'select b.id,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join "users-permissions_user" u on u.id=b.created_by_d2 where u.digitizationcenter=' + req.session.user.user.digitizationcenter.id + ' and f.imagestatus=5 and readyforverify=false  group by b.id,b.bundlenumber order by b.bundlenumber'
+    var dc = req.session.user && req.session.user.user && req.session.user.user.digitizationcenter
+        ? req.session.user.user.digitizationcenter.id : null;
+    var query;
+    if (dc) {
+        query = 'select b.id,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join "users-permissions_user" u on u.id=b.created_by_d2 where u.digitizationcenter=' + dc + ' and f.imagestatus=5 and readyforverify=false  group by b.id,b.bundlenumber order by b.bundlenumber';
+    } else {
+        query = 'select b.id,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch where f.imagestatus=5 and readyforverify=false group by b.id,b.bundlenumber order by b.bundlenumber';
+    }
     CIPAService.executeSQL(query, function (batchdata) {
         var resultbat = batchdata[0];
         res.send({ status: true, data: resultbat });
@@ -75,6 +83,29 @@ ReadyForverifyController.prototype.bulkReadyForVerifyReject = async function (re
     })
 
 }
+
+var VERIFY_EDIT_FIELDS = ['efilno', 'dateOfEfiling', 'filNo', 'filYear', 'dateOfFiling', 'dateOfScrutiny',
+    'regNo', 'regYear', 'dtRegis', 'caseType', 'typeName', 'status', 'dateFirstList', 'dateNextList',
+    'dateLastList', 'dateOfDecision', 'dateFilingDisp', 'dateFilingDispO', 'dispNature', 'courtNo',
+    'policeStCode', 'subject', 'caseNo', 'mainCaseNo', 'mainMatterCino'];
+
+ReadyForverifyController.prototype.updateCaseDetail = async function (req, res) {
+    try {
+        var id = parseInt(req.params.id, 10);
+        if (!id) return res.send({ status: false, error: 'Case id is required' });
+        var fields = req.body || {};
+        var data = {};
+        VERIFY_EDIT_FIELDS.forEach(function (f) {
+            if (fields[f] !== undefined) data[f] = (fields[f] === '' || fields[f] === 'null') ? null : fields[f];
+        });
+        if (!Object.keys(data).length) return res.send({ status: false, error: 'Nothing to update' });
+        await db.CaseDetail.update(data, { where: { id: id } });
+        res.send({ status: true });
+    } catch (err) {
+        console.error('updateCaseDetail error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
 
 ////////////////////// REady for UPLOAD
 
