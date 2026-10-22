@@ -107,7 +107,7 @@ function bulkVerify(imagestatus) {
         pushtoSrever({ 'selectedfile': jsonform, imagestatus: imagestatus, Verifyremarks: $('#verifyTextarea').val() }, "/bulkReadyForVerify.dwf", "POST", function (node) {
             if (imagestatus == 5) {
                  if (node.status) {
-                
+                toastr.success('File verified successfully!');
 
                 $('#verifyTextarea').val("")
                 selected_fir = "";
@@ -156,7 +156,7 @@ function findfirs(batch) {
                     classremarks = "text-primary";
                 }
                 var remarksdata = firs[i].verifyremarks != null ? firs[i].verifyremarks.replaceAll("\n", "<br>") : "null";
-                $('.searchcasenotable').append('<tr><td>' + firs[i].batch.bundlenumber + '</td><td> <a href="#" disabled="' + disabled + '" class="' + classremarks + '" onclick="getdocument(this,' + firs[i].id + ',\'' + remarksdata + '\')">' + firs[i].casetype + '/' + firs[i].caseno + '/' + firs[i].year + '</a></td><td>' + firs[i].pdfpagecount + '</td><td>' + firs[i].crn + '</td></tr>')
+                $('.searchcasenotable').append('<tr><td>' + $("#batches option:selected").text().trim() + '</td><td> <a href="#" disabled="' + disabled + '" class="' + classremarks + '" onclick="getdocument(this,' + firs[i].id + ',\'' + remarksdata + '\')">' + firs[i].casetype + '/' + firs[i].caseno + '/' + firs[i].year + '</a></td><td>' + firs[i].pdfpagecount + '</td><td>' + firs[i].crn + '</td></tr>')
             }
         })
     }
