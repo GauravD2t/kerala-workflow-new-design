@@ -85,7 +85,7 @@
                     <div class="row mt-3">
                         <div class="col-lg-3"><label>Filing to Disposal Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateFilingDisp"></div>
                         <div class="col-lg-3"><label>Filing to Disposal Date (Other)</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_cd_dateFilingDispO"></div>
-                        <div class="col-lg-3"><label>Disposal Nature</label><input type="text" class="form-control" id="cf_cd_dispNature"></div>
+                        <div class="col-lg-3"><label>Disposal Nature</label><select class="form-control" id="cf_cd_dispNature" data-master="disposal_nature" data-val="disp_type" data-label="{disp_name}"></select></div>
                         <div class="col-lg-3"><label>Court No</label><input type="text" class="form-control" id="cf_cd_courtNo"></div>
                     </div>
                     <div class="row mt-3">
@@ -302,13 +302,13 @@
                     <div class="row mt-3">
                         <div class="col-lg-3"><label>FIR Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="cf_crime_firDate"></div>
                         <div class="col-lg-3"><label>Police Station Name</label><input type="text" class="form-control" id="cf_crime_policeStName"></div>
-                        <div class="col-lg-3"><label>Police Station Code</label><input type="text" class="form-control" id="cf_crime_policeStCode"></div>
+                        <div class="col-lg-3"><label>Police Station Code</label><select class="form-control" id="cf_crime_policeStCode" data-master="police_stn" data-val="police_st_code" data-label="{police_st_name}"></select></div>
                         <div class="col-lg-3"><label>Investigating Officer</label><input type="text" class="form-control" id="cf_crime_investofficer"></div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-lg-3"><label>State</label><input type="text" class="form-control" id="cf_crime_state"></div>
-                        <div class="col-lg-3"><label>District</label><input type="text" class="form-control" id="cf_crime_district"></div>
-                        <div class="col-lg-3"><label>Taluka</label><input type="text" class="form-control" id="cf_crime_taluka"></div>
+                        <div class="col-lg-3"><label>State</label><select class="form-control" id="cf_crime_state" data-master="state" data-val="state_id" data-label="{state}"></select></div>
+                        <div class="col-lg-3"><label>District</label><select class="form-control" id="cf_crime_district" data-master="district" data-val="dist_code" data-label="{dist_name}"></select></div>
+                        <div class="col-lg-3"><label>Taluka</label><select class="form-control" id="cf_crime_taluka" data-master="taluka" data-val="taluka_code" data-label="{taluka_name}" data-filter-key="dist_code" data-filter-from="cf_crime_district"></select></div>
                         <div class="col-lg-3"><label>Rank</label><input type="text" class="form-control" id="cf_crime_rank"></div>
                     </div>
                     <div class="row mt-3">

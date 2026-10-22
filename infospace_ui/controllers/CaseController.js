@@ -55,6 +55,14 @@ function findFirByCrn(cino) {
     });
 }
 
+function deleteFir(firId) {
+    return new Promise(function (resolve) {
+        httpService.delete("/firs/" + firId, {}, function () {
+            resolve();
+        });
+    });
+}
+
 function CaseController() {
 }
 
@@ -78,12 +86,12 @@ function parsePayload(req) {
 }
 
 CaseController.prototype.save = async function (req, res) {
+    var fir = null;
     try {
         var payload = parsePayload(req);
         if (!payload.caseDetails || !payload.caseDetails.cino) {
             return res.send({ status: false, error: 'caseDetails.cino is required' });
         }
-        var fir = null;
         if (req.session.batch != null) {
             fir = await createFir(req, payload.caseDetails);
             payload.caseDetails.fir = fir.id;
@@ -95,6 +103,14 @@ CaseController.prototype.save = async function (req, res) {
         res.send({ status: true, data: responseData });
     } catch (err) {
         console.error('CaseController.save error:', err);
+        if (fir && fir.id) {
+            try {
+                await deleteFir(fir.id);
+                console.log('Rolled back FIR ' + fir.id + ' after case save failure');
+            } catch (delErr) {
+                console.error('FIR rollback failed for ' + fir.id + ':', delErr.message);
+            }
+        }
         res.send({ status: false, error: err.message });
     }
 };
