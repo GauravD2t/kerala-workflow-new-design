@@ -15,6 +15,58 @@
         color: darkred;
         text-decoration: none;
     }
+    /* embed mode: page is loaded inside an iframe (verification screen) */
+    body.cf-embed {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .cf-embed #kt_wrapper {
+        padding-top: 0 !important;
+    }
+    .cf-embed #kt_aside,
+    .cf-embed #kt_subheader,
+    .cf-embed #kt_footer,
+    .cf-embed #kt_header_mobile {
+        display: none !important;
+    }
+    .cf-embed .content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .cf-embed .container-fluid {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    /* hide search bar in embed mode */
+    .cf-embed .sticky-top {
+        display: none !important;
+    }
+    /* hide Manage Batches in embed mode (keep batch files list) */
+    .cf-embed .cf-manage-batches {
+        display: none !important;
+    }
+    /* hide batch files list in embed mode */
+    .cf-embed .adddivfir {
+        display: none !important;
+    }
+    .cf-embed .commitbatchdiv {
+        display: none !important;
+    }
+    /* compact horizontal tabs instead of side pills in embed mode */
+    .cf-embed #cf_nav {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+    }
+    .cf-embed #cf_nav .nav-link {
+        padding: 0.35rem 0.6rem;
+        font-size: 12px;
+        margin: 2px;
+        border-radius: 4px;
+    }
+    /* hide reset button in embed mode */
+    .cf-embed #cf_reset_btn {
+        display: none !important;
+    }
 </style>
 <div class="container-fluid">
     <div class="row sticky-top bg-white py-2" style="z-index: 10; border-bottom: 1px solid #EBEDF3;">
@@ -473,7 +525,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-12 bg-white rounded rounded-top-0 ">
+        <div class="col-lg-12 bg-white commitbatchdiv rounded rounded-top-0 ">
             <div class=" card-custom card-stretch gutter-b">
                 <form class="form fv-plugins-bootstrap fv-plugins-framework" novalidate="novalidate"
                     id="batchcommitForm">
@@ -512,8 +564,8 @@
                 </form>
             </div>
         </div>
-        <div class="col-lg-12 py-4 bg-secondary"></div>
-        <div class="col-lg-12 bg-white rounded">
+        <div class="col-lg-12 py-4 bg-secondary cf-manage-batches"></div>
+        <div class="col-lg-12 bg-white rounded cf-manage-batches">
             <div class=" card-custom card-stretch gutter-b">
                 <h4 class=" py-2 px-2 ">
                     <span class="font-weight-bolder text-dark">Manage Batches</span>

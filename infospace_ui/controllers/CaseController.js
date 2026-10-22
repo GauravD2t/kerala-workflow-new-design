@@ -203,6 +203,10 @@ CaseController.prototype.digitizedEntryPage = function (req, res) {
 CaseController.prototype.caseFilingPage = function (req, res) {
 
     let user = req.session.user;
+    if (req.query.embed === '1') {
+        req.session.batch = null;
+        return res.render('casefiling', { title: 'Case Details', batch: null, locals: res.locals });
+    }
     httpService.get("/batchesfindOnebycreatedby?created_by_d2=" + parseInt(user.user.id) + "&batchstatus=" + BatchStatusEnum.batchstatus.createbatch, req.body, function (node1) {
         node1 = JSON.parse(node1)
         if (node1.status != false) {

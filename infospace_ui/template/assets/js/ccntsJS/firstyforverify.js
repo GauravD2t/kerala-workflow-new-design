@@ -90,6 +90,7 @@ function openFile($btn) {
     if (remarks) {
         $('.remakrsshow').show();
         $('#fvPrevRemarks').attr('title', remarks);
+        $('#fvPrevRemarks').html(remarks);
         $('#fvPrevRemarks').tooltip({ html: true });
     } else {
         $('.remakrsshow').hide();
@@ -100,9 +101,9 @@ function openFile($btn) {
     $('#pdfiream').hide().attr('src', '');
     $('#verifyTextarea').val('');
 
-    // embedded full case filing form (auto-loads this CINO in edit mode)
+    // embedded full case filing form (auto-loads this FIR in edit mode)
     $('#caseFrameSpinner').show();
-    $('#caseFrame').attr('src', '/caseFiling.dwf?cino=' + encodeURIComponent(FV.selectedCrn) + '&embed=1');
+    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1');
 
     $('.batchsection').hide(300);
     $('.filesection').show(300);
@@ -163,20 +164,21 @@ function loadDocuments(firId) {
             if (!d.ocrpdfpath || seen[d.ocrpdfpath]) return;
             seen[d.ocrpdfpath] = true;
             var parts = String(d.ocrpdfpath).split(/[\\/]/);
-            var name = parts[parts.length - 1];
-            html += '<a href="javascript:;" class="navi-item fv-doc" data-id="' + d.id + '" data-name="' + name + '">' +
-                '<span class="navi-text py-2">' +
-                '<i class="far fa-file-pdf text-danger mr-2"></i>' + name +
-                '</span></a>';
+           // var name = parts[parts.length - 1];
+           var name=d.documenttypename;
+            html += '<a href="javascript:;" class="btn btn-sm btn-outline-secondary font-weight-bold fv-doc" ' +
+                'data-id="' + d.id + '" data-name="' + name + '">' +
+                '<i class="far fa-file-pdf mr-1"></i>' + name +
+                '</a>';
         });
-        if (!html) html = '<div class="text-muted font-weight-bold p-3">No documents</div>';
+        if (!html) html = '<span class="text-muted font-weight-bold">No documents</span>';
         $('#docList').html(html);
     });
 }
 
 $(document).on('click', '.fv-doc', function () {
-    $('.fv-doc').removeClass('bg-light');
-    $(this).addClass('bg-light');
+    $('.fv-doc').removeClass('fv-active');
+    $(this).addClass('fv-active');
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
     $('#pdfPlaceholder').hide();
     $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));

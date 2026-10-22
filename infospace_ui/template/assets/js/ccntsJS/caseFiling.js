@@ -1,5 +1,7 @@
 var currentCaseId = null;
 var additionalSubjects = [];
+var cfEmbed = false;
+var cfEmbedFirId = null;
 
 var CASE_FIELDS = ['efilno', 'dateOfEfiling', 'filNo', 'filYear', 'dateOfFiling', 'dateOfScrutiny',
     'regNo', 'regYear', 'dtRegis', 'typeName', 'caseType', 'status', 'dateFirstList', 'dateNextList',
@@ -13,7 +15,56 @@ $(document).ready(function () {
     initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
+
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get('embed') === '1') {
+        cfEmbed = true;
+        $('body').addClass('cf-embed');
+        $('#cf_cino').closest('.sticky-top').hide();
+        var $navCol = $('#cf_nav').parent();
+        $navCol.removeClass('col-lg-2').addClass('col-lg-12');
+        $navCol.next('.col-lg-10').removeClass('col-lg-10').addClass('col-lg-12');
+    }
+    var autoFir = qs.get('fir');
+    var autoCino = qs.get('cino');
+    if (autoFir) {
+        cfEmbedFirId = parseInt(autoFir, 10);
+        loadCaseByFir(cfEmbedFirId);
+    } else if (autoCino) {
+        $('#cf_cino').val(autoCino);
+        searchCase(true);
+    }
 });
+
+function loadCaseByFir(firId) {
+    $('#cf_search_spinner').show();
+    $.ajax({
+        async: true,
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/digitizedEntryByFir',
+        data: { firId: firId },
+        success: function (res) {
+            if (res.success && res.data) {
+                clearAll(false);
+                currentCaseId = res.data.id;
+                $('#cf_cino').val(res.data.cino || '');
+                populateAll(res.data.caseDetails);
+                showStatusBadge(res.data.status);
+                updateSaveButtons(true);
+                toastr.success('Local record loaded');
+            } else {
+                toastr.info(res.error || 'No digitized case details found for this file.');
+            }
+            $('#cf_search_spinner').hide();
+        },
+        error: function (err) {
+            console.error('loadCaseByFir error:', err);
+            toastr.error('Load failed: ' + (err.statusText || 'unknown error'));
+            $('#cf_search_spinner').hide();
+        }
+    });
+}
 
 function initDatePickers() {
     $(document).on('input', 'input[placeholder="YYYY-MM-DD"]', function () {
@@ -907,6 +958,7 @@ function buildPayload() {
 function saveAll() {
     var payload = buildPayload();
     if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); return; }
+    if (cfEmbed && !currentCaseId) { toastr.warning('Case not digitized yet — nothing to update.'); return; }
 
     if (!currentCaseId) {
         $('#cf_save_btn, #cf_save_top').prop('disabled', true);
@@ -946,8 +998,12 @@ function doSave(payload) {
         success: function (res) {
             if (res.status) {
                 toastr.success(currentCaseId ? 'Case updated successfully.' : 'Case saved successfully.');
-                cfLoadBatchFirs();
-                clearAll(true);
+                if (cfEmbed) {
+                    updateSaveButtons(true);
+                } else {
+                    cfLoadBatchFirs();
+                    clearAll(true);
+                }
             } else {
                 toastr.error(res.error || 'Save failed');
             }
@@ -989,6 +1045,11 @@ function clearAll(clearCino) {
 }
 
 function resetAll() {
+    if (cfEmbed && cfEmbedFirId) {
+        loadCaseByFir(cfEmbedFirId);
+        toastr.info('Changes discarded. Reloaded from server.');
+        return;
+    }
     clearAll(true);
     toastr.info('Form cleared');
 }
@@ -1108,6 +1169,7 @@ function cfRenderBatchTable(dataJSONArray) {
 }
 
 function cfLoadBatchFirs() {
+    if (cfEmbed) return;
     $.ajax({
         async: true,
         type: 'GET',
@@ -1335,12 +1397,15 @@ function cfMakeBatchDatatable(elId, url) {
 }
 
 var cfDelayedDatatableInit = function () {
+    if (cfEmbed) return;
     cfMakeBatchDatatable('kt_datatable_delayed', '/batchesfindAllbyCreatedby.dwf/1');
 };
 var cfPendingDatatableInit = function () {
+    if (cfEmbed) return;
     cfMakeBatchDatatable('kt_datatable_pending', '/batchesfindAllbyCreatedby.dwf/2');
 };
 var cfDeliveredDatatableInit = function () {
+    if (cfEmbed) return;
     cfMakeBatchDatatable('kt_datatable_delivered', '/batchesfindAllbyCreatedby.dwf/3');
 };
 
