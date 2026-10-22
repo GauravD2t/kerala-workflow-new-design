@@ -97,7 +97,7 @@ function findfirs(batch) {
         if (!firs.length) {
             $('#firTableWrap').hide();
             $('#firEmpty').show();
-            return;
+           getBatches();
         }
         $('#firEmpty').hide();
         $('#firTableWrap').show();
@@ -179,7 +179,7 @@ function resetverify() {
     $('.filesection').hide(300);
     $('.batchsection').show(300);
     findfirs($('#batches').val());
-    getBatches();
+    
 }
 
 function toggleExpand() {
