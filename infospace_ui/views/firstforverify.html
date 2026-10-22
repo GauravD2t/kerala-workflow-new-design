@@ -43,7 +43,7 @@
     <div class="filesection" style="display:none;">
 
         <!-- File header bar -->
-        <div class="card card-custom mb-5">
+        <div class="card card-custom mb-4">
             <div class="card-body py-3 d-flex align-items-center flex-wrap">
                 <span class="symbol symbol-45 symbol-light-primary mr-3">
                     <span class="symbol-label"><i class="fas fa-file-alt text-primary icon-lg"></i></span>
@@ -62,53 +62,34 @@
                     </span>
                 </div>
                 <div class="flex-grow-1"></div>
-                <button type="button" class="btn btn-light-danger btn-sm font-weight-bold" onclick="closefile()">
+                <button type="button" class="btn btn-success font-weight-bold mr-2" onclick="approveFile()">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button type="button" class="btn btn-danger font-weight-bold mr-2" onclick="$('#rejectModal').modal('show')">
+                    <i class="fas fa-undo"></i> Reject
+                </button>
+                <button type="button" class="btn btn-light-danger font-weight-bold" onclick="closefile()">
                     <i class="fas fa-arrow-left"></i> Back to list
                 </button>
             </div>
         </div>
 
-        <div class="row">
-            <!-- Documents + Verify actions -->
-            <div class="col-lg-3" id="docPanel">
-                <div class="card card-custom">
-                    <div class="card-header border-0 pt-5 pb-3">
-                        <h3 class="card-title font-weight-bolder text-dark">
+        <div class="row align-items-stretch">
+            <!-- Documents + PDF viewer (40%) -->
+            <div class="col-lg-5" id="pdfcol">
+                <div class="card card-custom mb-4">
+                    <div class="card-header border-0 pt-4 pb-2">
+                        <h3 class="card-title font-weight-bolder text-dark font-size-md">
                             <i class="fas fa-file-pdf text-primary mr-2"></i>Documents
                         </h3>
                     </div>
-                    <div class="card-body pt-0 px-3" style="max-height:38vh; overflow-y:auto;">
+                    <div class="card-body pt-0 pb-3 px-3" style="max-height:16vh; overflow-y:auto;">
                         <div id="docList" class="navi navi-hover"></div>
                     </div>
                 </div>
-
-                <div class="card card-custom mt-5">
-                    <div class="card-header border-0 pt-5 pb-3">
-                        <h3 class="card-title font-weight-bolder text-dark">
-                            <i class="fas fa-check-double text-primary mr-2"></i>Verify
-                        </h3>
-                    </div>
-                    <div class="card-body pt-2">
-                        <button type="button" class="btn btn-success btn-block font-weight-bold mb-4" onclick="approveFile()">
-                            <i class="fas fa-check"></i> Approve
-                        </button>
-                        <textarea class="form-control mb-3" id="verifyTextarea" rows="3"
-                                  placeholder="Reject remarks (required to reject)"></textarea>
-                        <button type="button" class="btn btn-warning btn-block font-weight-bold mb-2" onclick="rejectFile(1)">
-                            <i class="fas fa-undo"></i> Reject to Scan
-                        </button>
-                        <button type="button" class="btn btn-danger btn-block font-weight-bold" onclick="rejectFile(3)">
-                            <i class="fas fa-undo"></i> Reject to Classification
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PDF viewer -->
-            <div class="col-lg-5" id="pdfdiv">
-                <div class="card card-custom card-stretch">
-                    <div class="card-header border-0 pt-5 pb-3">
-                        <h3 class="card-title font-weight-bolder text-dark" id="pdfTitle">
+                <div class="card card-custom">
+                    <div class="card-header border-0 pt-4 pb-2">
+                        <h3 class="card-title font-weight-bolder text-dark font-size-md" id="pdfTitle">
                             <i class="far fa-file-pdf text-primary mr-2"></i>Document Preview
                         </h3>
                         <div class="card-toolbar">
@@ -118,45 +99,58 @@
                         </div>
                     </div>
                     <div class="card-body pt-0">
-                        <div class="border rounded bg-light-secondary text-center" id="pdfPlaceholder">
-                            <div class="py-20 text-muted font-weight-bold">
+                        <div class="border rounded bg-light text-center" style="overflow:hidden;">
+                            <div class="py-20 text-muted font-weight-bold" id="pdfPlaceholder">
                                 <i class="far fa-file-pdf icon-3x mb-3 d-block"></i>
-                                Select a document to preview
+                                Select a document above to preview
                             </div>
-                            <iframe id="pdfiream" src="" width="100%" style="height:72vh; border:0; display:none;"></iframe>
+                            <iframe id="pdfiream" src="" width="100%" style="height:63vh; border:0; display:none;"></iframe>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Case details editor -->
-            <div class="col-lg-4" id="casePanel">
+            <!-- Case details editor (60%) -->
+            <div class="col-lg-7" id="casecol">
                 <div class="card card-custom card-stretch">
-                    <div class="card-header border-0 pt-5 pb-3">
-                        <h3 class="card-title font-weight-bolder text-dark">
+                    <div class="card-header border-0 pt-4 pb-2">
+                        <h3 class="card-title font-weight-bolder text-dark font-size-md">
                             <i class="fas fa-edit text-primary mr-2"></i>Case Details
                         </h3>
                         <div class="card-toolbar">
-                            <span class="label label-lg label-light-primary label-inline font-weight-bold" id="fvCaseStatus"></span>
+                            <i class="fa fa-spin fa-spinner text-primary" id="caseFrameSpinner"></i>
                         </div>
                     </div>
                     <div class="card-body pt-0 pb-2">
-                        <div id="fvNoCase" class="py-10 text-center text-muted font-weight-bold" style="display:none;">
-                            No digitized case details found for this file
-                        </div>
-                        <div id="fvCaseWrap" style="height:66vh; overflow-y:auto; display:none;">
-                            <div id="fvParties" class="mb-4"></div>
-                            <div class="row pr-2" id="fvCaseFields"></div>
-                        </div>
+                        <iframe id="caseFrame" src="" width="100%" style="height:84vh; border:0;" class="rounded"></iframe>
                     </div>
-                    <div class="card-footer text-right py-3" id="fvCaseFooter" style="display:none;">
-                        <span class="text-danger font-size-sm font-weight-bold mr-3" id="fvUnsaved" style="display:none;">
-                            <i class="fas fa-exclamation-circle"></i> Unsaved changes
-                        </span>
-                        <button type="button" class="btn btn-primary font-weight-bold" onclick="saveCaseDetail()">
-                            <i class="fas fa-save"></i> Save Changes
-                        </button>
-                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject modal -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bolder">Reject File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" id="verifyTextarea" rows="4"
+                              placeholder="Reject remarks (required)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning font-weight-bold" onclick="rejectFile(1)">
+                        <i class="fas fa-undo"></i> Reject to Scan
+                    </button>
+                    <button type="button" class="btn btn-danger font-weight-bold" onclick="rejectFile(3)">
+                        <i class="fas fa-undo"></i> Reject to Classification
+                    </button>
                 </div>
             </div>
         </div>

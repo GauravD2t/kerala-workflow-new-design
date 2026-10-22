@@ -132,7 +132,7 @@ CaseService.prototype.saveCase = async function (payload) {
             var items = childRows[modelName];
             if (items.length) {
                 await db[modelName].bulkCreate(
-                    items.map(function (item) { return Object.assign({}, item, fk); }),
+                    items.map(function (item) { return Object.assign({}, stripChildMeta(item), fk); }),
                     { transaction: t }
                 );
             }
