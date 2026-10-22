@@ -627,7 +627,7 @@ async function uploadTodms1(req) {
     }
 }
 DocumentverifyController.prototype.getdocumentclassficationByfir = async function (req, res) {
-    let sendtoSign = "select  cf.* from classficationfiles cf  where   cf.fir in (" + req.query.fir + ")  ";
+    let sendtoSign = "select  cf.* from classficationfiles cf  where   cf.fir in (" + req.query.fir + ")  order by cf.id ";
     //console.log(sendtoSign)
     let dataPDF = await CIPAService.executeSQLOnlyDatawithwait(sendtoSign);
     

@@ -89,16 +89,18 @@ function openFile($btn) {
     var remarks = String($btn.attr('data-remarks') || '');
     if (remarks) {
         $('.remakrsshow').show();
-        $('#fvPrevRemarks').attr('title', remarks);
-        $('#fvPrevRemarks').html(remarks);
-        $('#fvPrevRemarks').tooltip({ html: true });
+        $('.remakrsdata').html(remarks);
+        $('.remakrsshowbody').show();
     } else {
         $('.remakrsshow').hide();
+        $('.remakrsdata').html('');
+        $('.remakrsshowbody').hide();
     }
 
     $('#pdfPlaceholder').show();
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
     $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
     $('#verifyTextarea').val('');
 
     // embedded full case filing form (auto-loads this FIR in edit mode)
@@ -127,6 +129,7 @@ function resetverify() {
     FV.selectedCrn = null;
     $('#verifyTextarea').val('');
     $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
     $('#pdfPlaceholder').show();
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
     $('#docList').html('');
@@ -153,6 +156,10 @@ function toggleExpand() {
 
 /* ---------------- documents / pdf ---------------- */
 
+function fvEscape(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/"/g, '&quot;');
+}
+
 function loadDocuments(firId) {
     $('#docList').html('<div class="text-muted font-weight-bold p-3">Loading...</div>');
     pushtoServer(null, '/getdocumentclassficationByfir.dwf?fir=' + firId, 'GET', function (node) {
@@ -167,7 +174,10 @@ function loadDocuments(firId) {
            // var name = parts[parts.length - 1];
            var name=d.documenttypename;
             html += '<a href="javascript:;" class="btn btn-sm btn-outline-secondary font-weight-bold fv-doc" ' +
-                'data-id="' + d.id + '" data-name="' + name + '">' +
+                'data-id="' + d.id + '" data-name="' + fvEscape(name) + '" ' +
+                'data-date="' + fvEscape(d.documentdate) + '" ' +
+                'data-desc="' + fvEscape(d.documentdesc) + '" ' +
+                'data-remark="' + fvEscape(d.documentremark) + '">' +
                 '<i class="far fa-file-pdf mr-1"></i>' + name +
                 '</a>';
         });
@@ -180,6 +190,10 @@ $(document).on('click', '.fv-doc', function () {
     $('.fv-doc').removeClass('fv-active');
     $(this).addClass('fv-active');
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
+    $('#docMetaDate').text($(this).attr('data-date') || '-');
+    $('#docMetaDesc').text($(this).attr('data-desc') || '-');
+    $('#docMetaRemark').text($(this).attr('data-remark') || '-');
+    $('#docMeta').css('display', 'flex');
     $('#pdfPlaceholder').hide();
     $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));
 });
@@ -225,5 +239,6 @@ $(document).ready(function () {
     $('#batches').select2({ placeholder: 'Select Batch', allowClear: true });
     $('#batches').on('change', function () { findfirs($(this).val()); });
     $(document).on('click', '.fv-open', function () { openFile($(this)); });
+    $(document).on('click', '#fvPrevRemarksBtn', function () { $('.remakrsshowbody').toggle(200); });
     getBatches();
 });

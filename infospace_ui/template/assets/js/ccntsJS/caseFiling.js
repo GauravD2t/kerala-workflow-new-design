@@ -120,6 +120,7 @@ function loadSelect($el, params, done) {
                 });
             }
             if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
+            reRenderLists();
             if (done) done();
         },
         error: function (err) { console.error('master load failed:', master, err); if (done) done(); }
@@ -329,6 +330,13 @@ function masterLabel(selectId, val) {
     if (val === null || val === undefined || val === '') return '';
     var $opt = $('#' + selectId + ' option[value="' + val + '"]');
     return $opt.length ? $opt.text() : val;
+}
+
+function reRenderLists() {
+    if (typeof LISTS === 'undefined') return;
+    Object.keys(LISTS).forEach(function (k) {
+        LISTS[k].setItems(LISTS[k].getItems(), true);
+    });
 }
 
 function partyTypeLabel(v) {
