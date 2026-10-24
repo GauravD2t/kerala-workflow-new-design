@@ -551,6 +551,14 @@ function rejectFile(imagestatus) {
 /* ---------------- init ---------------- */
 
 $(document).ready(function () {
+    // collapse the left menu on this page
+    $('body').addClass('aside-minimize').removeClass('aside-minimize-hover');
+    $('#kt_aside_toggle').addClass('active');
+    try {
+        var _at = KTLayoutAsideToggle.getToggle();
+        if (_at) _at.state = 'on';
+    } catch (e) { }
+
     $('#batches').select2({ placeholder: 'Select Batch', allowClear: true });
     $('#batches').on('change', function () { findfirs($(this).val()); });
     $(document).on('click', '.fv-open', function () { openFile($(this)); });
