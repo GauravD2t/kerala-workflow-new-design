@@ -253,7 +253,7 @@ async function generatePDF(filePath, buildPdfContent) {
 }
 DocumentverifyController.prototype.getpdfwithstatusSecondVerification = async function (req, res) {
    
-    let sendtoSign = "select  cf.id,ocrpdfpath from classficationfiles cf  where cf.issubchild=false  and (cf.secondsign=false or cf.secondsign is null) and (cf.ocrpdfpath is not null or cf.ocrpdfpath !='') and cf.fir in (" + req.body.selectedfile + ") UNION  select chd.id,chd.ocrpdfpath from classficationfiles per join classficationfiles chd on chd.parent=per.id and per.issubchild=true where  per.issubchild=true  and (chd.secondsign=false or chd.secondsign is null) and (chd.ocrpdfpath != '' or chd.ocrpdfpath is not null)  and  per.fir in (" + req.body.selectedfile + ") ";
+    let sendtoSign = "select  cf.id,ocrpdfpath from classficationfiles cf  where  (cf.secondsign=false or cf.secondsign is null) and (cf.ocrpdfpath is not null or cf.ocrpdfpath !='') and cf.fir in (" + req.body.selectedfile + ") ";
     
     //let dataPDF = await CIPAService.executeSQLOnlyData(sendtoSign);
     let files = [];
