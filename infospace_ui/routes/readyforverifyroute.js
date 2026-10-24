@@ -8,6 +8,8 @@ function ReadyForVerifyRoute(app, db) {
     app.route("/bulkReadyForVerifyReject.dwf").post(readyforverifycontroller.bulkReadyForVerifyReject);
     app.route("/verifyCaseUpdate.dwf/:id").post(readyforverifycontroller.updateCaseDetail);
     app.route("/verifyMapPdf.dwf").post(readyforverifycontroller.mapPdfToEntry);
+    app.route("/verifyUnmapPdf.dwf").post(readyforverifycontroller.unmapPdf);
+    app.route("/verifyCreateEntry.dwf").post(readyforverifycontroller.createCaseEntry);
     app.route("/getmetadatabffile.dwf").get(readyforverifycontroller.getmetadatabffile);
 
     app.route("/readyforUpload.dwf").get(authfilter.isvaildUrl, readyforverifycontroller.readyforUpload);

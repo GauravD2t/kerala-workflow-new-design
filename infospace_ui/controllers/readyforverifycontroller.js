@@ -115,11 +115,72 @@ ReadyForverifyController.prototype.mapPdfToEntry = async function (req, res) {
         if (!id || !path) return res.send({ status: false, error: 'id and path are required' });
         if (type !== 'ia' && type !== 'order') return res.send({ status: false, error: 'Invalid type' });
         var model = (type === 'order') ? db.OrderDetail : db.IaFiling;
-        var result = await model.update({ documentPath: path }, { where: { id: id } });
-        if (!result[0]) return res.send({ status: false, error: 'Entry not found' });
+        var row = await model.findOne({ where: { id: id } });
+        if (!row) return res.send({ status: false, error: 'Entry not found' });
+        await db.sequelize.transaction(async function (t) {
+            var opts = { where: { documentPath: path, case_detail_id: row.case_detail_id }, transaction: t };
+            await db.IaFiling.update({ documentPath: null }, opts);
+            await db.OrderDetail.update({ documentPath: null }, opts);
+            await row.update({ documentPath: path }, { transaction: t });
+        });
         res.send({ status: true });
     } catch (err) {
         console.error('mapPdfToEntry error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
+
+ReadyForverifyController.prototype.unmapPdf = async function (req, res) {
+    try {
+        var path = req.body.path;
+        var firId = parseInt(req.body.fir, 10);
+        if (!path || !firId) return res.send({ status: false, error: 'fir and path are required' });
+        var detail = await db.CaseDetail.findOne({ where: { fir: firId }, order: [['id', 'DESC']] });
+        if (!detail) return res.send({ status: false, error: 'Case not found' });
+        var opts = { where: { documentPath: path, case_detail_id: detail.id } };
+        await db.IaFiling.update({ documentPath: null }, opts);
+        await db.OrderDetail.update({ documentPath: null }, opts);
+        res.send({ status: true });
+    } catch (err) {
+        console.error('unmapPdf error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
+
+var VERIFY_ENTRY_FIELDS = {
+    ia: {
+        model: 'IaFiling',
+        fields: ['iaType', 'iaNumber', 'iaYear', 'iaNature', 'filingDate', 'applicantName',
+            'applicantAdvocate', 'respondentName', 'respondentAdvocate', 'documentPath',
+            'status', 'dateOfDecision', 'nextdate']
+    },
+    order: {
+        model: 'OrderDetail',
+        fields: ['documentType', 'orderDate', 'documentPath', 'judgeCode', 'jocode',
+            'iaNumber', 'iaType']
+    }
+};
+
+ReadyForverifyController.prototype.createCaseEntry = async function (req, res) {
+    try {
+        var cfg = VERIFY_ENTRY_FIELDS[req.body.type];
+        var firId = parseInt(req.body.fir, 10);
+        if (!cfg || !firId) return res.send({ status: false, error: 'type and fir are required' });
+        var fields = req.body.fields;
+        if (typeof fields === 'string') {
+            try { fields = JSON.parse(fields); } catch (e) { fields = {}; }
+        }
+        fields = fields || {};
+        var detail = await db.CaseDetail.findOne({ where: { fir: firId }, order: [['id', 'DESC']] });
+        if (!detail) return res.send({ status: false, error: 'Case details not saved yet. Save the case first.' });
+        var data = { case_detail_id: detail.id };
+        cfg.fields.forEach(function (f) {
+            if (fields[f] !== undefined) data[f] = (fields[f] === '' || fields[f] === 'null') ? null : fields[f];
+        });
+        var row = await db[cfg.model].create(data);
+        res.send({ status: true, data: row });
+    } catch (err) {
+        console.error('createCaseEntry error:', err);
         res.send({ status: false, error: err.message });
     }
 };

@@ -118,7 +118,7 @@
 
         <div class="row align-items-stretch">
             <!-- Case details editor (60%) -->
-            <div class="col-lg-7" id="casecol">
+            <div class="col-lg-6" id="casecol">
                 <div class="card card-custom card-stretch">
                     <div class="card-header border-0 pt-4 pb-2">
                         <h3 class="card-title font-weight-bolder text-dark font-size-md">
@@ -135,7 +135,7 @@
             </div>
 
             <!-- Documents + PDF viewer (40%) -->
-            <div class="col-lg-5" id="pdfcol">
+            <div class="col-lg-6" id="pdfcol">
                 <div class="card card-custom card-stretch">
                     <div class="card-header border-0 pt-4 pb-2">
                         <h3 class="card-title font-weight-bolder text-dark font-size-md" id="pdfTitle">
@@ -149,32 +149,47 @@
                     </div>
                     <div class="card-body pt-0 pb-3">
                         <div id="mapBar" class="d-flex flex-wrap align-items-center mb-2 py-2 px-3 border rounded" style="display:none;">
-                            <span class="font-weight-bolder text-muted mr-2 mb-1">Map PDF to:</span>
-                            <select class="form-control form-control-sm w-auto mr-1 mb-1" id="fvMapIa"></select>
-                            <button type="button" class="btn btn-sm btn-primary font-weight-bold mr-1 mb-1" onclick="mapSelectedDoc('ia')">Map IA</button>
-                            <button type="button" class="btn btn-sm btn-light-primary mr-3 mb-1" title="Create new IA" onclick="openNewEntry('ia')"><i class="fas fa-plus"></i></button>
-                            <select class="form-control form-control-sm w-auto mr-1 mb-1" id="fvMapOrder"></select>
-                            <button type="button" class="btn btn-sm btn-primary font-weight-bold mr-1 mb-1" onclick="mapSelectedDoc('order')">Map Order</button>
-                            <button type="button" class="btn btn-sm btn-light-primary mr-3 mb-1" title="Create new Order" onclick="openNewEntry('order')"><i class="fas fa-plus"></i></button>
-                            <button type="button" class="btn btn-sm btn-icon btn-light mb-1" title="Refresh IA / Order list" onclick="refreshCaseRefs()">
+                            <div class="d-flex align-items-center flex-grow-1 mr-3 mb-1" style="min-width:280px;">
+                                <span class="text-muted font-weight-bold text-nowrap mr-2" style="width:72px;">
+                                    <i class="fas fa-file-signature text-primary mr-1"></i>IA:
+                                </span>
+                                <select class="form-control form-control-sm mr-2" id="fvMapIa"></select>
+                                <button type="button" class="btn btn-sm btn-primary font-weight-bold text-nowrap mr-1" id="fvMapIaBtn" style="min-width:82px;" onclick="mapBtnAction('ia')">Map IA</button>
+                                <button type="button" class="btn btn-sm btn-icon btn-light-primary" title="Create new IA" onclick="openNewEntry('ia')"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <div class="d-flex align-items-center flex-grow-1 mr-3 mb-1" style="min-width:280px;">
+                                <span class="text-muted font-weight-bold text-nowrap mr-2" style="width:72px;">
+                                    <i class="fas fa-gavel text-warning mr-1"></i>Order:
+                                </span>
+                                <select class="form-control form-control-sm mr-2" id="fvMapOrder"></select>
+                                <button type="button" class="btn btn-sm btn-primary font-weight-bold text-nowrap mr-1" id="fvMapOrderBtn" style="min-width:82px;" onclick="mapBtnAction('order')">Map Order</button>
+                                <button type="button" class="btn btn-sm btn-icon btn-light-primary" title="Create new Order" onclick="openNewEntry('order')"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-icon btn-light mb-1 ml-auto" title="Refresh IA / Order list" onclick="refreshCaseRefs()">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
                         <div id="docMeta" class="d-flex flex-wrap align-items-center mb-2 py-2 px-3 bg-light rounded" style="display:none;">
-                            <span class="mr-4 mb-1 text-dark font-weight-bolder d-flex align-items-center">
-                                <i class="far fa-calendar-alt text-primary mr-1"></i><span class="text-muted font-weight-bold mr-1">Date:</span>
-                                <input type="text" class="form-control form-control-sm" id="docMetaDate" style="width:110px;" placeholder="DD/MM/YYYY">
-                            </span>
-                            <span class="mr-4 mb-1 text-dark font-weight-bolder d-flex align-items-center" style="min-width:220px;">
-                                <i class="far fa-file-alt text-success mr-1"></i><span class="text-muted font-weight-bold mr-1">Desc:</span>
+                            <div class="d-flex align-items-center flex-grow-1 mr-3 mb-1" style="min-width:170px;">
+                                <span class="text-muted font-weight-bold text-nowrap mr-2" style="width:72px;">
+                                    <i class="far fa-calendar-alt text-primary mr-1"></i>Date:
+                                </span>
+                                <input type="text" class="form-control form-control-sm" id="docMetaDate" placeholder="DD/MM/YYYY">
+                            </div>
+                            <div class="d-flex align-items-center flex-grow-1 mr-3 mb-1" style="min-width:230px;">
+                                <span class="text-muted font-weight-bold text-nowrap mr-2" style="width:72px;">
+                                    <i class="far fa-file-alt text-success mr-1"></i>Desc:
+                                </span>
                                 <input type="text" class="form-control form-control-sm" id="docMetaDesc" placeholder="Description">
-                            </span>
-                            <span class="mr-3 mb-1 text-dark font-weight-bolder d-flex align-items-center" style="min-width:220px;">
-                                <i class="far fa-comment-dots text-warning mr-1"></i><span class="text-muted font-weight-bold mr-1">Remark:</span>
+                            </div>
+                            <div class="d-flex align-items-center flex-grow-1 mr-3 mb-1" style="min-width:230px;">
+                                <span class="text-muted font-weight-bold text-nowrap mr-2" style="width:72px;">
+                                    <i class="far fa-comment-dots text-warning mr-1"></i>Remark:
+                                </span>
                                 <input type="text" class="form-control form-control-sm" id="docMetaRemark" placeholder="Remark">
-                            </span>
-                            <button type="button" class="btn btn-sm btn-success font-weight-bold mb-1" onclick="saveDocMeta()">
-                                <i class="fas fa-save mr-1"></i>Save
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success font-weight-bold mb-1 ml-auto" onclick="saveDocMeta()">
+                                <i class="fas fa-save mr-1"></i>Update
                             </button>
                         </div>
                         <div class="border rounded bg-light text-center" style="overflow:hidden;">
@@ -185,6 +200,78 @@
                             <iframe id="pdfiream" src="" width="100%" style="height:80vh; border:0; display:none;"></iframe>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New IA modal -->
+    <div class="modal fade" id="fvIaModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bolder">New IA Filing</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-3"><label>IA Type</label><select class="form-control" id="fv_ia_iaType" data-master="ia_casetype" data-val="ia_case_type" data-label="{ia_type_name}"></select></div>
+                        <div class="col-lg-3"><label>IA Number</label><input type="text" class="form-control" id="fv_ia_iaNumber"></div>
+                        <div class="col-lg-3"><label>IA Year</label><input type="text" class="form-control" id="fv_ia_iaYear"></div>
+                        <div class="col-lg-3"><label>IA Nature</label><select class="form-control" id="fv_ia_iaNature" data-master="ia_nature" data-val="iacls_code" data-label="{iacls_name}"></select></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Filing Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="fv_ia_filingDate"></div>
+                        <div class="col-lg-3"><label>Applicant Name</label><input type="text" class="form-control" id="fv_ia_applicantName"></div>
+                        <div class="col-lg-3"><label>Applicant Advocate Code</label><input type="text" class="form-control" id="fv_ia_applicantAdvocate"></div>
+                        <div class="col-lg-3"><label>Respondent Name</label><input type="text" class="form-control" id="fv_ia_respondentName"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-3"><label>Respondent Advocate Code</label><input type="text" class="form-control" id="fv_ia_respondentAdvocate"></div>
+                        <div class="col-lg-3"><label>Status</label><input type="text" class="form-control" id="fv_ia_status"></div>
+                        <div class="col-lg-3"><label>Date of Decision</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="fv_ia_dateOfDecision"></div>
+                        <div class="col-lg-3"><label>Next Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="fv_ia_nextdate"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success font-weight-bold" onclick="fvSaveNewEntry('ia')">
+                        <i class="fas fa-save"></i> Save IA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Order modal -->
+    <div class="modal fade" id="fvOrderModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bolder">New Order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i aria-hidden="true" class="ki ki-close"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4"><label>Document Type</label><select class="form-control" id="fv_ord_documentType" data-master="docutype" data-val="docu_type" data-label="{docu_name}"></select></div>
+                        <div class="col-lg-4"><label>Order Date</label><input type="text" class="form-control" placeholder="YYYY-MM-DD" id="fv_ord_orderDate"></div>
+                        <div class="col-lg-4"><label>Judge Code</label><input type="text" class="form-control" id="fv_ord_judgeCode"></div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-lg-4"><label>JO Code</label><input type="text" class="form-control" id="fv_ord_jocode"></div>
+                        <div class="col-lg-4"><label>IA Number</label><input type="text" class="form-control" id="fv_ord_iaNumber"></div>
+                        <div class="col-lg-4"><label>IA Type</label><select class="form-control" id="fv_ord_iaType" data-master="ia_casetype" data-val="ia_case_type" data-label="{ia_type_name}"></select></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light-primary font-weight-bold" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success font-weight-bold" onclick="fvSaveNewEntry('order')">
+                        <i class="fas fa-save"></i> Save Order
+                    </button>
                 </div>
             </div>
         </div>

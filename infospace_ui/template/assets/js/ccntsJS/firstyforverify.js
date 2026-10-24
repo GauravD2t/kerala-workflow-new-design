@@ -159,13 +159,13 @@ function resetverify() {
 function toggleExpand() {
     var $pdf = $('#pdfcol');
     var $case = $('#casecol');
-    if ($pdf.hasClass('col-lg-5')) {
-        $pdf.removeClass('col-lg-5').addClass('col-lg-8');
-        $case.removeClass('col-lg-7').addClass('col-lg-4');
+    if ($pdf.hasClass('col-lg-6')) {
+        $pdf.removeClass('col-lg-6').addClass('col-lg-8');
+        $case.removeClass('col-lg-6').addClass('col-lg-4');
         $('.changeicon').removeClass('fa-expand').addClass('fa-compress');
     } else {
-        $pdf.removeClass('col-lg-8').addClass('col-lg-5');
-        $case.removeClass('col-lg-4').addClass('col-lg-7');
+        $pdf.removeClass('col-lg-8').addClass('col-lg-6');
+        $case.removeClass('col-lg-4').addClass('col-lg-6');
         $('.changeicon').removeClass('fa-compress').addClass('fa-expand');
     }
 }
@@ -210,6 +210,11 @@ $(document).on('click', '.fv-doc', function () {
     $(this).addClass('fv-active');
     FV.selectedDocId = parseInt($(this).data('id'), 10);
     FV.selectedDocPath = String($(this).attr('data-path') || '');
+    var iaMap = fvMappedEntry('ia');
+    var ordMap = fvMappedEntry('order');
+    $('#fvMapIa').val(iaMap ? String(iaMap.id) : '');
+    $('#fvMapOrder').val(ordMap ? String(ordMap.id) : '');
+    syncMapUi();
     $('#mapBar').css('display', 'flex');
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
     $('#docMetaDate').val($(this).attr('data-date') || '');
@@ -245,10 +250,57 @@ function refreshCaseRefs() {
             if (r.documentPath) lbl += ' (mapped)';
             ordOpt += '<option value="' + r.id + '">' + lbl + '</option>';
         });
+        var prevIa = $('#fvMapIa').val();
+        var prevOrd = $('#fvMapOrder').val();
         $('#fvMapIa').html(iaOpt);
         $('#fvMapOrder').html(ordOpt);
+        if (FV.pendingSelect) {
+            $(FV.pendingSelect.type === 'order' ? '#fvMapOrder' : '#fvMapIa').val(FV.pendingSelect.id);
+            FV.pendingSelect = null;
+        } else {
+            if (prevIa && $('#fvMapIa option[value="' + prevIa + '"]').length) $('#fvMapIa').val(prevIa);
+            if (prevOrd && $('#fvMapOrder option[value="' + prevOrd + '"]').length) $('#fvMapOrder').val(prevOrd);
+        }
+        var iaMap = fvMappedEntry('ia');
+        var ordMap = fvMappedEntry('order');
+        if (iaMap && !$('#fvMapIa').val()) $('#fvMapIa').val(iaMap.id);
+        if (ordMap && !$('#fvMapOrder').val()) $('#fvMapOrder').val(ordMap.id);
         markMappedDocs();
+        syncMapUi();
     });
+}
+
+function fvMappedEntry(type) {
+    var p = normPath(FV.selectedDocPath);
+    if (!p) return null;
+    var list = (type === 'order') ? FV.orderList : FV.iaList;
+    var hit = null;
+    list.forEach(function (r) {
+        if (normPath(r.documentPath) === p) hit = r;
+    });
+    return hit;
+}
+
+function syncMapUi() {
+    ['ia', 'order'].forEach(function (type) {
+        var mapped = fvMappedEntry(type);
+        var selId = parseInt($(type === 'order' ? '#fvMapOrder' : '#fvMapIa').val(), 10);
+        var $btn = $(type === 'order' ? '#fvMapOrderBtn' : '#fvMapIaBtn');
+        if (mapped && selId === mapped.id) {
+            $btn.data('mode', 'unmap')
+                .removeClass('btn-primary').addClass('btn-light-danger')
+                .html('<i class="fas fa-unlink mr-1"></i>Unmap');
+        } else {
+            $btn.data('mode', 'map')
+                .removeClass('btn-light-danger').addClass('btn-primary')
+                .html('Map ' + (type === 'order' ? 'Order' : 'IA'));
+        }
+    });
+}
+
+function mapBtnAction(type) {
+    var mode = $(type === 'order' ? '#fvMapOrderBtn' : '#fvMapIaBtn').data('mode');
+    if (mode === 'unmap') { unmapSelectedDoc(); } else { mapSelectedDoc(type); }
 }
 
 function markMappedDocs() {
@@ -275,10 +327,28 @@ function markMappedDocs() {
 function syncIframeListItem(type, entryId, path) {
     try {
         var w = document.getElementById('caseFrame').contentWindow;
-        var list = w && w.LISTS && w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'];
-        if (!list) return;
-        list.getItems().forEach(function (it) {
+        if (!w || !w.LISTS) return;
+        ['iaFilings', 'orderDetails'].forEach(function (key) {
+            w.LISTS[key].getItems().forEach(function (it) {
+                if (normPath(it.documentPath) === normPath(path) && parseInt(it.id, 10) !== entryId) {
+                    it.documentPath = null;
+                }
+            });
+        });
+        w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'].getItems().forEach(function (it) {
             if (parseInt(it.id, 10) === entryId) it.documentPath = path;
+        });
+    } catch (e) { /* iframe not ready */ }
+}
+
+function syncIframeUnmap(path) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        if (!w || !w.LISTS) return;
+        ['iaFilings', 'orderDetails'].forEach(function (key) {
+            w.LISTS[key].getItems().forEach(function (it) {
+                if (normPath(it.documentPath) === normPath(path)) it.documentPath = null;
+            });
         });
     } catch (e) { /* iframe not ready */ }
 }
@@ -289,7 +359,7 @@ function mapSelectedDoc(type) {
     var label = isOrder ? 'Order' : 'IA';
     if (!FV.selectedDocPath) { toastr.warning('Select a document first.'); return; }
     if (!entryId) { toastr.warning('Select an ' + label + ' from the list first.'); return; }
-    if (!confirm('Map this PDF to the selected ' + label + '?')) return;
+    if (!confirm('Map this PDF to the selected ' + label + '? Any existing mapping of this PDF will be moved.')) return;
     $.blockUI();
     pushtoServer({ type: type, id: entryId, path: FV.selectedDocPath }, '/verifyMapPdf.dwf', 'POST', function (node) {
         $.unblockUI();
@@ -303,21 +373,100 @@ function mapSelectedDoc(type) {
     });
 }
 
+function unmapSelectedDoc() {
+    if (!FV.selectedDocPath) { toastr.warning('Select a document first.'); return; }
+    var p = normPath(FV.selectedDocPath);
+    var isMapped = FV.iaList.concat(FV.orderList).some(function (r) {
+        return normPath(r.documentPath) === p;
+    });
+    if (!isMapped) { toastr.info('This document is not mapped to any IA or Order.'); return; }
+    if (!confirm('Remove the IA / Order mapping for this PDF?')) return;
+    $.blockUI();
+    pushtoServer({ fir: FV.selectedFir, path: FV.selectedDocPath }, '/verifyUnmapPdf.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('Mapping removed.');
+            syncIframeUnmap(FV.selectedDocPath);
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Unmap failed. Please try again.');
+        }
+    });
+}
+
+function syncIframeNewItem(type, row) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        var list = w && w.LISTS && w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'];
+        if (!list || !row || !row.id) return;
+        var items = list.getItems();
+        if (!items.some(function (it) { return parseInt(it.id, 10) === parseInt(row.id, 10); })) {
+            items.push(row);
+            list.setItems(items, true);
+        }
+    } catch (e) { /* iframe not ready */ }
+}
+
+var FV_IA_FIELDS = ['iaType', 'iaNumber', 'iaYear', 'iaNature', 'filingDate', 'applicantName',
+    'applicantAdvocate', 'respondentName', 'respondentAdvocate', 'status', 'dateOfDecision', 'nextdate'];
+var FV_IA_NUM = ['iaType', 'iaYear', 'iaNature', 'applicantAdvocate', 'respondentAdvocate'];
+var FV_ORDER_FIELDS = ['documentType', 'orderDate', 'judgeCode', 'jocode', 'iaNumber', 'iaType'];
+var FV_ORDER_NUM = ['documentType', 'judgeCode', 'iaType'];
+
+function collectFvModal(prefix, fields, numFields) {
+    var item = {};
+    fields.forEach(function (f) {
+        var el = document.getElementById(prefix + f);
+        if (!el) return;
+        var v = el.value;
+        item[f] = (v === '') ? null : (numFields.indexOf(f) !== -1 ? parseInt(v, 10) : v);
+    });
+    return item;
+}
+
 function openNewEntry(type) {
+    if (!FV.selectedFir) { toastr.warning('Open a file first.'); return; }
+    var $modal = $(type === 'order' ? '#fvOrderModal' : '#fvIaModal');
+    $modal.find('input').val('');
+    $modal.find('select').val('');
+    $modal.modal('show');
+}
+
+function fvSaveNewEntry(type) {
     var isOrder = (type === 'order');
-    var frame = document.getElementById('caseFrame');
-    var w = frame && frame.contentWindow;
-    if (!w || !w.LISTS) {
-        toastr.warning('Case details form is still loading. Please wait and try again.');
-        return;
-    }
-    if (!w.currentCaseId) {
-        toastr.warning('Case details are not saved yet. Save the case first, then add ' + (isOrder ? 'an Order' : 'an IA') + '.');
-        return;
-    }
-    w.$(isOrder ? 'a[href="#cf_tab_orders"]' : 'a[href="#cf_tab_iafiling"]').tab('show');
-    (isOrder ? w.LISTS.orderDetails : w.LISTS.iaFilings).open();
-    toastr.info('Fill the ' + (isOrder ? 'Order' : 'IA') + ' details, Save the entry and click Update. The list will refresh automatically.');
+    var fields = collectFvModal(isOrder ? 'fv_ord_' : 'fv_ia_', isOrder ? FV_ORDER_FIELDS : FV_IA_FIELDS, isOrder ? FV_ORDER_NUM : FV_IA_NUM);
+    if (!isOrder && !fields.iaNumber) { toastr.warning('IA Number is required.'); return; }
+    if (isOrder && !fields.orderDate) { toastr.warning('Order Date is required.'); return; }
+    $.blockUI();
+    pushtoServer({ type: type, fir: FV.selectedFir, fields: JSON.stringify(fields) }, '/verifyCreateEntry.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status && node.data) {
+            toastr.success((isOrder ? 'Order' : 'IA') + ' created successfully.');
+            $(isOrder ? '#fvOrderModal' : '#fvIaModal').modal('hide');
+            syncIframeNewItem(type, node.data);
+            FV.pendingSelect = { type: type, id: node.data.id };
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Create failed. Please try again.');
+        }
+    });
+}
+
+function fvInitMasterSelects() {
+    $('#fvIaModal select[data-master], #fvOrderModal select[data-master]').each(function () {
+        var $el = $(this);
+        pushtoServer(null, '/api/digitization/master/' + $el.data('master'), 'GET', function (res) {
+            var valKey = $el.data('val');
+            var labelTpl = String($el.data('label'));
+            $el.empty().append('<option value="">Select</option>');
+            if (res && res.success && res.data) {
+                res.data.forEach(function (row) {
+                    var label = labelTpl.replace(/\{([^}]+)\}/g, function (m, k) { return row[k] !== undefined ? row[k] : ''; });
+                    $el.append('<option value="' + row[valKey] + '">' + label + '</option>');
+                });
+            }
+        });
+    });
 }
 
 function saveDocMeta() {
@@ -384,5 +533,7 @@ $(document).ready(function () {
     $('#batches').on('change', function () { findfirs($(this).val()); });
     $(document).on('click', '.fv-open', function () { openFile($(this)); });
     $(document).on('click', '#fvPrevRemarksBtn', function () { $('.remakrsshowbody').toggle(200); });
+    $(document).on('change', '#fvMapIa, #fvMapOrder', syncMapUi);
+    fvInitMasterSelects();
     getBatches();
 });
