@@ -963,10 +963,10 @@ function buildPayload() {
     return payload;
 }
 
-function saveAll() {
+function saveAll(onDone) {
     var payload = buildPayload();
-    if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); return; }
-    if (cfEmbed && !currentCaseId) { toastr.warning('Case not digitized yet — nothing to update.'); return; }
+    if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); if (onDone) onDone(false); return; }
+    if (cfEmbed && !currentCaseId) { toastr.warning('Case not digitized yet — nothing to update.'); if (onDone) onDone(false); return; }
 
     if (!currentCaseId) {
         $('#cf_save_btn, #cf_save_top').prop('disabled', true);
@@ -980,20 +980,20 @@ function saveAll() {
                 if (res.status && res.data && res.data.bundlenumber) {
                     toastr.warning(payload.caseDetails.cino + ' file already exists in batch ' + res.data.bundlenumber + '. A new file will be created for this CINO.');
                 }
-                doSave(payload);
+                doSave(payload, onDone);
             },
             error: function (err) {
                 console.error('saveAll bundle check error:', err);
-                doSave(payload);
+                doSave(payload, onDone);
             }
         });
         return;
     }
 
-    doSave(payload);
+    doSave(payload, onDone);
 }
 
-function doSave(payload) {
+function doSave(payload, onDone) {
     $('#cf_save_btn, #cf_save_top').prop('disabled', true);
 
     $.ajax({
@@ -1015,8 +1015,10 @@ function doSave(payload) {
                     cfLoadBatchFirs();
                     clearAll(true);
                 }
+                if (onDone) onDone(true);
             } else {
                 toastr.error(res.error || 'Save failed');
+                if (onDone) onDone(false);
             }
             $('#cf_save_btn, #cf_save_top').prop('disabled', false);
         },
@@ -1024,6 +1026,7 @@ function doSave(payload) {
             console.error('saveAll error:', err);
             toastr.error('Save failed');
             $('#cf_save_btn, #cf_save_top').prop('disabled', false);
+            if (onDone) onDone(false);
         }
     });
 }

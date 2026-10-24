@@ -495,7 +495,29 @@ function saveDocMeta() {
 
 function approveFile() {
     if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
-    if (!confirm('Did you save all case detail changes? Approve this file now?')) return;
+    if (!confirm('Save case detail changes and approve this file now?')) return;
+    var frame = document.getElementById('caseFrame');
+    var w = frame && frame.contentWindow;
+    if (w && w.currentCaseId && typeof w.saveAll === 'function') {
+        $.blockUI();
+        try {
+            w.saveAll(function (ok) {
+                if (ok) {
+                    doApproveFile();
+                } else {
+                    $.unblockUI();
+                    toastr.error('Case details save failed — file not approved.');
+                }
+            });
+            return;
+        } catch (e) {
+            $.unblockUI();
+        }
+    }
+    doApproveFile();
+}
+
+function doApproveFile() {
     $.blockUI();
     pushtoServer({ selectedfile: [FV.selectedFir], imagestatus: 5, Verifyremarks: '' }, '/bulkReadyForVerify.dwf', 'POST', function (node) {
         $.unblockUI();
