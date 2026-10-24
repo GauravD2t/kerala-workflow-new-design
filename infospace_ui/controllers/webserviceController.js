@@ -690,7 +690,7 @@ SET
     pdf_by = ${req.session.user.user.id},
     imagestatus = 5,
     islock = false,
-    pdf_at = '${moment().format()}',
+    pdf_at = NOW(),
     pdfpagecount = (
         SELECT SUM(pagecount)
         FROM (
@@ -807,7 +807,7 @@ webserviceController.prototype.updateStatusUploadFile = function (req, res) {
                                     CIPAService.executeSQL(updatefir, function (batchdata) {
                                         var resultbat = batchdata[0];
                                         if (resultbat[0].count == 0) {
-                                            let firupdate = "update firs set isupload=true,setuploadfile=true,upload_at='" + moment().format() + "' where id in (select fir from classficationfiles where id in (select parent from classficationfiles where id=" + req.body.id + " ))";
+                                            let firupdate = "update firs set isupload=true,setuploadfile=true,upload_at=NOW() where id in (select fir from classficationfiles where id in (select parent from classficationfiles where id=" + req.body.id + " ))";
                                             CIPAService.UpdateexecuteSQL(firupdate, function (data22) {
                                                 res.send({ status: true });
                                             })
@@ -826,7 +826,7 @@ webserviceController.prototype.updateStatusUploadFile = function (req, res) {
                         CIPAService.executeSQL(updatefir, function (batchdata) {
                             var resultbat = batchdata[0];
                             if (resultbat[0].count == 0) {
-                                let firupdate = "update firs set isupload=true,setuploadfile=true,upload_at='" + moment().format() + "' where id in (select fir from classficationfiles where id=" + req.body.id + ")";
+                                let firupdate = "update firs set isupload=true,setuploadfile=true,upload_at=NOW() where id in (select fir from classficationfiles where id=" + req.body.id + ")";
                                 CIPAService.UpdateexecuteSQL(firupdate, function (data22) {
                                     res.send({ status: true });
                                 })
@@ -898,7 +898,7 @@ webserviceController.prototype.getListofpdfuploadtoDMS = function (req, res) {
                             parentnode.push(element);
                         } else {
                             httpService.put("/classficationfiles/" + element.id, { isupload: true }, function (update) {
-                                let firupdate = "update firs set isupload=true,upload_at='" + moment().format() + "' where id in (select fir from classficationfiles where id=" + element.id + ")";
+                                let firupdate = "update firs set isupload=true,upload_at=NOW() where id in (select fir from classficationfiles where id=" + element.id + ")";
                                 CIPAService.UpdateexecuteSQL(firupdate, function (data22) {
                                 })
 
