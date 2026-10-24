@@ -349,7 +349,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
    
     var deletequery = "";
     if (req.body.imagestatus == 6) {
-        deletequery = "update firs set secondverify_at='" + moment().format() + "',secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
 
             if (req.body.imagestatus == 6) {
@@ -364,7 +364,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
             }
         })
     } else {
-        deletequery = "update firs set readyforverify=false,secondverify_at='" + moment().format() + "',secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set readyforverify=false,secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
 
         httpService.get("/firs/" + letfldid, req.body, function (node1) {
@@ -395,7 +395,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
 DocumentverifyController.prototype.thirdverifybulkwithupload = async function (req, res) {
     var deletequery = "";
     if (req.body.imagestatus == 6) {
-        deletequery = "update firs set thirdverify_at='" + moment().format() + "',thirdverify_by=" + req.session.user.user.id + ",thirdverify=true where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",thirdverify=true where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
             if (req.body.imagestatus == 6) {
                 uploadTodms1(req);
@@ -421,7 +421,7 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
                 lettostage = "Classfication";
             }
             updatesign = "update classficationfiles set firstsign=false,secondsign=false where id in (select  cf.id from classficationfiles cf  where cf.issubchild=false  and (cf.ocrpdfpath is not null or cf.ocrpdfpath !='') and cf.fir in (" + req.body.selectedfile + ") UNION  select chd.id from classficationfiles per join classficationfiles chd on chd.parent=per.id and per.issubchild=true where  per.issubchild=true   and (chd.ocrpdfpath != '' or chd.ocrpdfpath is not null)  and  per.fir in (" + req.body.selectedfile + ") )";
-            deletequery = "update firs set secondverify=false,readyforverify=false,thirdverify_at='" + moment().format() + "',thirdverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",thirdverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+            deletequery = "update firs set secondverify=false,readyforverify=false,thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",thirdverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
 
             updateFORM_A = "delete from classficationfiles where fir in (" + req.body.selectedfile + ") and documenttype ='" + Form_A_DocumentID + "'";
 
@@ -586,16 +586,16 @@ async function uploadTodms1(req) {
                                     //     return true;
                                     // })
                                     if (dataa.data.data.status) {
-                                        var deletequery = "update  firs set uploadmsg='" + dataa.data.message + "',isupload=true,setuploadfile=true,upload_at='" + moment().format() + "' where id=" + fileid;
+                                        var deletequery = "update  firs set uploadmsg='" + dataa.data.message + "',isupload=true,setuploadfile=true,upload_at=NOW() where id=" + fileid;
 
                                         CIPAService.UpdateexecuteSQL(deletequery, function (data) {
-                                            return true;
+                                           // return true;
                                         })
                                     } else {
                                         var deletequery = "update  firs set uploadmsg='" + dataa.data.data.message + "',isupload=false,setuploadfile=false where id=" + fileid;
 
                                         CIPAService.UpdateexecuteSQL(deletequery, function (data) {
-                                            return true;
+                                           // return true;
                                         })
                                     }
 
