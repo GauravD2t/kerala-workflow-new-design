@@ -1,393 +1,582 @@
+/* Document Verification - batch > file > pdf + embedded case editor > approve/reject */
 
+var FV = {
+    selectedFir: null,
+    selectedCrn: null,
+    selectedDocId: null,
+    selectedDocPath: null,
+    iaList: [],
+    orderList: []
+};
 
-function pushtoSrever(pushObject, url, method, callback) {
+function pushtoServer(pushObject, url, method, callback) {
     $.ajax({
         async: true,
         type: method,
         dataType: 'json',
         url: url,
         data: pushObject,
-        success: function (response) {
-            //toastr.success('Data InserteId Successfully!');                
-            callback(response);
-        },
-        error: function (response) {
-            //toastr.error('Problem in Deleting Data!');
-            console.log("error")
-            callback(response)
-        }
+        success: function (response) { callback(response); },
+        error: function (response) { callback(response && response.responseJSON ? response.responseJSON : { status: false }); }
     });
 }
-let listofBatches = [];
 
-function rejectScannDocumentModal(id) {
-
-    $('#modalimagestatus').val(id);
-    $('#rejectRemarksModal').modal('show');
-}
-function submitRemarksmenu() {
-    if ($('#verifyTextarea').val().length != 0) {
-        bulkVerify($('#modalimagestatus').val())
-        $('#rejectRemarksModal').modal('hide');
-    } else {
-        toastr.error('Remaks required !');
-        $('#rejectRemarksModal').modal('show');
-
-    }
-
-}
-
-
-
-
+/* ---------------- batch & file list ---------------- */
 
 function getBatches() {
-    pushtoSrever(null, "/getbstches.dwf", "GET", function (node) {
-        listofBatches = node.data;
-        let option = "";
-        for (var i = 0; i < listofBatches.length; i++) {
-            option = option + "<option batchobj=" + listofBatches[i] + " value='" + listofBatches[i].id + "'>" + listofBatches[i].bundlenumber + "</option>";
+    pushtoServer(null, '/getbstches.dwf', 'GET', function (node) {
+        var list = node.data || [];
+        var option = '';
+        for (var i = 0; i < list.length; i++) {
+            option += '<option value="' + list[i].id + '">' + list[i].bundlenumber + '</option>';
         }
-
         $('#batches').html(option);
-    })
-}
-function selectAll() {
-    if ($('#iif1').prop('checked')) {
-        $('#firlist .ckhform').prop('checked', true);
-        $('#firlist .ckhform').attr('value', 'true');
-    } else {
-        $('#firlist  .ckhform').prop('checked', false);
-        $('#firlist  .ckhform').attr('value', 'false');
-    }
-
-}
-function bulkVerify(imagestatus) {
-    var jsonform = []
-
-    $('#firlist .ckhform').each(function () {
-        if ($(this).is(':checked')) {
-            jsonform.push(this.name)
-        }
+        $('#batches').val('').trigger('change');
+        $('#firTableWrap').hide();
+        $('#firEmpty').hide();
     });
-
-    if (jsonform.length == 0) {
-        toastr.error("Select one file !");
-    } else {
-        $.blockUI();
-        pushtoSrever({ 'selectedfile': jsonform, imagestatus: imagestatus, Verifyremarks: $('#verifyTextarea').val() }, "/bulkverifyfile.dwf", "POST", function (node) {
-            for (var i = 0; i < jsonform.length; i++) {
-                $('#firs' + jsonform[i]).remove();
-            }
-
-            $('#verifyTextarea').val("")
-            selected_fir = "";
-            $('#kt_tree_1').jstree(true).settings.core.data = [];
-            $('#kt_tree_1').jstree(true).refresh();
-            toastr.success('File verified successfully!');
-            document.getElementById("pdfiream").src = "";
-            getBatches();
-            $.unblockUI();
-        })
-
-    }
-    console.log(jsonform);
 }
+
 function findfirs(batch) {
-    pushtoSrever(null, "/findFIrsbybathc.dwf?batch=" + batch, "GET", function (node) {
-        let firs = node.data;
-        let li = "";
+    if (batch === null || batch === '' || batch === undefined) {
+        $('#firTableWrap').hide();
+        $('#firEmpty').hide();
+        return;
+    }
+    pushtoServer(null, '/findFIrsbybathc.dwf?batch=' + batch, 'GET', function (node) {
+        var firs = node.data || [];
+        $('.searchcasenotable').html('');
+        if (!firs.length) {
+            $('#firTableWrap').hide();
+            $('#firEmpty').show();
+             getBatches();
+            return;
+        }
+        $('#firEmpty').hide();
+        $('#firTableWrap').show();
+        var batchNo = $('#batches option:selected').text().trim();
         for (var i = 0; i < firs.length; i++) {
-            li = li + '<li class="lilist list-group-item" id="firs' + firs[i].id + '"  onclick="getdocument(this,' + firs[i].id + ')"><div class="form-check"><label class="form-check-label"><input type="checkbox" class="form-check-input mr-3 ckhform"  name="' + firs[i].id + '" value="false"> <span class="ml-4"> ' + firs[i].casetype + '/' + firs[i].caseno + '/' + firs[i].year + '</span> </label></div></li>';
+            var f = firs[i];
+            var fileLabel = (f.casetype || '') + '/' + (f.caseno || '') + '/' + (f.year || '');
+            var remarks = (f.verifyremarks || '').replace(/"/g, '&quot;').replace(/\n/g, '<br>');
+            $('.searchcasenotable').append(
+                '<tr>' +
+                '<td class="font-weight-bold">' + batchNo + '</td>' +
+                '<td class="font-weight-bold text-primary">' + fileLabel + '</td>' +
+                '<td>' + (f.crn || '') + '</td>' +
+                '<td>' + (f.pdfpagecount || 0) + '</td>' +
+                '<td>' +
+                '<button type="button" class="btn btn-sm btn-light-primary font-weight-bold fv-open" ' +
+                'data-id="' + f.id + '" data-crn="' + (f.crn || '') + '" data-pages="' + (f.pdfpagecount || 0) + '" ' +
+                'data-file="' + fileLabel + '" data-remarks="' + remarks + '">' +
+                '<i class="fas fa-folder-open mr-1"></i>Open</button>' +
+                '</td></tr>'
+            );
         }
-        if (firs.length != 0) {
-            $("#bulkdiv").show();
-        } else {
-            $("#bulkdiv").hide();
-        }
-        $("#firlist").html(li);
-    })
+        $('[data-toggle="tooltip"]').tooltip();
+    });
 }
 
-let selected_fir = "";
-function getdocument(dom, id) {
-    selected_fir = id;
-    $('.lilist').removeClass('active');
-    $(dom).addClass('active');
-    let data = [];
-    pushtoSrever(null, "/getdocumentclassficationByfir.dwf?fir=" + id, "GET", function (node) {
-        let classfication = node.data;
-        let treearry = [];
+/* ---------------- file workspace ---------------- */
 
-        for (var i = 0; i < classfication.length; i++) {
-            let desc = (classfication[i].documentdesc == "" || classfication[i].documentdesc == null) ? classfication[i].documentdate : classfication[i].documentdesc;
-           // desc = ((classfication[i].documentdesc == "" || classfication[i].documentdesc == null) && (classfication[i].documentdate == "" || classfication[i].documentdate == null)) ? classfication[i].documenttypename.split(">>")[classfication[i].documenttypename.split(">>").length - 1] : desc;
-            let index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
-            if (classfication[i].child.length != 0) {
-                var childdata = [];
-                for (var k = 0; k < classfication[i].child.length; k++) {
-                    let child = classfication[i].child[k];
-                    //  let childdesc = (child.documentdesc == "" || child.documentdesc == null) ? child.documentdate : child.documentdesc;
-                    childdata.push({ 'pdfpath': child.ocrpdfpath, "id": child.id, "text": child.documenttypename, "icon": "fa fa-file text-danger " });
-                }
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [{ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-primary ", "children": childdata }] })
-                } else {
-                    treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-            } else {
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">>")[0].trim(), "children": [] });
-                }
-                index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
-                let documentname = classfication[i].documenttypename.split(">>");
-                var childdata = [];
-                childdata.push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-file text-danger " });
+function openFile($btn) {
+    FV.selectedFir = parseInt($btn.data('id'), 10);
+    FV.selectedCrn = String($btn.data('crn') || '');
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
 
-                if (0 == documentname.length - 1) {
-                    treearry[index]["children"] = [...treearry[index]["children"], ...childdata];
-                } else {
-                    if (documentname.length == 3) {
-                        childdata[0].text = classfication[i].documenttypename.split(">>")[2].trim() + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>';
-                        childindex = treearry[index]["children"].findIndex(x => x.text === classfication[i].documenttypename.split(">>")[1].trim());
-                        if (childindex == -1) {
+    $('#firTable tbody tr').removeClass('table-active');
+    $btn.closest('tr').addClass('table-active');
 
-                            treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                        } else {
-                            treearry[index]["children"][childindex]['children'] = [...treearry[index]["children"][childindex]['children'], ...childdata];
-                            //treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                        }
+    $('#fvFileTitle').text($btn.data('file'));
+    $('#fvCrn').text($btn.data('crn'));
+    $('#fvPages').text($btn.data('pages'));
 
-                    } else {
-                        treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                    }
-                    // treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-                // treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " })
-
-
-            }
-
-
-            data = treearry
-        }
-
-        $('#kt_tree_1').jstree(true).settings.core.data = data;
-        $('#kt_tree_1').jstree(true).refresh();
-    })
-
-
-
-
-
-}
-
-
-let editCalssfication = "";
-function getDigitizationCenter() {
-    pushtoSrever(null, "/getAllUser.dwf?type=1", "GET", function (node) {
-        for (var i = 0; i < node.data.length; i++) {
-            console.log(node.data[0])
-        }
-    })
-}
-function poppuEditNode(dom, classid) {
-    pushtoSrever(null, "/getclassficationmodal.dwf?id=" + classid, "GET", function (node) {
-        let classfication = node.data;
-        editCalssfication = classid
-        $('#modaldate').val(classfication.documentdate);
-        $('#modalremark').val(classfication.documentdesc);
-        $('#deleteModal').modal('show');
-    })
-
-}
-function updateClassfication() {
-    pushtoSrever({ documentdate: $('#modaldate').val(), documentdesc: $('#modalremark').val() }, "/updatedocumentclassficationByfir.dwf?id=" + editCalssfication, "POST", function (node) {
-        toastr.success('File update successfully!');
-        $('#deleteModal').modal('hide');
-        editCalssfication = "";
-        getdocument(null, selected_fir);
-        $('#modaldate').val("");
-        $('#modalremark').val("");
-    })
-}
-/*
-function getdocument(dom, id) {
-    selected_fir = id;
-    $('.lilist').removeClass('active');
-    $(dom).addClass('active');
-    let data = [];
-    pushtoSrever(null, "/getdocumentclassficationByfir.dwf?fir=" + id, "GET", function (node) {
-        let classfication = node.data;
-        let treearry = [];
-
-        for (var i = 0; i < classfication.length; i++) {
-            let desc = (classfication[i].documentdesc == "" || classfication[i].documentdesc == null) ? classfication[i].documentdate : classfication[i].documentdesc;
-            let index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">")[0].trim());
-            if (classfication[i].child.length != 0) {
-                var childdata = [];
-                for (var k = 0; k < classfication[i].child.length; k++) {
-                    let child = classfication[i].child[k];
-                    //  let childdesc = (child.documentdesc == "" || child.documentdesc == null) ? child.documentdate : child.documentdesc;
-                    childdata.push({ 'pdfpath': child.ocrpdfpath, "id": child.id, "text": child.documenttypename, "icon": "fa fa-file text-danger " });
-                }
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [{ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc, "icon": "fa fa-folder text-primary ", "children": childdata }] })
-                } else {
-                    treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc, "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-            } else {
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [] });
-                }
-                index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">")[0].trim());
-                let documentname = classfication[i].documenttypename.split(">");
-                var childdata = [];
-                childdata.push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " });
-
-                if (0 == documentname.length - 1) {
-                    treearry[index]["children"] = [...treearry[index]["children"], ...childdata];
-                } else {
-                    treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-                // treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " })
-
-
-            }
-
-
-            data = treearry
-        }
-
-        $('#kt_tree_1').jstree(true).settings.core.data = data;
-        $('#kt_tree_1').jstree(true).refresh();
-    })
-
-
-
-
-
-}*/
-function updateMetadataReject() {
-
-    if ($('#rejectmetadata').val().length != 0) {
-        let formdata = {
-            id: selected_fir,
-            verifyremarks: $('#rejectmetadata').val(),
-            readyforverify: false
-
-        }
-        pushtoSrever(formdata, "/rejectforMetadata.dwf", "POST", function (node) {
-            toastr.success('Data Reject successfully!');
-            $('#viewmeatadata').modal('hide');
-            $('#firs' + selected_fir).remove()
-            selected_fir = "";
-            $('#kt_tree_1').jstree(true).settings.core.data = [];
-            $('#kt_tree_1').jstree(true).refresh();
-            getBatches();
-        })
+    var remarks = String($btn.attr('data-remarks') || '');
+    if (remarks) {
+        $('.remakrsshow').show();
+        $('.remakrsdata').html(remarks);
+        $('.remakrsshowbody').show();
     } else {
-        toastr.error("Enter Reject Remarks!!");
+        $('.remakrsshow').hide();
+        $('.remakrsdata').html('');
+        $('.remakrsshowbody').hide();
     }
 
-}
-function updateMetadata() {
-    let metadatavalueArray = [];
-    $('.metadatafir').find('input[type=text]').each(function () {
-        metadatavalueArray.push({ metadataid: $(this).attr('metadata'), value: $(this).val() })
+    $('#pdfPlaceholder').show();
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
+    $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
+    $('#mapBar').css('display', 'none');
+    $('#fvMapIa').html('<option value="">Select IA</option>');
+    $('#fvMapOrder').html('<option value="">Select Order</option>');
+    $('#verifyTextarea').val('');
 
-    });
-    let formdata = {
-        fileid: selected_fir,
-        metadata: JSON.stringify(metadatavalueArray)
-    }
-    pushtoSrever(formdata, "/service/updatemetadataByFile.ser", "POST", function (node) {
-        toastr.success('Data Update successfully!');
-        $('#viewmeatadata').modal('hide');
-        //getBatches();
-    })
+    // embedded full case filing form (auto-loads this FIR in edit mode)
+    $('#caseFrameSpinner').show();
+    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1');
+
+    $('.batchsection').hide(300);
+    $('.filesection').show(300);
+    window.scrollTo(0, 0);
+
+    loadDocuments(FV.selectedFir);
 }
-function viewMetadataByFile() {
-    if (selected_fir == "") {
-        toastr.error("Select one file !");
+
+$('#caseFrame').on('load', function () {
+    if ($('#caseFrame').attr('src')) $('#caseFrameSpinner').hide();
+});
+
+function closefile() {
+    if (confirm('Close this file and go back to the list?')) {
+        resetverify();
+    }
+}
+
+function resetverify() {
+    FV.selectedFir = null;
+    FV.selectedCrn = null;
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
+    $('#verifyTextarea').val('');
+    $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
+    $('#mapBar').css('display', 'none');
+    $('#pdfPlaceholder').show();
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
+    $('#docList').html('');
+    $('#caseFrame').attr('src', '');
+    $('.filesection').hide(300);
+    $('.batchsection').show(300);
+    findfirs($('#batches').val());
+   
+}
+
+function toggleExpand() {
+    var $pdf = $('#pdfcol');
+    var $case = $('#casecol');
+    if ($pdf.hasClass('col-lg-6')) {
+        $pdf.removeClass('col-lg-6').addClass('col-lg-8');
+        $case.removeClass('col-lg-6').addClass('col-lg-4');
+        $('.changeicon').removeClass('fa-expand').addClass('fa-compress');
     } else {
-        pushtoSrever(null, "/getmetadatabffile.dwf?fileid=" + selected_fir, "GET", function (node) {
-            $('#viewmeatadata').modal('show');
-
-            let data = node.data;
-            //let data = [1, 2, 3];
-            $('#casedetailstable').html("");
-            for (let i = 0; i < data.length; i += 2) {
-                // Create a new table row
-                let row = $('<tr></tr>');
-
-                var id = data[i].metadatum.entityname.replaceAll('.', '_');
-                row.append('<td><b>' + data[i].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i].metadatum.id + '" value="' + data[i].value + '"  id = "' + id + '" ></td>');
-
-                // Check if there's a next element to avoid undefined
-                if (data[i + 1] !== undefined) {
-                    var id = data[i + 1].metadatum.entityname.replaceAll('.', '_');
-                    row.append('<td><b>' + data[i + 1].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i + 1].metadatum.id + '" value="' + data[i + 1].value + '"  id = "' + id + '" ></td>');
-
-                }
-
-                // Append the row to the table
-                $('#casedetailstable').append(row);
-            }
-            $('#casedetailstable').append('<tr><td><b class="h5">Reject Remarks</b></td><td><textarea class="form-control" id="rejectmetadata" placeholder="Enter Remarks " rows="5"     spellcheck = "false" ></textarea ></td></tr>')
-
-        })
+        $pdf.removeClass('col-lg-8').addClass('col-lg-6');
+        $case.removeClass('col-lg-4').addClass('col-lg-6');
+        $('.changeicon').removeClass('fa-compress').addClass('fa-expand');
     }
 }
-function getpdf(id) {
 
-    document.getElementById("pdfiream").src = "/getpdf.dwf?id=" + id;
+/* ---------------- documents / pdf ---------------- */
+
+function fvEscape(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/"/g, '&quot;');
 }
-jQuery(document).ready(function () {
-    // getDigitizationCenter();
-    $(document).on('click', '.ckhform', function () {
 
-        if ($(this).is(':checked')) {
-            $(this).attr('value', 'true');
-        } else {
-            $(this).attr('value', 'false');
-        }
-
-
+function loadDocuments(firId) {
+    $('#docList').html('<div class="text-muted font-weight-bold p-3">Loading...</div>');
+    pushtoServer(null, '/getdocumentclassficationByfir.dwf?fir=' + firId, 'GET', function (node) {
+        var docs = node.data || [];
+        docs.sort(function (a, b) { return a.id - b.id; });
+        var seen = {};
+        var html = '';
+        docs.forEach(function (d) {
+            if (!d.ocrpdfpath || seen[d.ocrpdfpath]) return;
+            seen[d.ocrpdfpath] = true;
+            var parts = String(d.ocrpdfpath).split(/[\\/]/);
+           // var name = parts[parts.length - 1];
+           var name=d.documenttypename;
+            html += '<a href="javascript:;" class="btn btn-sm btn-outline-secondary font-weight-bold fv-doc" ' +
+                'data-id="' + d.id + '" data-name="' + fvEscape(name) + '" ' +
+                'data-path="' + fvEscape(d.ocrpdfpath) + '" ' +
+                'data-date="' + fvEscape(d.documentdate) + '" ' +
+                'data-desc="' + fvEscape(d.documentdesc) + '" ' +
+                'data-remark="' + fvEscape(d.documentremark) + '">' +
+                '<i class="far fa-file-pdf mr-1"></i>' + name +
+                '</a>';
+        });
+        if (!html) html = '<span class="text-muted font-weight-bold">No documents</span>';
+        $('#docList').html(html);
+        markMappedDocs();
     });
-    $("#kt_tree_1").jstree({
-        "core": {
-            "themes": {
-                "responsive": false
-            },
-            // so that create works
-            "check_callback": false,
-            "data": [],
-        },
-        "types": {
-            "default": {
-                "icon": "fa fa-folder text-primary"
-            },
-            "file": {
-                "icon": "fa fa-file  text-primary"
+    refreshCaseRefs();
+}
+
+$(document).on('click', '.fv-doc', function () {
+    $('.fv-doc').removeClass('fv-active');
+    $(this).addClass('fv-active');
+    FV.selectedDocId = parseInt($(this).data('id'), 10);
+    FV.selectedDocPath = String($(this).attr('data-path') || '');
+    var iaMap = fvMappedEntry('ia');
+    var ordMap = fvMappedEntry('order');
+    $('#fvMapIa').val(iaMap ? String(iaMap.id) : '');
+    $('#fvMapOrder').val(ordMap ? String(ordMap.id) : '');
+    syncMapUi();
+    $('#mapBar').css('display', 'flex');
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
+    $('#docMetaDate').val($(this).attr('data-date') || '');
+    $('#docMetaDesc').val($(this).attr('data-desc') || '');
+    $('#docMetaRemark').val($(this).attr('data-remark') || '');
+    $('#docMeta').css('display', 'flex');
+    $('#pdfPlaceholder').hide();
+    $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));
+});
+
+/* ---------------- map pdf to IA / Order ---------------- */
+
+function normPath(p) {
+    return String(p || '').replace(/\\/g, '/').toLowerCase();
+}
+
+function refreshCaseRefs() {
+    if (!FV.selectedFir) return;
+    pushtoServer(null, '/api/digitization/digitizedEntryByFir?firId=' + FV.selectedFir, 'GET', function (node) {
+        var cd = (node && node.data && node.data.caseDetails) || {};
+        FV.iaList = cd.ia_filings || [];
+        FV.orderList = cd.order_details || [];
+
+        var iaOpt = '<option value="">Select IA</option>';
+        FV.iaList.forEach(function (r) {
+            var lbl = 'IA ' + (r.iaNumber || '?') + '/' + (r.iaYear || '');
+            if (r.documentPath) lbl += ' (mapped)';
+            iaOpt += '<option value="' + r.id + '">' + lbl + '</option>';
+        });
+        var ordOpt = '<option value="">Select Order</option>';
+        FV.orderList.forEach(function (r) {
+            var lbl = 'Order ' + (r.orderDate || ('#' + r.id)) + (r.iaNumber ? ' / IA ' + r.iaNumber : '');
+            if (r.documentPath) lbl += ' (mapped)';
+            ordOpt += '<option value="' + r.id + '">' + lbl + '</option>';
+        });
+        var prevIa = $('#fvMapIa').val();
+        var prevOrd = $('#fvMapOrder').val();
+        $('#fvMapIa').html(iaOpt);
+        $('#fvMapOrder').html(ordOpt);
+        if (FV.pendingSelect) {
+            $(FV.pendingSelect.type === 'order' ? '#fvMapOrder' : '#fvMapIa').val(FV.pendingSelect.id);
+            FV.pendingSelect = null;
+        } else {
+            if (prevIa && $('#fvMapIa option[value="' + prevIa + '"]').length) $('#fvMapIa').val(prevIa);
+            if (prevOrd && $('#fvMapOrder option[value="' + prevOrd + '"]').length) $('#fvMapOrder').val(prevOrd);
+        }
+        var iaMap = fvMappedEntry('ia');
+        var ordMap = fvMappedEntry('order');
+        if (iaMap && !$('#fvMapIa').val()) $('#fvMapIa').val(iaMap.id);
+        if (ordMap && !$('#fvMapOrder').val()) $('#fvMapOrder').val(ordMap.id);
+        markMappedDocs();
+        syncMapUi();
+    });
+}
+
+function fvMappedEntry(type) {
+    var p = normPath(FV.selectedDocPath);
+    if (!p) return null;
+    var list = (type === 'order') ? FV.orderList : FV.iaList;
+    var hit = null;
+    list.forEach(function (r) {
+        if (normPath(r.documentPath) === p) hit = r;
+    });
+    return hit;
+}
+
+function syncMapUi() {
+    ['ia', 'order'].forEach(function (type) {
+        var mapped = fvMappedEntry(type);
+        var selId = parseInt($(type === 'order' ? '#fvMapOrder' : '#fvMapIa').val(), 10);
+        var $btn = $(type === 'order' ? '#fvMapOrderBtn' : '#fvMapIaBtn');
+        if (mapped && selId === mapped.id) {
+            $btn.data('mode', 'unmap')
+                .removeClass('btn-primary').addClass('btn-light-danger')
+                .html('<i class="fas fa-unlink mr-1"></i>Unmap');
+        } else {
+            $btn.data('mode', 'map')
+                .removeClass('btn-light-danger').addClass('btn-primary')
+                .html('Map ' + (type === 'order' ? 'Order' : 'IA'));
+        }
+    });
+}
+
+function mapBtnAction(type) {
+    var mode = $(type === 'order' ? '#fvMapOrderBtn' : '#fvMapIaBtn').data('mode');
+    if (mode === 'unmap') { unmapSelectedDoc(); } else { mapSelectedDoc(type); }
+}
+
+function markMappedDocs() {
+    var mapped = {};
+    FV.iaList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'IA ' + (r.iaNumber || '') + '/' + (r.iaYear || '');
+    });
+    FV.orderList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'Order ' + (r.orderDate || '');
+    });
+    $('.fv-doc').each(function () {
+        var lbl = mapped[normPath($(this).attr('data-path'))];
+        $(this).find('.fv-map-tag').remove();
+        $(this).toggleClass('fv-mapped', !!lbl);
+        if (lbl) {
+            $(this).attr('title', 'Mapped to ' + lbl)
+                .append(' <span class="fv-map-tag label label-sm label-inline label-light-success font-weight-bolder">' + lbl + '</span>');
+        } else {
+            $(this).removeAttr('title');
+        }
+    });
+}
+
+function syncIframeListItem(type, entryId, path) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        if (!w || !w.LISTS) return;
+        ['iaFilings', 'orderDetails'].forEach(function (key) {
+            w.LISTS[key].getItems().forEach(function (it) {
+                if (normPath(it.documentPath) === normPath(path) && parseInt(it.id, 10) !== entryId) {
+                    it.documentPath = null;
+                }
+            });
+        });
+        w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'].getItems().forEach(function (it) {
+            if (parseInt(it.id, 10) === entryId) it.documentPath = path;
+        });
+    } catch (e) { /* iframe not ready */ }
+}
+
+function syncIframeUnmap(path) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        if (!w || !w.LISTS) return;
+        ['iaFilings', 'orderDetails'].forEach(function (key) {
+            w.LISTS[key].getItems().forEach(function (it) {
+                if (normPath(it.documentPath) === normPath(path)) it.documentPath = null;
+            });
+        });
+    } catch (e) { /* iframe not ready */ }
+}
+
+function mapSelectedDoc(type) {
+    var isOrder = (type === 'order');
+    var entryId = parseInt($(isOrder ? '#fvMapOrder' : '#fvMapIa').val(), 10);
+    var label = isOrder ? 'Order' : 'IA';
+    if (!FV.selectedDocPath) { toastr.warning('Select a document first.'); return; }
+    if (!entryId) { toastr.warning('Select an ' + label + ' from the list first.'); return; }
+    if (!confirm('Map this PDF to the selected ' + label + '? Any existing mapping of this PDF will be moved.')) return;
+    $.blockUI();
+    pushtoServer({ type: type, id: entryId, path: FV.selectedDocPath }, '/verifyMapPdf.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('PDF mapped to ' + label + ' successfully.');
+            syncIframeListItem(type, entryId, FV.selectedDocPath);
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Mapping failed. Please try again.');
+        }
+    });
+}
+
+function unmapSelectedDoc() {
+    if (!FV.selectedDocPath) { toastr.warning('Select a document first.'); return; }
+    var p = normPath(FV.selectedDocPath);
+    var isMapped = FV.iaList.concat(FV.orderList).some(function (r) {
+        return normPath(r.documentPath) === p;
+    });
+    if (!isMapped) { toastr.info('This document is not mapped to any IA or Order.'); return; }
+    if (!confirm('Remove the IA / Order mapping for this PDF?')) return;
+    $.blockUI();
+    pushtoServer({ fir: FV.selectedFir, path: FV.selectedDocPath }, '/verifyUnmapPdf.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('Mapping removed.');
+            syncIframeUnmap(FV.selectedDocPath);
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Unmap failed. Please try again.');
+        }
+    });
+}
+
+function syncIframeNewItem(type, row) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        var list = w && w.LISTS && w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'];
+        if (!list || !row || !row.id) return;
+        var items = list.getItems();
+        if (!items.some(function (it) { return parseInt(it.id, 10) === parseInt(row.id, 10); })) {
+            items.push(row);
+            list.setItems(items, true);
+        }
+    } catch (e) { /* iframe not ready */ }
+}
+
+var FV_IA_FIELDS = ['iaType', 'iaNumber', 'iaYear', 'iaNature', 'filingDate', 'applicantName',
+    'applicantAdvocate', 'respondentName', 'respondentAdvocate', 'status', 'dateOfDecision', 'nextdate'];
+var FV_IA_NUM = ['iaType', 'iaYear', 'iaNature', 'applicantAdvocate', 'respondentAdvocate'];
+var FV_ORDER_FIELDS = ['documentType', 'orderDate', 'judgeCode', 'jocode', 'iaNumber', 'iaType'];
+var FV_ORDER_NUM = ['documentType', 'judgeCode', 'iaType'];
+
+function collectFvModal(prefix, fields, numFields) {
+    var item = {};
+    fields.forEach(function (f) {
+        var el = document.getElementById(prefix + f);
+        if (!el) return;
+        var v = el.value;
+        item[f] = (v === '') ? null : (numFields.indexOf(f) !== -1 ? parseInt(v, 10) : v);
+    });
+    return item;
+}
+
+function openNewEntry(type) {
+    if (!FV.selectedFir) { toastr.warning('Open a file first.'); return; }
+    var $modal = $(type === 'order' ? '#fvOrderModal' : '#fvIaModal');
+    $modal.find('input').val('');
+    $modal.find('select').val('');
+    $modal.modal('show');
+}
+
+function fvSaveNewEntry(type) {
+    var isOrder = (type === 'order');
+    var fields = collectFvModal(isOrder ? 'fv_ord_' : 'fv_ia_', isOrder ? FV_ORDER_FIELDS : FV_IA_FIELDS, isOrder ? FV_ORDER_NUM : FV_IA_NUM);
+    if (!isOrder && !fields.iaNumber) { toastr.warning('IA Number is required.'); return; }
+    if (isOrder && !fields.orderDate) { toastr.warning('Order Date is required.'); return; }
+    $.blockUI();
+    pushtoServer({ type: type, fir: FV.selectedFir, fields: JSON.stringify(fields) }, '/verifyCreateEntry.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status && node.data) {
+            toastr.success((isOrder ? 'Order' : 'IA') + ' created successfully.');
+            $(isOrder ? '#fvOrderModal' : '#fvIaModal').modal('hide');
+            syncIframeNewItem(type, node.data);
+            FV.pendingSelect = { type: type, id: node.data.id };
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Create failed. Please try again.');
+        }
+    });
+}
+
+function fvInitMasterSelects() {
+    $('#fvIaModal select[data-master], #fvOrderModal select[data-master]').each(function () {
+        var $el = $(this);
+        pushtoServer(null, '/api/digitization/master/' + $el.data('master'), 'GET', function (res) {
+            var valKey = $el.data('val');
+            var labelTpl = String($el.data('label'));
+            $el.empty().append('<option value="">Select</option>');
+            if (res && res.success && res.data) {
+                res.data.forEach(function (row) {
+                    var label = labelTpl.replace(/\{([^}]+)\}/g, function (m, k) { return row[k] !== undefined ? row[k] : ''; });
+                    $el.append('<option value="' + row[valKey] + '">' + label + '</option>');
+                });
             }
-        },
-        "state": {
-            "key": "demo2"
-        },
-        "plugins": ["contextmenu", "state", "types"]
+        });
     });
-    $('#kt_tree_1').on("select_node.jstree", function (e, data) {
-        if (data.node.id.indexOf('parent') != -1 || data.node.id.indexOf('child') != -1) {
-            console.log(data.node.id + " found");
-        } else {
-            getpdf(data.node.id);
-        }
+}
 
+function navigateDoc(dir) {
+    var $docs = $('#docList .fv-doc');
+    if (!$docs.length) return;
+    var idx = $docs.index($docs.filter('.fv-active'));
+    var next = idx + dir;
+    if (idx === -1) next = (dir > 0) ? 0 : $docs.length - 1;
+    if (next < 0 || next >= $docs.length) {
+        toastr.info(dir > 0 ? 'No more documents.' : 'This is the first document.');
+        return;
+    }
+    $docs.eq(next).trigger('click');
+}
+
+function saveDocMeta() {
+    if (!FV.selectedDocId) { toastr.warning('Select a document first.'); return; }
+    var body = {
+        documentdate: $('#docMetaDate').val().trim(),
+        documentdesc: $('#docMetaDesc').val().trim(),
+        documentremark: $('#docMetaRemark').val().trim()
+    };
+    $.blockUI();
+    pushtoServer(body, '/updatedocumentclassficationByfir.dwf?id=' + FV.selectedDocId, 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('Document details saved.');
+            $('.fv-doc.fv-active')
+                .attr('data-date', body.documentdate)
+                .attr('data-desc', body.documentdesc)
+                .attr('data-remark', body.documentremark);
+        } else {
+            toastr.error('Save failed. Please try again.');
+        }
     });
-    $('#batches').select2({
-        placeholder: "Select Batches ",
-        allowClear: true
-    })
+}
+
+/* ---------------- approve / reject ---------------- */
+
+function approveFile() {
+    if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    if (!confirm('Save case detail changes and approve this file now?')) return;
+    var frame = document.getElementById('caseFrame');
+    var w = frame && frame.contentWindow;
+    if (w && w.currentCaseId && typeof w.saveAll === 'function') {
+        $.blockUI();
+        try {
+            w.saveAll(function (ok) {
+                if (ok) {
+                    doApproveFile();
+                } else {
+                    $.unblockUI();
+                    toastr.error('Case details save failed — file not approved.');
+                }
+            });
+            return;
+        } catch (e) {
+            $.unblockUI();
+        }
+    }
+    doApproveFile();
+}
+
+function doApproveFile() {
+    $.blockUI();
+    pushtoServer({ selectedfile: [FV.selectedFir], imagestatus: 6 }, '/bulkverifyfile.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node.status) {
+            toastr.success('File verified successfully!');
+            resetverify();
+        } else {
+            toastr.error('Approve failed. Please try again.');
+        }
+    });
+}
+
+function rejectFile(imagestatus) {
+    if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    var remarks = $('#verifyTextarea').val().trim();
+    if (!remarks.length) { toastr.error('Reject remarks required!'); return; }
+    if (!confirm('Are you sure you want to Reject this file?')) return;
+    $.blockUI();
+    pushtoServer({ selectedfile: [FV.selectedFir], imagestatus: imagestatus, Verifyremarks: remarks }, '/bulkverifyfile.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node.status) {
+            $('#rejectModal').modal('hide');
+            toastr.success('File rejected successfully!');
+            resetverify();
+        } else {
+            toastr.error('Reject failed. Please try again.');
+        }
+    });
+}
+
+/* ---------------- init ---------------- */
+
+$(document).ready(function () {
+    // collapse the left menu on this page
+    $('body').addClass('aside-minimize').removeClass('aside-minimize-hover');
+    $('#kt_aside_toggle').addClass('active');
+    try {
+        var _at = KTLayoutAsideToggle.getToggle();
+        if (_at) _at.state = 'on';
+    } catch (e) { }
+
+    $('#batches').select2({ placeholder: 'Select Batch', allowClear: true });
+    $('#batches').on('change', function () { findfirs($(this).val()); });
+    $(document).on('click', '.fv-open', function () { openFile($(this)); });
+    $(document).on('click', '#fvPrevRemarksBtn', function () { $('.remakrsshowbody').toggle(200); });
+    $(document).on('change', '#fvMapIa, #fvMapOrder', syncMapUi);
+    fvInitMasterSelects();
     getBatches();
 });

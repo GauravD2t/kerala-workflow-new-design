@@ -302,7 +302,7 @@ DocumentverifyController.prototype.findFIrsbybathcForFirstTime = function (req, 
 DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
     var deletequery = "";
     if (req.body.imagestatus == 6) {
-        deletequery = "update firs set verify_at='" + moment().format() + "',verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
 
             if (data != null) {
@@ -312,7 +312,7 @@ DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
             }
         })
     } else {
-        deletequery = "update firs set readyforverify=false,verify_at='" + moment().format() + "',verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",verifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set readyforverify=false,verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",verifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
 
         httpService.get("/firs/" + letfldid, req.body, function (node1) {
