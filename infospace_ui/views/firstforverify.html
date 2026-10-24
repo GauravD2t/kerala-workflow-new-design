@@ -194,6 +194,12 @@
                             <i class="far fa-file-pdf text-primary mr-2"></i>Document Preview
                         </h3>
                         <div class="card-toolbar">
+                            <button type="button" class="btn btn-sm btn-icon btn-light-primary mr-1" title="Previous PDF" onclick="navigateDoc(-1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-icon btn-light-primary mr-1" title="Next PDF" onclick="navigateDoc(1)">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                             <button type="button" class="btn btn-sm btn-icon btn-light-primary" title="Expand / Reset" onclick="toggleExpand()">
                                 <i class="fas fa-expand changeicon"></i>
                             </button>

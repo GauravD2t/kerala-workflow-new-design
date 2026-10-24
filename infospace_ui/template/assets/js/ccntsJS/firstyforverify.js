@@ -469,6 +469,19 @@ function fvInitMasterSelects() {
     });
 }
 
+function navigateDoc(dir) {
+    var $docs = $('#docList .fv-doc');
+    if (!$docs.length) return;
+    var idx = $docs.index($docs.filter('.fv-active'));
+    var next = idx + dir;
+    if (idx === -1) next = (dir > 0) ? 0 : $docs.length - 1;
+    if (next < 0 || next >= $docs.length) {
+        toastr.info(dir > 0 ? 'No more documents.' : 'This is the first document.');
+        return;
+    }
+    $docs.eq(next).trigger('click');
+}
+
 function saveDocMeta() {
     if (!FV.selectedDocId) { toastr.warning('Select a document first.'); return; }
     var body = {
