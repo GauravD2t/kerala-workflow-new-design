@@ -47,7 +47,7 @@ ReadyForverifyController.prototype.bulkReadyForVerify = async function (req, res
 if(req.session.user.user.id==89 || req.session.user.user.id=='89'){
             res.send({ status: false });
 }else{
-      var deletequery = "update firs set imagestatus=" + req.body.imagestatus + ",first_verify_at='" + moment().format() + "',first_verify_by=" + req.session.user.user.id + ",readyforverify=true where id in (" + req.body.selectedfile.toString() + ")";
+      var deletequery = "update firs set imagestatus=" + req.body.imagestatus + ",first_verify_at=NOW(),first_verify_by=" + req.session.user.user.id + ",readyforverify=true where id in (" + req.body.selectedfile.toString() + ")";
     console.log(deletequery)
     CIPAService.UpdateexecuteSQL(deletequery, function (data) {
         if (data != null) {
@@ -62,7 +62,7 @@ if(req.session.user.user.id==89 || req.session.user.user.id=='89'){
 }
 ReadyForverifyController.prototype.bulkReadyForVerifyReject = async function (req, res) {
 
-    var deletequery = "update firs set first_verify_at='" + moment().format() + "',first_verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",readyforverify=false,verifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+    var deletequery = "update firs set first_verify_at=NOW(),first_verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",readyforverify=false,verifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
    
     letfldid = req.body.selectedfile.toString().split(",")[0];
     
