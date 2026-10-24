@@ -2,7 +2,11 @@
 
 var FV = {
     selectedFir: null,
-    selectedCrn: null
+    selectedCrn: null,
+    selectedDocId: null,
+    selectedDocPath: null,
+    iaList: [],
+    orderList: []
 };
 
 function pushtoServer(pushObject, url, method, callback) {
@@ -78,6 +82,10 @@ function findfirs(batch) {
 function openFile($btn) {
     FV.selectedFir = parseInt($btn.data('id'), 10);
     FV.selectedCrn = String($btn.data('crn') || '');
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
 
     $('#firTable tbody tr').removeClass('table-active');
     $btn.closest('tr').addClass('table-active');
@@ -101,6 +109,9 @@ function openFile($btn) {
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
     $('#pdfiream').hide().attr('src', '');
     $('#docMeta').hide();
+    $('#mapBar').css('display', 'none');
+    $('#fvMapIa').html('<option value="">Select IA</option>');
+    $('#fvMapOrder').html('<option value="">Select Order</option>');
     $('#verifyTextarea').val('');
 
     // embedded full case filing form (auto-loads this FIR in edit mode)
@@ -127,9 +138,14 @@ function closefile() {
 function resetverify() {
     FV.selectedFir = null;
     FV.selectedCrn = null;
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
     $('#verifyTextarea').val('');
     $('#pdfiream').hide().attr('src', '');
     $('#docMeta').hide();
+    $('#mapBar').css('display', 'none');
     $('#pdfPlaceholder').show();
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
     $('#docList').html('');
@@ -175,6 +191,7 @@ function loadDocuments(firId) {
            var name=d.documenttypename;
             html += '<a href="javascript:;" class="btn btn-sm btn-outline-secondary font-weight-bold fv-doc" ' +
                 'data-id="' + d.id + '" data-name="' + fvEscape(name) + '" ' +
+                'data-path="' + fvEscape(d.ocrpdfpath) + '" ' +
                 'data-date="' + fvEscape(d.documentdate) + '" ' +
                 'data-desc="' + fvEscape(d.documentdesc) + '" ' +
                 'data-remark="' + fvEscape(d.documentremark) + '">' +
@@ -183,12 +200,17 @@ function loadDocuments(firId) {
         });
         if (!html) html = '<span class="text-muted font-weight-bold">No documents</span>';
         $('#docList').html(html);
+        markMappedDocs();
     });
+    refreshCaseRefs();
 }
 
 $(document).on('click', '.fv-doc', function () {
     $('.fv-doc').removeClass('fv-active');
     $(this).addClass('fv-active');
+    FV.selectedDocId = parseInt($(this).data('id'), 10);
+    FV.selectedDocPath = String($(this).attr('data-path') || '');
+    $('#mapBar').css('display', 'flex');
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
     $('#docMetaDate').text($(this).attr('data-date') || '-');
     $('#docMetaDesc').text($(this).attr('data-desc') || '-');
@@ -197,6 +219,106 @@ $(document).on('click', '.fv-doc', function () {
     $('#pdfPlaceholder').hide();
     $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));
 });
+
+/* ---------------- map pdf to IA / Order ---------------- */
+
+function normPath(p) {
+    return String(p || '').replace(/\\/g, '/').toLowerCase();
+}
+
+function refreshCaseRefs() {
+    if (!FV.selectedFir) return;
+    pushtoServer(null, '/api/digitization/digitizedEntryByFir?firId=' + FV.selectedFir, 'GET', function (node) {
+        var cd = (node && node.data && node.data.caseDetails) || {};
+        FV.iaList = cd.ia_filings || [];
+        FV.orderList = cd.order_details || [];
+
+        var iaOpt = '<option value="">Select IA</option>';
+        FV.iaList.forEach(function (r) {
+            var lbl = 'IA ' + (r.iaNumber || '?') + '/' + (r.iaYear || '');
+            if (r.documentPath) lbl += ' (mapped)';
+            iaOpt += '<option value="' + r.id + '">' + lbl + '</option>';
+        });
+        var ordOpt = '<option value="">Select Order</option>';
+        FV.orderList.forEach(function (r) {
+            var lbl = 'Order ' + (r.orderDate || ('#' + r.id)) + (r.iaNumber ? ' / IA ' + r.iaNumber : '');
+            if (r.documentPath) lbl += ' (mapped)';
+            ordOpt += '<option value="' + r.id + '">' + lbl + '</option>';
+        });
+        $('#fvMapIa').html(iaOpt);
+        $('#fvMapOrder').html(ordOpt);
+        markMappedDocs();
+    });
+}
+
+function markMappedDocs() {
+    var mapped = {};
+    FV.iaList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'IA ' + (r.iaNumber || '') + '/' + (r.iaYear || '');
+    });
+    FV.orderList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'Order ' + (r.orderDate || '');
+    });
+    $('.fv-doc').each(function () {
+        var lbl = mapped[normPath($(this).attr('data-path'))];
+        $(this).find('.fv-map-tag').remove();
+        $(this).toggleClass('fv-mapped', !!lbl);
+        if (lbl) {
+            $(this).attr('title', 'Mapped to ' + lbl)
+                .append(' <span class="fv-map-tag label label-sm label-inline label-light-success font-weight-bolder">' + lbl + '</span>');
+        } else {
+            $(this).removeAttr('title');
+        }
+    });
+}
+
+function syncIframeListItem(type, entryId, path) {
+    try {
+        var w = document.getElementById('caseFrame').contentWindow;
+        var list = w && w.LISTS && w.LISTS[type === 'order' ? 'orderDetails' : 'iaFilings'];
+        if (!list) return;
+        list.getItems().forEach(function (it) {
+            if (parseInt(it.id, 10) === entryId) it.documentPath = path;
+        });
+    } catch (e) { /* iframe not ready */ }
+}
+
+function mapSelectedDoc(type) {
+    var isOrder = (type === 'order');
+    var entryId = parseInt($(isOrder ? '#fvMapOrder' : '#fvMapIa').val(), 10);
+    var label = isOrder ? 'Order' : 'IA';
+    if (!FV.selectedDocPath) { toastr.warning('Select a document first.'); return; }
+    if (!entryId) { toastr.warning('Select an ' + label + ' from the list first.'); return; }
+    if (!confirm('Map this PDF to the selected ' + label + '?')) return;
+    $.blockUI();
+    pushtoServer({ type: type, id: entryId, path: FV.selectedDocPath }, '/verifyMapPdf.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('PDF mapped to ' + label + ' successfully.');
+            syncIframeListItem(type, entryId, FV.selectedDocPath);
+            refreshCaseRefs();
+        } else {
+            toastr.error((node && node.error) || 'Mapping failed. Please try again.');
+        }
+    });
+}
+
+function openNewEntry(type) {
+    var isOrder = (type === 'order');
+    var frame = document.getElementById('caseFrame');
+    var w = frame && frame.contentWindow;
+    if (!w || !w.LISTS) {
+        toastr.warning('Case details form is still loading. Please wait and try again.');
+        return;
+    }
+    if (!w.currentCaseId) {
+        toastr.warning('Case details are not saved yet. Save the case first, then add ' + (isOrder ? 'an Order' : 'an IA') + '.');
+        return;
+    }
+    w.$(isOrder ? 'a[href="#cf_tab_orders"]' : 'a[href="#cf_tab_iafiling"]').tab('show');
+    (isOrder ? w.LISTS.orderDetails : w.LISTS.iaFilings).open();
+    toastr.info('Fill the ' + (isOrder ? 'Order' : 'IA') + ' details, Save the entry and click Update. The list will refresh automatically.');
+}
 
 /* ---------------- approve / reject ---------------- */
 

@@ -107,6 +107,23 @@ ReadyForverifyController.prototype.updateCaseDetail = async function (req, res) 
     }
 };
 
+ReadyForverifyController.prototype.mapPdfToEntry = async function (req, res) {
+    try {
+        var type = req.body.type;
+        var id = parseInt(req.body.id, 10);
+        var path = req.body.path;
+        if (!id || !path) return res.send({ status: false, error: 'id and path are required' });
+        if (type !== 'ia' && type !== 'order') return res.send({ status: false, error: 'Invalid type' });
+        var model = (type === 'order') ? db.OrderDetail : db.IaFiling;
+        var result = await model.update({ documentPath: path }, { where: { id: id } });
+        if (!result[0]) return res.send({ status: false, error: 'Entry not found' });
+        res.send({ status: true });
+    } catch (err) {
+        console.error('mapPdfToEntry error:', err);
+        res.send({ status: false, error: err.message });
+    }
+};
+
 ////////////////////// REady for UPLOAD
 
 

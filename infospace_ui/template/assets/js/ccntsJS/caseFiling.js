@@ -1008,6 +1008,9 @@ function doSave(payload) {
                 toastr.success(currentCaseId ? 'Case updated successfully.' : 'Case saved successfully.');
                 if (cfEmbed) {
                     updateSaveButtons(true);
+                    if (window.parent && typeof window.parent.refreshCaseRefs === 'function') {
+                        try { window.parent.refreshCaseRefs(); } catch (e) {}
+                    }
                 } else {
                     cfLoadBatchFirs();
                     clearAll(true);
