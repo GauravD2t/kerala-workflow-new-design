@@ -212,9 +212,9 @@ $(document).on('click', '.fv-doc', function () {
     FV.selectedDocPath = String($(this).attr('data-path') || '');
     $('#mapBar').css('display', 'flex');
     $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
-    $('#docMetaDate').text($(this).attr('data-date') || '-');
-    $('#docMetaDesc').text($(this).attr('data-desc') || '-');
-    $('#docMetaRemark').text($(this).attr('data-remark') || '-');
+    $('#docMetaDate').val($(this).attr('data-date') || '');
+    $('#docMetaDesc').val($(this).attr('data-desc') || '');
+    $('#docMetaRemark').val($(this).attr('data-remark') || '');
     $('#docMeta').css('display', 'flex');
     $('#pdfPlaceholder').hide();
     $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));
@@ -318,6 +318,28 @@ function openNewEntry(type) {
     w.$(isOrder ? 'a[href="#cf_tab_orders"]' : 'a[href="#cf_tab_iafiling"]').tab('show');
     (isOrder ? w.LISTS.orderDetails : w.LISTS.iaFilings).open();
     toastr.info('Fill the ' + (isOrder ? 'Order' : 'IA') + ' details, Save the entry and click Update. The list will refresh automatically.');
+}
+
+function saveDocMeta() {
+    if (!FV.selectedDocId) { toastr.warning('Select a document first.'); return; }
+    var body = {
+        documentdate: $('#docMetaDate').val().trim(),
+        documentdesc: $('#docMetaDesc').val().trim(),
+        documentremark: $('#docMetaRemark').val().trim()
+    };
+    $.blockUI();
+    pushtoServer(body, '/updatedocumentclassficationByfir.dwf?id=' + FV.selectedDocId, 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('Document details saved.');
+            $('.fv-doc.fv-active')
+                .attr('data-date', body.documentdate)
+                .attr('data-desc', body.documentdesc)
+                .attr('data-remark', body.documentremark);
+        } else {
+            toastr.error('Save failed. Please try again.');
+        }
+    });
 }
 
 /* ---------------- approve / reject ---------------- */

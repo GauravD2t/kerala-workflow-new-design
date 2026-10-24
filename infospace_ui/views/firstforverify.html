@@ -161,18 +161,21 @@
                             </button>
                         </div>
                         <div id="docMeta" class="d-flex flex-wrap align-items-center mb-2 py-2 px-3 bg-light rounded" style="display:none;">
-                            <span class="mr-5 mb-1 text-dark font-weight-bolder">
-                                <i class="far fa-calendar-alt text-primary mr-1"></i><span class="text-muted font-weight-bold">Date:</span>
-                                <span id="docMetaDate"></span>
+                            <span class="mr-4 mb-1 text-dark font-weight-bolder d-flex align-items-center">
+                                <i class="far fa-calendar-alt text-primary mr-1"></i><span class="text-muted font-weight-bold mr-1">Date:</span>
+                                <input type="text" class="form-control form-control-sm" id="docMetaDate" style="width:110px;" placeholder="DD/MM/YYYY">
                             </span>
-                            <span class="mr-5 mb-1 text-dark font-weight-bolder">
-                                <i class="far fa-file-alt text-success mr-1"></i><span class="text-muted font-weight-bold">Description:</span>
-                                <span id="docMetaDesc"></span>
+                            <span class="mr-4 mb-1 text-dark font-weight-bolder d-flex align-items-center" style="min-width:220px;">
+                                <i class="far fa-file-alt text-success mr-1"></i><span class="text-muted font-weight-bold mr-1">Desc:</span>
+                                <input type="text" class="form-control form-control-sm" id="docMetaDesc" placeholder="Description">
                             </span>
-                            <span class="mr-5 mb-1 text-dark font-weight-bolder">
-                                <i class="far fa-comment-dots text-warning mr-1"></i><span class="text-muted font-weight-bold">Remark:</span>
-                                <span id="docMetaRemark"></span>
+                            <span class="mr-3 mb-1 text-dark font-weight-bolder d-flex align-items-center" style="min-width:220px;">
+                                <i class="far fa-comment-dots text-warning mr-1"></i><span class="text-muted font-weight-bold mr-1">Remark:</span>
+                                <input type="text" class="form-control form-control-sm" id="docMetaRemark" placeholder="Remark">
                             </span>
+                            <button type="button" class="btn btn-sm btn-success font-weight-bold mb-1" onclick="saveDocMeta()">
+                                <i class="fas fa-save mr-1"></i>Save
+                            </button>
                         </div>
                         <div class="border rounded bg-light text-center" style="overflow:hidden;">
                             <div class="py-20 text-muted font-weight-bold" id="pdfPlaceholder">
