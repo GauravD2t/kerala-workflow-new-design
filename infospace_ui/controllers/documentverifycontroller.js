@@ -374,6 +374,8 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
                 lettostage = "Image QC";
             } else if (req.body.imagestatus == 2) {
                 lettostage = "Classfication";
+            }else if (req.body.imagestatus == 5) {
+                lettostage = "First Verify";
             }
             queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + firdata.classficationpagecount + ",'L2 Rejected','" + lettostage + "','" + req.body.Verifyremarks + "'," + firdata.pdfpagecount + "," + firdata.scanpagecount + "," + firdata.qcpagecount + "," + firdata.metadatapage + ")";
             console.log("queryinsert.............", queryinsert)
@@ -419,6 +421,8 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
                 lettostage = "Image QC";
             } else if (req.body.imagestatus == 2) {
                 lettostage = "Classfication";
+            }else if (req.body.imagestatus == 5) {
+                lettostage = "First Verify";
             }
             updatesign = "update classficationfiles set firstsign=false,secondsign=false where id in (select  cf.id from classficationfiles cf  where cf.issubchild=false  and (cf.ocrpdfpath is not null or cf.ocrpdfpath !='') and cf.fir in (" + req.body.selectedfile + ") UNION  select chd.id from classficationfiles per join classficationfiles chd on chd.parent=per.id and per.issubchild=true where  per.issubchild=true   and (chd.ocrpdfpath != '' or chd.ocrpdfpath is not null)  and  per.fir in (" + req.body.selectedfile + ") )";
             deletequery = "update firs set secondverify=false,readyforverify=false,thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",thirdverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
