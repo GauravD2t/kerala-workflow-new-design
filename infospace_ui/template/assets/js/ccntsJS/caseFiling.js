@@ -124,6 +124,7 @@ function loadSelect($el, params, done) {
             }
             if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
             reRenderLists();
+            renderSubjectChips();
             if (done) done();
         },
         error: function (err) { console.error('master load failed:', master, err); if (done) done(); }
