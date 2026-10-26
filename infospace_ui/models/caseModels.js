@@ -3,7 +3,7 @@ module.exports = function (sequelize, DataTypes) {
 
     models.CaseDetail = sequelize.define('case_detail', {
         cino: { type: DataTypes.STRING, allowNull: false },
-        efilno: { type: DataTypes.STRING, allowNull: false },
+        efilno: { type: DataTypes.STRING },
         dateOfEfiling: { type: DataTypes.DATEONLY },
         filNo: { type: DataTypes.INTEGER },
         filYear: { type: DataTypes.INTEGER },
