@@ -79,9 +79,9 @@ function findfirs(batch) {
 
 function buildPrevRemarks(f) {
     var parts = [];
-    if (f.verifyremarks) parts.push('L1 Verify: ' + f.verifyremarks);
-    if (f.secondverifyremarks) parts.push('L2 Verify: ' + f.secondverifyremarks);
-    if (f.thirdverifyremarks) parts.push('L3 Verify: ' + f.thirdverifyremarks);
+    if (f.verifyremarks) parts.push('L1 Remarks: ' + f.verifyremarks);
+    if (f.secondverifyremarks) parts.push('L2 Remarks: ' + f.secondverifyremarks);
+    if (f.thirdverifyremarks) parts.push('L3 Remarks: ' + f.thirdverifyremarks);
     return parts.join('\n');
 }
 

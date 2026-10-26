@@ -83,9 +83,9 @@ function findfirs(batch) {
 
 function buildPrevRemarks(f) {
     var parts = [];
-    if (f.verifyremarks) parts.push('L1 Verify: ' + f.verifyremarks);
-    if (f.secondverifyremarks) parts.push('L2 Verify: ' + f.secondverifyremarks);
-    if (f.thirdverifyremarks) parts.push('L3 Verify: ' + f.thirdverifyremarks);
+    if (f.verifyremarks) parts.push('L1 Remarks: ' + f.verifyremarks);
+    if (f.secondverifyremarks) parts.push('L2 Remarks: ' + f.secondverifyremarks);
+    if (f.thirdverifyremarks) parts.push('L3 Remarks: ' + f.thirdverifyremarks);
     return parts.join('\n');
 }
 
@@ -341,7 +341,7 @@ function rejectMetadataFile() {
     if (!remarks.length) { toastr.error('Reject remarks required!'); return; }
     if (!confirm('Reject this file back to Metadata stage?')) return;
     $.blockUI();
-    pushtoServer({ id: FV.selectedFir, verifyremarks: remarks, readyforverify: false, imagestatus: 5 }, '/rejectforMetadatasecondverify.dwf', 'POST', function (node) {
+    pushtoServer({ id: FV.selectedFir, secondverifyremarks: remarks, readyforverify: false, imagestatus: 5 }, '/rejectforMetadatasecondverify.dwf', 'POST', function (node) {
         $.unblockUI();
         if (node && node.status) {
             $('#rejectModal').modal('hide');
