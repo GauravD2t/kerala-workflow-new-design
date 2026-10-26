@@ -1,401 +1,372 @@
+/* Second Verification - batch > file > pdf + embedded case editor > approve/reject
+   No IA/Order mapping here — mapped docs only show their IA/Order badge. */
 
+var FV = {
+    selectedFir: null,
+    selectedCrn: null,
+    selectedDocId: null,
+    selectedDocPath: null,
+    iaList: [],
+    orderList: []
+};
 
-function pushtoSrever(pushObject, url, method, callback) {
+function pushtoServer(pushObject, url, method, callback) {
     $.ajax({
         async: true,
         type: method,
         dataType: 'json',
         url: url,
         data: pushObject,
-        success: function (response) {
-            //toastr.success('Data InserteId Successfully!');                
-            callback(response);
-        },
-        error: function (response) {
-            //toastr.error('Problem in Deleting Data!');
-            console.log("error")
-            callback(response)
-        }
+        success: function (response) { callback(response); },
+        error: function (response) { callback(response && response.responseJSON ? response.responseJSON : { status: false }); }
     });
 }
-let listofBatches = [];
 
-function rejectScannDocumentModal(id) {
-
-    $('#modalimagestatus').val(id);
-    $('#rejectRemarksModal').modal('show');
-}
-function submitRemarksmenu() {
-    if ($('#verifyTextarea').val().length != 0) {
-        bulkVerify($('#modalimagestatus').val())
-        $('#rejectRemarksModal').modal('hide');
-    } else {
-        toastr.error('Remaks required !');
-        $('#rejectRemarksModal').modal('show');
-
-    }
-
-}
-
-
+/* ---------------- batch & file list ---------------- */
 
 function getBatches() {
-    pushtoSrever(null, "/getbstchesecondverify.dwf", "GET", function (node) {
-        listofBatches = node.data;
-        let option = "";
-        for (var i = 0; i < listofBatches.length; i++) {
-            option = option + "<option batchobj=" + listofBatches[i] + " value='" + listofBatches[i].id + "'>" + listofBatches[i].bundlenumber + "</option>";
+    pushtoServer(null, '/getbstchesecondverify.dwf', 'GET', function (node) {
+        var list = node.data || [];
+        var option = '';
+        for (var i = 0; i < list.length; i++) {
+            option += '<option value="' + list[i].id + '">' + list[i].bundlenumber + '</option>';
         }
-
         $('#batches').html(option);
-    })
-}
-function selectAll() {
-    if ($('#iif1').prop('checked')) {
-        $('#firlist .ckhform').prop('checked', true);
-        $('#firlist .ckhform').attr('value', 'true');
-    } else {
-        $('#firlist  .ckhform').prop('checked', false);
-        $('#firlist  .ckhform').attr('value', 'false');
-    }
-
-}
-function bulkVerify(imagestatus) {
-    var jsonform = []
-
-    $('#firlist .ckhform').each(function () {
-        if ($(this).is(':checked')) {
-            jsonform.push(this.name)
-        }
+        $('#batches').val('').trigger('change');
+        $('#firTableWrap').hide();
+        $('#firEmpty').hide();
     });
-
-    if (jsonform.length == 0) {
-        toastr.error("Select one file !");
-    } else {
-        $.blockUI();
-        pushtoSrever({ 'selectedfile': jsonform, imagestatus: imagestatus, Verifyremarks: $('#verifyTextarea').val() }, "/secondverifybulkwithupload.dwf", "POST", function (node) {
-            for (var i = 0; i < jsonform.length; i++) {
-                $('#firs' + jsonform[i]).remove();
-            }
-
-            $('#verifyTextarea').val("")
-            selected_fir = "";
-            $('#kt_tree_1').jstree(true).settings.core.data = [];
-            $('#kt_tree_1').jstree(true).refresh();
-            toastr.success('File verified successfully!');
-            document.getElementById("pdfiream").src = "";
-            getBatches();
-            $.unblockUI();
-        })
-
-    }
-    //console.log(jsonform);
 }
+
 function findfirs(batch) {
-    pushtoSrever(null, "/findFIrsbybathcsecondverify.dwf?batch=" + batch, "GET", function (node) {
-        let firs = node.data;
-        let li = "";
-       
+    if (batch === null || batch === '' || batch === undefined) {
+        $('#firTableWrap').hide();
+        $('#firEmpty').hide();
+        return;
+    }
+    pushtoServer(null, '/findFIrsbybathcsecondverify.dwf?batch=' + batch, 'GET', function (node) {
+        var firs = node.data || [];
+        $('.searchcasenotable').html('');
+        if (!firs.length) {
+            $('#firTableWrap').hide();
+            $('#firEmpty').show();
+             getBatches();
+            return;
+        }
+        $('#firEmpty').hide();
+        $('#firTableWrap').show();
+        var batchNo = $('#batches option:selected').text().trim();
         for (var i = 0; i < firs.length; i++) {
-            li = li + '<li class="lilist list-group-item" id="firs' + firs[i].id + '" firstverify="'+firs[i].verify_by.name+'" onclick="getdocument(this,' + firs[i].id + ')"><div class="form-check"><label class="form-check-label"><input type="checkbox" class="form-check-input mr-3 ckhform"  name="' + firs[i].id + '" value="false"> <span class="ml-4"> ' + firs[i].casetype + '/' + firs[i].caseno + '/' + firs[i].year + '</span></label></div></li>'
+            var f = firs[i];
+            var fileLabel = (f.casetype || '') + '/' + (f.caseno || '') + '/' + (f.year || '');
+            var remarks = buildPrevRemarks(f).replace(/"/g, '&quot;').replace(/\n/g, '<br>');
+            var l1By = (f.verify_by && f.verify_by.name) ? f.verify_by.name : '';
+            $('.searchcasenotable').append(
+                '<tr>' +
+                '<td class="font-weight-bold">' + batchNo + '</td>' +
+                '<td class="font-weight-bold text-primary">' + fileLabel + '</td>' +
+                '<td>' + (f.crn || '') + '</td>' +
+                '<td>' + (f.pdfpagecount || 0) + '</td>' +
+                '<td>' + l1By + '</td>' +
+                '<td>' +
+                '<button type="button" class="btn btn-sm btn-light-primary font-weight-bold fv-open" ' +
+                'data-id="' + f.id + '" data-crn="' + (f.crn || '') + '" data-pages="' + (f.pdfpagecount || 0) + '" ' +
+                'data-l1by="' + l1By + '" ' +
+                'data-file="' + fileLabel + '" data-remarks="' + remarks + '">' +
+                '<i class="fas fa-folder-open mr-1"></i>Open</button>' +
+                '</td></tr>'
+            );
         }
-        if (firs.length != 0) {
-            $("#bulkdiv").show();
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+}
+
+function buildPrevRemarks(f) {
+    var parts = [];
+    if (f.verifyremarks) parts.push('L1 Verify: ' + f.verifyremarks);
+    if (f.secondverifyremarks) parts.push('L2 Verify: ' + f.secondverifyremarks);
+    if (f.thirdverifyremarks) parts.push('L3 Verify: ' + f.thirdverifyremarks);
+    return parts.join('\n');
+}
+
+/* ---------------- file workspace ---------------- */
+
+function openFile($btn) {
+    FV.selectedFir = parseInt($btn.data('id'), 10);
+    FV.selectedCrn = String($btn.data('crn') || '');
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
+
+    $('#firTable tbody tr').removeClass('table-active');
+    $btn.closest('tr').addClass('table-active');
+
+    $('#fvFileTitle').text($btn.data('file'));
+    $('#fvCrn').text($btn.data('crn'));
+    $('#fvPages').text($btn.data('pages'));
+    $('#fvL1By').text($btn.attr('data-l1by') || '-');
+
+    var remarks = String($btn.attr('data-remarks') || '');
+    if (remarks) {
+        $('.remakrsshow').show();
+        $('.remakrsdata').html(remarks);
+        $('.remakrsshowbody').show();
+    } else {
+        $('.remakrsshow').hide();
+        $('.remakrsdata').html('');
+        $('.remakrsshowbody').hide();
+    }
+
+    $('#pdfPlaceholder').show();
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
+    $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
+    $('#verifyTextarea').val('');
+
+    // embedded case filing form — read-only at this stage (no Update button)
+    $('#caseFrameSpinner').show();
+    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1&readonly=1');
+
+    $('.batchsection').hide(300);
+    $('.filesection').show(300);
+    window.scrollTo(0, 0);
+
+    loadDocuments(FV.selectedFir);
+}
+
+$('#caseFrame').on('load', function () {
+    if ($('#caseFrame').attr('src')) $('#caseFrameSpinner').hide();
+});
+
+function closefile() {
+    if (confirm('Close this file and go back to the list?')) {
+        resetverify();
+    }
+}
+
+function resetverify() {
+    FV.selectedFir = null;
+    FV.selectedCrn = null;
+    FV.selectedDocId = null;
+    FV.selectedDocPath = null;
+    FV.iaList = [];
+    FV.orderList = [];
+    $('#verifyTextarea').val('');
+    $('#pdfiream').hide().attr('src', '');
+    $('#docMeta').hide();
+    $('#pdfPlaceholder').show();
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>Document Preview');
+    $('#docList').html('');
+    $('#caseFrame').attr('src', '');
+    $('.filesection').hide(300);
+    $('.batchsection').show(300);
+    findfirs($('#batches').val());
+   
+}
+
+function toggleExpand() {
+    var $pdf = $('#pdfcol');
+    var $case = $('#casecol');
+    if ($pdf.hasClass('col-lg-6')) {
+        $pdf.removeClass('col-lg-6').addClass('col-lg-8');
+        $case.removeClass('col-lg-6').addClass('col-lg-4');
+        $('.changeicon').removeClass('fa-expand').addClass('fa-compress');
+    } else {
+        $pdf.removeClass('col-lg-8').addClass('col-lg-6');
+        $case.removeClass('col-lg-4').addClass('col-lg-6');
+        $('.changeicon').removeClass('fa-compress').addClass('fa-expand');
+    }
+}
+
+/* ---------------- documents / pdf ---------------- */
+
+function fvEscape(s) {
+    return String(s === null || s === undefined ? '' : s).replace(/"/g, '&quot;');
+}
+
+function loadDocuments(firId) {
+    $('#docList').html('<div class="text-muted font-weight-bold p-3">Loading...</div>');
+    pushtoServer(null, '/getdocumentclassficationByfir.dwf?fir=' + firId, 'GET', function (node) {
+        var docs = node.data || [];
+        docs.sort(function (a, b) { return a.id - b.id; });
+        var seen = {};
+        var html = '';
+        docs.forEach(function (d) {
+            if (!d.ocrpdfpath || seen[d.ocrpdfpath]) return;
+            seen[d.ocrpdfpath] = true;
+            var name = d.documenttypename;
+            html += '<a href="javascript:;" class="btn btn-sm btn-outline-secondary font-weight-bold fv-doc" ' +
+                'data-id="' + d.id + '" data-name="' + fvEscape(name) + '" ' +
+                'data-path="' + fvEscape(d.ocrpdfpath) + '" ' +
+                'data-date="' + fvEscape(d.documentdate) + '" ' +
+                'data-desc="' + fvEscape(d.documentdesc) + '" ' +
+                'data-remark="' + fvEscape(d.documentremark) + '">' +
+                '<i class="far fa-file-pdf mr-1"></i>' + name +
+                '</a>';
+        });
+        if (!html) html = '<span class="text-muted font-weight-bold">No documents</span>';
+        $('#docList').html(html);
+        markMappedDocs();
+    });
+    refreshCaseRefs();
+}
+
+$(document).on('click', '.fv-doc', function () {
+    $('.fv-doc').removeClass('fv-active');
+    $(this).addClass('fv-active');
+    FV.selectedDocId = parseInt($(this).data('id'), 10);
+    FV.selectedDocPath = String($(this).attr('data-path') || '');
+    $('#pdfTitle').html('<i class="far fa-file-pdf text-primary mr-2"></i>' + $(this).data('name'));
+    $('#docMetaDate').val($(this).attr('data-date') || '');
+    $('#docMetaDesc').val($(this).attr('data-desc') || '');
+    $('#docMetaRemark').val($(this).attr('data-remark') || '');
+    $('#docMeta').css('display', 'flex');
+    $('#pdfPlaceholder').hide();
+    $('#pdfiream').show().attr('src', '/getpdf.dwf?id=' + $(this).data('id'));
+});
+
+/* ---------------- mapped IA / Order badges (read-only) ---------------- */
+
+function normPath(p) {
+    return String(p || '').replace(/\\/g, '/').toLowerCase();
+}
+
+function refreshCaseRefs() {
+    if (!FV.selectedFir) return;
+    pushtoServer(null, '/api/digitization/digitizedEntryByFir?firId=' + FV.selectedFir, 'GET', function (node) {
+        var cd = (node && node.data && node.data.caseDetails) || {};
+        FV.iaList = cd.ia_filings || [];
+        FV.orderList = cd.order_details || [];
+        markMappedDocs();
+    });
+}
+
+function markMappedDocs() {
+    var mapped = {};
+    FV.iaList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'IA ' + (r.iaNumber || '') + '/' + (r.iaYear || '');
+    });
+    FV.orderList.forEach(function (r) {
+        if (r.documentPath) mapped[normPath(r.documentPath)] = 'Order ' + (r.orderDate || '');
+    });
+    $('.fv-doc').each(function () {
+        var lbl = mapped[normPath($(this).attr('data-path'))];
+        $(this).find('.fv-map-tag').remove();
+        $(this).toggleClass('fv-mapped', !!lbl);
+        if (lbl) {
+            $(this).attr('title', 'Mapped to ' + lbl)
+                .append(' <span class="fv-map-tag label label-sm label-inline label-light-success font-weight-bolder">' + lbl + '</span>');
         } else {
-            $("#bulkdiv").hide();
+            $(this).removeAttr('title');
         }
-        $("#firlist").html(li);
-    })
+    });
 }
 
-let selected_fir = "";
-function getdocument(dom, id) {
-    selected_fir = id;
-    $('.lilist').removeClass('active');
-    $(dom).addClass('active');
-    $('.verifydiv').html('<h5>First Verify By: ' + $(dom).attr('firstverify') + '</h5> ');
-    let data = [];
-    pushtoSrever(null, "/getdocumentclassficationByfir.dwf?fir=" + id, "GET", function (node) {
-        let classfication = node.data;
-        let treearry = [];
+/* ---------------- document meta / navigation ---------------- */
 
-        for (var i = 0; i < classfication.length; i++) {
-            let desc = (classfication[i].documentdesc == "" || classfication[i].documentdesc == null) ? classfication[i].documentdate : classfication[i].documentdesc;
-            //desc = ((classfication[i].documentdesc == "" || classfication[i].documentdesc == null) && (classfication[i].documentdate == "" || classfication[i].documentdate == null)) ? classfication[i].documenttypename.split(">>")[classfication[i].documenttypename.split(">>").length - 1] : desc;
-            let index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
-            if (classfication[i].child.length != 0) {
-                var childdata = [];
-                for (var k = 0; k < classfication[i].child.length; k++) {
-                    let child = classfication[i].child[k];
-                    //  let childdesc = (child.documentdesc == "" || child.documentdesc == null) ? child.documentdate : child.documentdesc;
-                    childdata.push({ 'pdfpath': child.ocrpdfpath, "id": child.id, "text": child.documenttypename, "icon": "fa fa-file text-danger " });
-                }
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [{ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-primary ", "children": childdata }] })
-                } else {
-                    treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-            } else {
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">>")[0].trim(), "children": [] });
-                }
-                index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">>")[0].trim());
-                let documentname = classfication[i].documenttypename.split(">>");
-                var childdata = [];
-                childdata.push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>', "icon": "fa fa-file text-danger " });
-
-                if (0 == documentname.length - 1) {
-                    treearry[index]["children"] = [...treearry[index]["children"], ...childdata];
-                } else {
-                    if (documentname.length == 3) {
-                        childdata[0].text = classfication[i].documenttypename.split(">>")[2].trim() + ' <i class="fa ml-2 fa-edit text-primary" onclick="poppuEditNode(this,' + classfication[i].id + ')" ></i>';
-                        childindex = treearry[index]["children"].findIndex(x => x.text === classfication[i].documenttypename.split(">>")[1].trim());
-                        if (childindex == -1) {
-
-                            treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                        } else {
-                            treearry[index]["children"][childindex]['children'] = [...treearry[index]["children"][childindex]['children'], ...childdata];
-                            //treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>")[1].trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                        }
-
-                    } else {
-                        treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                    }
-                    // treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">>").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-                // treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " })
-
-
-            }
-
-
-            data = treearry
-        }
-
-        $('#kt_tree_1').jstree(true).settings.core.data = data;
-        $('#kt_tree_1').jstree(true).refresh();
-    })
-
-
-
-
-
-}
-
-
-let editCalssfication = "";
-function getDigitizationCenter() {
-    pushtoSrever(null, "/getAllUser.dwf?type=1", "GET", function (node) {
-        for (var i = 0; i < node.data.length; i++) {
-            console.log(node.data[0])
-        }
-    })
-}
-function poppuEditNode(dom, classid) {
-    pushtoSrever(null, "/getclassficationmodal.dwf?id=" + classid, "GET", function (node) {
-        let classfication = node.data;
-        editCalssfication = classid
-        $('#modaldate').val(classfication.documentdate);
-        $('#modalremark').val(classfication.documentdesc);
-        $('#deleteModal').modal('show');
-    })
-
-}
-function updateClassfication() {
-    pushtoSrever({ documentdate: $('#modaldate').val(), documentdesc: $('#modalremark').val() }, "/updatedocumentclassficationByfir.dwf?id=" + editCalssfication, "POST", function (node) {
-        toastr.success('File update successfully!');
-        $('#deleteModal').modal('hide');
-        editCalssfication = "";
-        getdocument(null, selected_fir);
-        $('#modaldate').val("");
-        $('#modalremark').val("");
-    })
-}
-/*
-function getdocument(dom, id) {
-    selected_fir = id;
-    $('.lilist').removeClass('active');
-    $(dom).addClass('active');
-    let data = [];
-    pushtoSrever(null, "/getdocumentclassficationByfir.dwf?fir=" + id, "GET", function (node) {
-        let classfication = node.data;
-        let treearry = [];
-
-        for (var i = 0; i < classfication.length; i++) {
-            let desc = (classfication[i].documentdesc == "" || classfication[i].documentdesc == null) ? classfication[i].documentdate : classfication[i].documentdesc;
-            let index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">")[0].trim());
-            if (classfication[i].child.length != 0) {
-                var childdata = [];
-                for (var k = 0; k < classfication[i].child.length; k++) {
-                    let child = classfication[i].child[k];
-                    //  let childdesc = (child.documentdesc == "" || child.documentdesc == null) ? child.documentdate : child.documentdesc;
-                    childdata.push({ 'pdfpath': child.ocrpdfpath, "id": child.id, "text": child.documenttypename, "icon": "fa fa-file text-danger " });
-                }
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [{ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc, "icon": "fa fa-folder text-primary ", "children": childdata }] })
-                } else {
-                    treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": 'child' + classfication[i].id, "text": desc, "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-            } else {
-                if (index == -1) {
-                    treearry.push({ 'id': 'parent' + classfication[i].id, 'text': classfication[i].documenttypename.split(">")[0].trim(), "children": [] });
-                }
-                index = treearry.findIndex(x => x.text === classfication[i].documenttypename.split(">")[0].trim());
-                let documentname = classfication[i].documenttypename.split(">");
-                var childdata = [];
-                childdata.push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " });
-
-                if (0 == documentname.length - 1) {
-                    treearry[index]["children"] = [...treearry[index]["children"], ...childdata];
-                } else {
-                    treearry[index]["children"].push({ 'id': 'parent' + classfication[i].id + "_", 'text': classfication[i].documenttypename.split(">").slice(1).join().trim(), "icon": "fa fa-folder text-danger ", "children": childdata })
-                }
-                // treearry[index]["children"].push({ 'pdfpath': classfication[i].ocrpdfpath, "id": classfication[i].id, "text": desc, "icon": "fa fa-file text-danger " })
-
-
-            }
-
-
-            data = treearry
-        }
-
-        $('#kt_tree_1').jstree(true).settings.core.data = data;
-        $('#kt_tree_1').jstree(true).refresh();
-    })
-
-
-
-
-
-}*/
-function updateMetadata() {
-
-    if ($('#rejectmetadata').val().length != 0) {
-        let formdata = {
-            id: selected_fir,
-            verifyremarks: $('#rejectmetadata').val(),
-            readyforverify: false,
-            imagestatus:5,
-
-        }
-        pushtoSrever(formdata, "/rejectforMetadatasecondverify.dwf", "POST", function (node) {
-            toastr.success('Data Reject successfully!');
-            $('#viewmeatadata').modal('hide');
-            $('#firs' + selected_fir).remove()
-            selected_fir = "";
-            $('#kt_tree_1').jstree(true).settings.core.data = [];
-            $('#kt_tree_1').jstree(true).refresh();
-            getBatches();
-        })
-    } else {
-        toastr.error("Enter Reject Remarks!!");
+function navigateDoc(dir) {
+    var $docs = $('#docList .fv-doc');
+    if (!$docs.length) return;
+    var idx = $docs.index($docs.filter('.fv-active'));
+    var next = idx + dir;
+    if (idx === -1) next = (dir > 0) ? 0 : $docs.length - 1;
+    if (next < 0 || next >= $docs.length) {
+        toastr.info(dir > 0 ? 'No more documents.' : 'This is the first document.');
+        return;
     }
-
+    $docs.eq(next).trigger('click');
 }
 
-function viewMetadataByFile() {
-    if (selected_fir == "") {
-        toastr.error("Select one file !");
-    } else {
-        pushtoSrever(null, "/getmetadatabffile.dwf?fileid=" + selected_fir, "GET", function (node) {
-            $('#viewmeatadata').modal('show');
-
-            let data = node.data;
-            //let data = [1, 2, 3];
-            $('#casedetailstable').html("");
-            for (let i = 0; i < data.length; i += 2) {
-                // Create a new table row
-                let row = $('<tr></tr>');
-
-                var id = data[i].metadatum.entityname.replaceAll('.', '_');
-                row.append('<td><b>' + data[i].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i].metadatum.id + '" value="' + data[i].value + '"  id = "' + id + '" ></td>');
-
-                // Check if there's a next element to avoid undefined
-                if (data[i + 1] !== undefined) {
-                    var id = data[i + 1].metadatum.entityname.replaceAll('.', '_');
-                    row.append('<td><b>' + data[i + 1].metadatum.title + '</b><input type="text" class="w-100" metadata="' + data[i + 1].metadatum.id + '" value="' + data[i + 1].value + '"  id = "' + id + '" ></td>');
-
-                }
-
-                // Append the row to the table
-                $('#casedetailstable').append(row);
-            }
-            $('#casedetailstable').append('<tr><td><b class="h5">Reject Remarks</b></td><td><textarea class="form-control" id="rejectmetadata" placeholder="Enter Remarks " rows="5"     spellcheck = "false" ></textarea ></td></tr>')
-
-        })
-    }
+function saveDocMeta() {
+    if (!FV.selectedDocId) { toastr.warning('Select a document first.'); return; }
+    var body = {
+        documentdate: $('#docMetaDate').val().trim(),
+        documentdesc: $('#docMetaDesc').val().trim(),
+        documentremark: $('#docMetaRemark').val().trim()
+    };
+    $.blockUI();
+    pushtoServer(body, '/updatedocumentclassficationByfir.dwf?id=' + FV.selectedDocId, 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            toastr.success('Document details saved.');
+            $('.fv-doc.fv-active')
+                .attr('data-date', body.documentdate)
+                .attr('data-desc', body.documentdesc)
+                .attr('data-remark', body.documentremark);
+        } else {
+            toastr.error('Save failed. Please try again.');
+        }
+    });
 }
-function getpdf(id) {
-    // Show PDF iframe and hide TIFF container
+
+/* ---------------- approve / reject ---------------- */
+
+function approveFile() {
+    if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    if (!confirm('Approve this file now?')) return;
+    $.blockUI();
+    pushtoServer({ selectedfile: [FV.selectedFir], imagestatus: 6, Verifyremarks: '' }, '/secondverifybulkwithupload.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node.status) {
+            toastr.success('File verified successfully!');
+            resetverify();
+        } else {
+            toastr.error('Approve failed. Please try again.');
+        }
+    });
+}
+
+function rejectFile(imagestatus) {
+    if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    var remarks = $('#verifyTextarea').val().trim();
+    if (!remarks.length) { toastr.error('Reject remarks required!'); return; }
+    if (!confirm('Are you sure you want to Reject this file?')) return;
+    $.blockUI();
+    pushtoServer({ selectedfile: [FV.selectedFir], imagestatus: imagestatus, Verifyremarks: remarks }, '/secondverifybulkwithupload.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node.status) {
+            $('#rejectModal').modal('hide');
+            toastr.success('File rejected successfully!');
+            resetverify();
+        } else {
+            toastr.error('Reject failed. Please try again.');
+        }
+    });
+}
+
+function rejectMetadataFile() {
+    if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    var remarks = $('#verifyTextarea').val().trim();
+    if (!remarks.length) { toastr.error('Reject remarks required!'); return; }
+    if (!confirm('Reject this file back to Metadata stage?')) return;
+    $.blockUI();
+    pushtoServer({ id: FV.selectedFir, verifyremarks: remarks, readyforverify: false, imagestatus: 5 }, '/rejectforMetadatasecondverify.dwf', 'POST', function (node) {
+        $.unblockUI();
+        if (node && node.status) {
+            $('#rejectModal').modal('hide');
+            toastr.success('File rejected to metadata successfully!');
+            resetverify();
+        } else {
+            toastr.error('Reject failed. Please try again.');
+        }
+    });
+}
+
+/* ---------------- init ---------------- */
+
+$(document).ready(function () {
+    // collapse the left menu on this page
+    $('body').addClass('aside-minimize').removeClass('aside-minimize-hover');
+    $('#kt_aside_toggle').addClass('active');
     try {
-        $('#tiffContainer').hide().empty();
-        $('#tiffActions').hide();
-    } catch (e) {}
-    var $iframe = $('#pdfiream');
-    $iframe.show();
-    $iframe.attr('src', "/getpdf.dwf?id=" + id);
-}
-jQuery(document).ready(function () {
-    // getDigitizationCenter();
-    $(document).on('click', '.ckhform', function () {
+        var _at = KTLayoutAsideToggle.getToggle();
+        if (_at) _at.state = 'on';
+    } catch (e) { }
 
-        if ($(this).is(':checked')) {
-            $(this).attr('value', 'true');
-        } else {
-            $(this).attr('value', 'false');
-        }
-
-
-    });
-    $("#kt_tree_1").jstree({
-        "core": {
-            "themes": {
-                "responsive": false
-            },
-            // so that create works
-            "check_callback": false,
-            "data": [],
-        },
-        "types": {
-            "default": {
-                "icon": "fa fa-folder text-primary"
-            },
-            "file": {
-                "icon": "fa fa-file  text-primary"
-            }
-        },
-        "state": {
-            "key": "demo2"
-        },
-        "plugins": ["contextmenu", "state", "types"]
-    });
-    $('#kt_tree_1').on("select_node.jstree", function (e, data) {
-        if (data.node.id.indexOf('parent') != -1 || data.node.id.indexOf('child') != -1) {
-            console.log(data.node.id + " found");
-        } else {
-            var original = data.node.original || {};
-            var path = original.pdfpath || '';
-            if (path && /\.tiff?$/.test(path.toLowerCase())) {
-                // Render TIFF instead of PDF
-                $('#pdfiream').hide().attr('src','');
-                $('#tiffContainer').show();
-                $('#tiffActions').show();
-                try {
-                    TiffViewer.load({ url: path, container: '#tiffContainer' });
-                } catch (err) {
-                    console.error('TIFF render failed', err);
-                    if (typeof toastr !== 'undefined' && toastr.error) toastr.error('Failed to load TIFF');
-                }
-            } else {
-                getpdf(data.node.id);
-            }
-        }
-
-    });
-    $('#batches').select2({
-        placeholder: "Select Batches ",
-        allowClear: true
-    });
-    
+    $('#batches').select2({ placeholder: 'Select Batch', allowClear: true });
+    $('#batches').on('change', function () { findfirs($(this).val()); });
+    $(document).on('click', '.fv-open', function () { openFile($(this)); });
+    $(document).on('click', '#fvPrevRemarksBtn', function () { $('.remakrsshowbody').toggle(200); });
     getBatches();
 });

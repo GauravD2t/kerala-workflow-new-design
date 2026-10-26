@@ -58,7 +58,7 @@ function findfirs(batch) {
         for (var i = 0; i < firs.length; i++) {
             var f = firs[i];
             var fileLabel = (f.casetype || '') + '/' + (f.caseno || '') + '/' + (f.year || '');
-            var remarks = (f.verifyremarks || '').replace(/"/g, '&quot;').replace(/\n/g, '<br>');
+            var remarks = buildPrevRemarks(f).replace(/"/g, '&quot;').replace(/\n/g, '<br>');
             $('.searchcasenotable').append(
                 '<tr>' +
                 '<td class="font-weight-bold">' + batchNo + '</td>' +
@@ -75,6 +75,14 @@ function findfirs(batch) {
         }
         $('[data-toggle="tooltip"]').tooltip();
     });
+}
+
+function buildPrevRemarks(f) {
+    var parts = [];
+    if (f.verifyremarks) parts.push('L1 Verify: ' + f.verifyremarks);
+    if (f.secondverifyremarks) parts.push('L2 Verify: ' + f.secondverifyremarks);
+    if (f.thirdverifyremarks) parts.push('L3 Verify: ' + f.thirdverifyremarks);
+    return parts.join('\n');
 }
 
 /* ---------------- file workspace ---------------- */

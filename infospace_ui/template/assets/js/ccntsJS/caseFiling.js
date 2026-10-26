@@ -25,6 +25,9 @@ $(document).ready(function () {
         $navCol.removeClass('col-lg-2').addClass('col-lg-12');
         $navCol.next('.col-lg-10').removeClass('col-lg-10').addClass('col-lg-12');
     }
+    if (qs.get('readonly') === '1') {
+        $('#cf_save_btn, #cf_save_top').hide();
+    }
     var autoFir = qs.get('fir');
     var autoCino = qs.get('cino');
     if (autoFir) {
