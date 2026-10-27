@@ -847,7 +847,7 @@ function searchCase(forEdit) {
 }
 
 function updateSaveButtons(editing) {
-    $('#cf_save_btn, #cf_save_top').text(editing ? 'Update' : 'Save');
+    $('#cf_save_btn, #cf_save_top').text(editing ? 'Update' : 'Save File');
     $('#cf_reset_btn').text(editing ? 'Cancel' : 'Reset');
 }
 
