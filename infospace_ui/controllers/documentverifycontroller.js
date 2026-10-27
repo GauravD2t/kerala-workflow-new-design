@@ -7,6 +7,8 @@ const localStorage = new LocalStorage('./scratch');
 const fs = require('fs');
 const path = require('path');
 var CIPAService = require("../service/CIPAService");
+var CaseService = require("../service/CaseService");
+var DigitizationApiService = require("../service/DigitizationApiService");
 var communityname_center = "Ernakulam";
 var FORAM_AB_PATH = "/mnt/server/ocr";
 var Form_A_DocumentID = 'd7906485-028b-4ded-b485-c8a0c6ab32fd';
@@ -400,7 +402,8 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
         deletequery = "update firs set thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",thirdverify=true where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
             if (req.body.imagestatus == 6) {
-                uploadTodms1(req);
+               // uploadTodms1(req);
+               uploadCaseToCis(req);
             }
 
             if (data != null) {
@@ -476,6 +479,36 @@ async function getclassficationbyfilewait(fileid, request) {
             resolve(JSON.parse(node1));
         })
     })
+}
+
+// Upload digitized case details to CIS after third-level approval.
+// If the CINO already exists in CIS -> PUT (update), otherwise -> POST (create).
+async function uploadCaseToCis(req) {
+    var firIds = String(req.body.selectedfile).toString().split(',');
+    for (var i = 0; i < firIds.length; i++) {
+        var firId = parseInt(firIds[i], 10);
+        if (!firId) continue;
+        try {
+            var detail = await CaseService.getCaseByFir(firId);
+            if (!detail) {
+                console.log('uploadCaseToCis: no case details saved for fir ' + firId + ' - skipping CIS upload');
+                continue;
+            }
+            var caseJson = detail.toJSON ? detail.toJSON() : detail;
+            var existsInCis = false;
+            try {
+                var cisCase = await DigitizationApiService.fetchCaseByCino(caseJson.cino);
+                existsInCis = !!(cisCase && cisCase.success && cisCase.data && !cisCase.decrypt_error);
+            } catch (lookupErr) {
+                existsInCis = false;
+            }
+            var result = await DigitizationApiService.pushDigitizedEntry(caseJson, existsInCis);
+            console.log('uploadCaseToCis: fir ' + firId + ' cino ' + caseJson.cino + ' ' +
+                (existsInCis ? 'updated' : 'created') + ' in CIS ->', JSON.stringify(result));
+        } catch (err) {
+            console.error('uploadCaseToCis failed for fir ' + firId + ':', err.message);
+        }
+    }
 }
 
 async function uploadTodms1(req) {

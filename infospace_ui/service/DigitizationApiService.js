@@ -142,4 +142,45 @@ DigitizationApiService.prototype.syncAllMasters = async function (db) {
     return results;
 };
 
+
+DigitizationApiService.prototype.pushDigitizedEntry = async function (caseData, isUpdate) {
+    var payload = {
+        data: caseData,
+        courtCode: config.digitizationApi.courtCode
+    };
+    var res = await requestWithToken(isUpdate ? 'put' : 'post', 'api/digitization/digitizedEntry', payload);
+    return res.data;
+};
+
+async function requestWithToken(method, path, body, forceTokenRefresh, timeoutMs) {
+    var timeout = timeoutMs || 60000;
+    var token = await getToken(forceTokenRefresh);
+    var opts = {
+        method: method,
+        url: config.digitizationApi.baseUrl + path,
+        data: body,
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        timeout: timeout
+    };
+    try {
+        var res = await axios(opts);
+        if (isJwtExpiredResponse(res)) {
+            token = await getToken(true);
+            opts.headers.Authorization = 'Bearer ' + token;
+            res = await axios(opts);
+            if (isJwtExpiredResponse(res)) {
+                throw new Error('JWT expired even after forced token refresh');
+            }
+        }
+        return res;
+    } catch (err) {
+        if (err.response && err.response.status === 401) {
+            token = await getToken(true);
+            opts.headers.Authorization = 'Bearer ' + token;
+            return await axios(opts);
+        }
+        throw err;
+    }
+}
+
 module.exports = new DigitizationApiService();

@@ -791,58 +791,59 @@ function searchCase(forEdit) {
     var cino = $('#cf_cino').val().trim();
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     $('#cf_search_spinner').show();
-    checkFirBundleNotice(cino);
+    //checkFirBundleNotice(cino);
+
+
 
     $.ajax({
         async: true,
         type: 'GET',
         dataType: 'json',
-        url: '/api/digitization/digitizedEntry',
+        url: '/api/digitization/checkFirBundle',
         data: { cino: cino },
         success: function (res) {
-            if (res.success && res.data) {
+            if (res.status && res.data && res.data.bundlenumber) {
+                toastr.warning(cino + ' file already exists in batch ' + res.data.bundlenumber);
                 clearAll(false);
-                currentCaseId = forEdit ? res.data.id : null;
-                populateAll(res.data.caseDetails);
-                showStatusBadge(res.data.status);
-                updateSaveButtons(!!forEdit);
-                toastr.success('Local record loaded');
+                currentCaseId = null;
                 $('#cf_search_spinner').hide();
-                return;
-            }
-            $.ajax({
-                async: true,
-                type: 'GET',
-                dataType: 'json',
-                url: '/api/digitization/fetchCase',
-                data: { cino: cino },
-                success: function (ext) {
-                    if (ext.success && ext.data && typeof ext.data === 'object') {
-                        clearAll(false);
-                        currentCaseId = null;
-                        populateFromExternal(ext.data);
-                        showStatusBadge((ext.data.caseDetails || {}).status || 'From CMS');
-                        toastr.success('Case fetched from CMS. Review and Save All to digitize.');
-                    } else {
-                        clearAll(false);
-                        currentCaseId = null;
-                        toastr.info('Record not found in local DB or CMS. Fill in the tabs and Save All to create a new entry.');
+            } else {
+                $.ajax({
+                    async: true,
+                    type: 'GET',
+                    dataType: 'json',
+                    url: '/api/digitization/fetchCase',
+                    data: { cino: cino },
+                    success: function (ext) {
+                        if (ext.success && ext.data && typeof ext.data === 'object') {
+                            clearAll(false);
+                            currentCaseId = null;
+                            populateFromExternal(ext.data);
+                            showStatusBadge((ext.data.caseDetails || {}).status || 'From CIS');
+                            toastr.success('Case fetched from CIS. Review and Save All to digitize.');
+                            
+                        } else {
+                            clearAll(false);
+                            currentCaseId = null;
+                            toastr.info('Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
+                        }
+                        $('#cf_search_spinner').hide();
+                    },
+                    error: function (err) {
+                        console.error('searchCase error:', err);
+                        toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
+                        $('#cf_search_spinner').hide();
                     }
-                    $('#cf_search_spinner').hide();
-                },
-                error: function (err) {
-                    console.error('searchCase error:', err);
-                    toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
-                    $('#cf_search_spinner').hide();
-                }
-            });
+                });
+            }
         },
         error: function (err) {
-            console.error('searchCase error:', err);
-            toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
+             console.error('checkFirBundle error:', err);
             $('#cf_search_spinner').hide();
-        }
+            }
     });
+
+
 }
 
 function updateSaveButtons(editing) {
@@ -850,7 +851,8 @@ function updateSaveButtons(editing) {
     $('#cf_reset_btn').text(editing ? 'Cancel' : 'Reset');
 }
 
-function showStatusBadge(status) {    var badge = $('#cf_status_badge');
+function showStatusBadge(status) {
+    var badge = $('#cf_status_badge');
     if (!status) { badge.hide(); return; }
     var cls = status === 'Disposed' ? 'label-light-danger' : (status === 'Pending' ? 'label-light-warning' : 'label-light-info');
     badge.removeClass('label-light-info label-light-warning label-light-danger').addClass(cls)
@@ -1020,7 +1022,7 @@ function doSave(payload, onDone) {
                 if (cfEmbed) {
                     updateSaveButtons(true);
                     if (window.parent && typeof window.parent.refreshCaseRefs === 'function') {
-                        try { window.parent.refreshCaseRefs(); } catch (e) {}
+                        try { window.parent.refreshCaseRefs(); } catch (e) { }
                     }
                 } else {
                     cfLoadBatchFirs();
@@ -1065,8 +1067,8 @@ function clearAll(clearCino) {
     fillPrefix('cf_td_', TD_FIELDS, {});
     ['extraParties', 'additionalAdvocates', 'witnesses', 'victims', 'acts', 'iaFilings',
         'caseHistories', 'iaHistories', 'documents', 'orderDetails'].forEach(function (k) {
-        LISTS[k].clear();
-    });
+            LISTS[k].clear();
+        });
 }
 
 function resetAll() {
@@ -1227,7 +1229,7 @@ function cfEditFirFromTable(firId, crn) {
                 showStatusBadge(res.data.status);
                 updateSaveButtons(true);
                 toastr.success('File loaded for editing');
-            }  else {
+            } else {
                 toastr.info('No digitized details found for this file');
             }
             $('html, body').animate({ scrollTop: 0 }, 300);
