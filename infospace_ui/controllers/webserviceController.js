@@ -649,43 +649,24 @@ webserviceController.prototype.updatePDFPathClassficationByID = function (req, r
         httpService.put("/classficationfiles/" + req.body.id, body, function (node) {
             node = JSON.parse(node)
             //quesry = "select count(*) from classficationfiles where fir in (select fir from classficationfiles where id=" + req.body.id + ") and  (ocrpdfpath is null or ocrpdfpath='') ";
-            quesry = `SELECT COUNT(*)
-FROM (
-   
-    SELECT c.id
-    FROM classficationfiles c
-    WHERE c.issubchild = false
-      AND (c.ocrpdfpath IS NULL OR c.ocrpdfpath = '')
-      AND c.fir = (
-            SELECT COALESCE(cf.fir, p.fir)
-            FROM classficationfiles cf
-            LEFT JOIN classficationfiles p ON p.id = cf.parent
-            WHERE cf.id = ${req.body.id} 
-      )
-
-    UNION ALL
-
-   
-    SELECT child.id
-    FROM classficationfiles child
-    JOIN classficationfiles parent 
-         ON parent.id = child.parent
-    WHERE child.issubchild = true
-      AND (child.ocrpdfpath IS NULL OR child.ocrpdfpath = '')
-      AND parent.fir = (
-            SELECT COALESCE(cf.fir, p.fir)
-            FROM classficationfiles cf
-            LEFT JOIN classficationfiles p ON p.id = cf.parent
-            WHERE cf.id = ${req.body.id}   
-      )
-) t;  `;
+        const quesry = `
+SELECT COUNT(*)
+FROM classficationfiles c
+WHERE (c.ocrpdfpath IS NULL OR c.ocrpdfpath = '')
+AND c.fir = (
+    SELECT fir 
+    FROM classficationfiles 
+    WHERE id = ${req.body.id}
+);
+`;
 
             // console.log("check ocrpdfpath update query::" + quesry);
             CIPAService.executeSQL(quesry, function (data) {
                 var resultbat = data[0];
                 if (resultbat[0].count == 0) {
                     //  let firupdate = "update firs set pdf_by=" + req.session.user.user.id + ",imagestatus=5,islock=false,pdf_at='" + moment().format() + "',pdfpagecount=(SELECT SUM(pagecount) AS total_pagecount FROM (SELECT ocrpdfpath, MAX(pagecount) AS pagecount FROM classficationfiles WHERE fir in ( SELECT fir  FROM classficationfiles  WHERE id = " + req.body.id + ") AND ocrpdfpath IS NOT NULL  GROUP BY ocrpdfpath) t)  where id in (select fir from classficationfiles where id=" + req.body.id + ")";
-                    const firupdate = `UPDATE firs f 
+                  const firupdate = `
+UPDATE firs f 
 SET 
     pdf_by = ${req.session.user.user.id},
     imagestatus = 5,
@@ -694,26 +675,18 @@ SET
     pdfpagecount = (
         SELECT SUM(pagecount)
         FROM (
-            SELECT c.ocrpdfpath, MAX(c.pagecount) AS pagecount
-            FROM classficationfiles c
-            LEFT JOIN classficationfiles p 
-                   ON c.parent = p.id
-            WHERE (
-                    c.fir = f.id
-                    OR
-                    p.fir = f.id
-                  )
-            AND c.ocrpdfpath IS NOT NULL
-            GROUP BY c.ocrpdfpath
+            SELECT ocrpdfpath, MAX(pagecount) AS pagecount
+            FROM classficationfiles
+            WHERE fir = f.id
+              AND ocrpdfpath IS NOT NULL
+            GROUP BY ocrpdfpath
         ) t
     )
 WHERE f.id = (
-    SELECT COALESCE(c.fir, p.fir)
-    FROM classficationfiles c
-    LEFT JOIN classficationfiles p 
-           ON c.parent = p.id
-    WHERE c.id = ${req.body.id}
-)
+    SELECT fir 
+    FROM classficationfiles 
+    WHERE id = ${req.body.id}
+);
 `;
                     //console.log("firupdate pdf page conut update query::" + firupdate)
                     CIPAService.UpdateexecuteSQL(firupdate, function (data22) {
