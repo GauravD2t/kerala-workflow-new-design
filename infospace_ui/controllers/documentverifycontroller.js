@@ -39,12 +39,14 @@ DocumentverifyController.prototype.filenotuploadlist = function (req, res) {
         res.send({ status: true, data: JSON.parse(node1) });
     })
 }
-DocumentverifyController.prototype.secondtimebulkverifyfile = function (req, res) {
-    var deletequery = "update firs set isupload=true where id in (" + req.body.selectedfile.toString() + ")"; //console.log(deletequery)
-    CIPAService.UpdateexecuteSQL(deletequery, function (data) {
-       uploadTodms1(req);
-        res.send({ status: true });
-    })
+DocumentverifyController.prototype.secondtimebulkverifyfile =async function (req, res) {
+           await uploadCaseToCis(req);
+           res.send({ status: true });
+    // var deletequery = "update firs set isupload=true where id in (" + req.body.selectedfile.toString() + ")"; //console.log(deletequery)
+    // CIPAService.UpdateexecuteSQL(deletequery, function (data) {
+    //    uploadCaseToCis(req);
+    //     res.send({ status: true });
+    // })
 
 }
 
@@ -355,6 +357,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
 
             if (req.body.imagestatus == 6) {
+                
                // CreateFromAfromB(req, res);
             }
 
@@ -403,7 +406,7 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
             if (req.body.imagestatus == 6) {
                // uploadTodms1(req);
-               uploadCaseToCis(req);
+              await uploadCaseToCis(req);
             }
 
             if (data != null) {
@@ -495,6 +498,8 @@ async function uploadCaseToCis(req) {
                 continue;
             }
             var caseJson = detail.toJSON ? detail.toJSON() : detail;
+            var classDocs = await getClassficationDocs(firId, req);
+            var cisPayload = buildCisPayload(caseJson, classDocs);
             var existsInCis = false;
             try {
                 var cisCase = await DigitizationApiService.fetchCaseByCino(caseJson.cino);
@@ -502,13 +507,190 @@ async function uploadCaseToCis(req) {
             } catch (lookupErr) {
                 existsInCis = false;
             }
-            var result = await DigitizationApiService.pushDigitizedEntry(caseJson, existsInCis);
-            console.log('uploadCaseToCis: fir ' + firId + ' cino ' + caseJson.cino + ' ' +
-                (existsInCis ? 'updated' : 'created') + ' in CIS ->', JSON.stringify(result));
+
+            console.log("cisPayload,,,", cisPayload, existsInCis)
+            var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
+            if (result && result.success !== false && result.status !== false) {
+                var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
+                await new Promise(function (resolve) {
+                    CIPAService.UpdateexecuteSQL(firupdate, function () { resolve(); });
+                });
+                console.log('uploadCaseToCis: fir ' + firId + ' cino ' + caseJson.cino + ' ' +
+                    (existsInCis ? 'updated' : 'created') + ' in CIS ->', JSON.stringify(result));
+            } else {
+                console.error('uploadCaseToCis: CIS rejected fir ' + firId + ' ->', JSON.stringify(result));
+            }
         } catch (err) {
             console.error('uploadCaseToCis failed for fir ' + firId + ':', err.message);
         }
     }
+}
+
+function getClassficationDocs(firId, req) {
+    return new Promise(function (resolve) {
+        httpService.get(encodeURI("/classficationfiles?fir=" + firId + "&_sort=id:asc&_limit=-1"), req.body, function (node) {
+            try {
+                var list = JSON.parse(node);
+                resolve(Array.isArray(list) ? list : []);
+            } catch (e) {
+                resolve([]);
+            }
+        });
+    });
+}
+
+function cisStrip(row) {
+    var r = Object.assign({}, row);
+    delete r.id;
+    delete r.case_detail_id;
+    delete r.createdAt;
+    delete r.updatedAt;
+    return r;
+}
+
+function cisHistory(row) {
+    var r = cisStrip(row);
+    r.nextDate = r.nextdate !== undefined ? r.nextdate : null;
+    delete r.nextdate;
+    if (r.contestedUnContested !== undefined) {
+        r.contestedUncontested = r.contestedUnContested;
+        delete r.contestedUnContested;
+    }
+    return r;
+}
+
+function cisMainParty(r) {
+    if (!r) return null;
+    return {
+        name: r.name,
+        address: r.address,
+        isPartyInPerson: r.isPartyInPerson || false,
+        mobileNumber: r.mobileNumber,
+        isHidden: r.isHidden || false,
+        legalHeir: r.legalHeir,
+        advocate: {
+            name: r.advName,
+            code: (r.advCode !== null && r.advCode !== undefined) ? String(r.advCode) : null,
+            regNo: r.advReg
+        }
+    };
+}
+
+function cisAdvGroups(rows) {
+    var map = {}, keys = [];
+    (rows || []).forEach(function (r) {
+        var key = [r.partyNo, r.partyId, r.partyType].join('_');
+        if (!map[key]) {
+            map[key] = { partyNo: r.partyNo, partyId: r.partyId, partyType: r.partyType, advocates: [] };
+            keys.push(key);
+        }
+        map[key].advocates.push({
+            name: r.advName,
+            code: (r.advCode !== null && r.advCode !== undefined) ? String(r.advCode) : null,
+            regNo: r.advReg
+        });
+    });
+    return keys.map(function (k) { return map[k]; });
+}
+
+function normCisPath(p) {
+    return String(p || '').replace(/\\/g, '/').toLowerCase();
+}
+
+// documents[] = saved case_documents rows + classification PDFs not mapped to any IA/Order,
+// renumbered sequentially 1,2,3,... in classification id order.
+function cisDocuments(cd, classDocs) {
+    var docs = (cd.case_documents || []).map(cisStrip);
+    var mappedPaths = {};
+    (cd.ia_filings || []).forEach(function (r) { if (r.documentPath) mappedPaths[normCisPath(r.documentPath)] = true; });
+    (cd.order_details || []).forEach(function (r) { if (r.documentPath) mappedPaths[normCisPath(r.documentPath)] = true; });
+    (classDocs || []).forEach(function (cf) {
+        var p = cf.ocrpdfpath;
+        if (!p || mappedPaths[normCisPath(p)]) return;
+        docs.push({
+            partyNo: null,
+            partyType: null,
+            documentType: cf.documenttype,
+            documentName: String(p).split(/[\\/]/).pop(),
+            documentTitle: cf.documenttypename,
+            description: cf.documentdesc,
+            remarks: cf.documentremark,
+            documentPath: p,
+            advReg: null,
+            advCode: null,
+            filedDate: cf.documentdate,
+            documentOrder: null,
+            fileSize: cf.filesize,
+            fileExtension: 'pdf'
+        });
+    });
+    docs.forEach(function (d, idx) { d.documentOrder = idx + 1; });
+    return docs;
+}
+
+// Build the CIS digitizedEntry payload from a local case (CaseService.getCaseByFir toJSON)
+// in the same shape the CIS fetch API returns.
+function buildCisPayload(cd, classDocs) {
+    var crime = (cd.crime_details || [])[0];
+    var parties = cd.main_parties || [];
+    return {
+        caseDetails: {
+            cino: cd.cino,
+            efilno: cd.efilno,
+            dateOfEfiling: cd.dateOfEfiling,
+            filNo: cd.filNo,
+            filYear: cd.filYear,
+            dateOfFiling: cd.dateOfFiling,
+            dateOfScrutiny: cd.dateOfScrutiny,
+            regNo: cd.regNo,
+            regYear: cd.regYear,
+            dtRegis: cd.dtRegis,
+            typeName: cd.typeName,
+            caseType: cd.caseType,
+            ciCri: (cd.ciCri !== undefined) ? cd.ciCri : null,
+            status: cd.status,
+            dateFirstList: cd.dateFirstList,
+            dateNextList: cd.dateNextList,
+            dateLastList: cd.dateLastList,
+            dateOfDecision: cd.dateOfDecision,
+            dateFilingDisp: cd.dateFilingDisp,
+            dateFilingDispO: cd.dateFilingDispO,
+            dispNature: cd.dispNature,
+            courtNo: cd.courtNo,
+            policeStCode: cd.policeStCode,
+            firNo: crime ? crime.firNo : null,
+            firYear: crime ? crime.firYear : null,
+            mainCaseNo: cd.mainCaseNo,
+            subject: cd.subject,
+            caseNo: cd.caseNo,
+            mainMatterCino: cd.mainMatterCino
+        },
+        additionalSubjects: (cd.additional_subjects || []).map(function (r) {
+            return { subjectCode: r.subjectcode };
+        }),
+        mainparties: {
+            petitioner: cisMainParty(parties.filter(function (r) { return r.partytype == 1; })[0]),
+            respondent: cisMainParty(parties.filter(function (r) { return r.partytype == 2; })[0])
+        },
+        extraParties: (cd.extra_parties || []).map(cisStrip),
+        additionalAdvocates: cisAdvGroups(cd.additional_advocates),
+        otherParties: (cd.other_parties || []).map(cisStrip),
+        victims: (cd.victims || []).map(cisStrip),
+        witness: (cd.witnesses || []).map(cisStrip),
+        caveat: (cd.caveats || []).map(cisStrip),
+        act: (cd.case_acts || []).map(cisStrip),
+        factDetails: (cd.fact_details || []).map(cisStrip),
+        causeofaction: (cd.cause_of_actions || []).map(cisStrip),
+        iaFiling: (cd.ia_filings || []).map(cisStrip),
+        caseHistory: (cd.case_histories || []).map(cisHistory),
+        iaHistory: (cd.ia_histories || []).map(cisHistory),
+        proceedingsPresence: (cd.proceedings_presences || []).map(cisStrip),
+        trialCourtDetails: (cd.trial_court_details || []).map(cisStrip),
+        crimeDetails: (cd.crime_details || []).map(cisStrip),
+        transferDetails: (cd.transfer_details || []).map(cisStrip),
+        orderDetails: (cd.order_details || []).map(cisStrip),
+        documents: cisDocuments(cd, classDocs)
+    };
 }
 
 async function uploadTodms1(req) {
