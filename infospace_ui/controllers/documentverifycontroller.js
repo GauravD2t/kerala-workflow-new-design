@@ -40,8 +40,8 @@ DocumentverifyController.prototype.filenotuploadlist = function (req, res) {
     })
 }
 DocumentverifyController.prototype.secondtimebulkverifyfile =async function (req, res) {
-           await uploadCaseToCis(req);
-           res.send({ status: true });
+           var cisUpload = await uploadCaseToCis(req);
+           res.send({ status: true, cisUpload: cisUpload });
     // var deletequery = "update firs set isupload=true where id in (" + req.body.selectedfile.toString() + ")"; //console.log(deletequery)
     // CIPAService.UpdateexecuteSQL(deletequery, function (data) {
     //    uploadCaseToCis(req);
@@ -404,13 +404,14 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
     if (req.body.imagestatus == 6) {
         deletequery = "update firs set thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",thirdverify=true where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
+            var cisUpload = null;
             if (req.body.imagestatus == 6) {
                // uploadTodms1(req);
-              await uploadCaseToCis(req);
+              cisUpload = await uploadCaseToCis(req);
             }
 
             if (data != null) {
-                res.send({ status: true });
+                res.send({ status: true, cisUpload: cisUpload });
             } else {
                 res.send({ status: false });
             }
@@ -487,14 +488,18 @@ async function getclassficationbyfilewait(fileid, request) {
 // Upload digitized case details to CIS after third-level approval.
 // If the CINO already exists in CIS -> PUT (update), otherwise -> POST (create).
 async function uploadCaseToCis(req) {
+    var summary = { total: 0, uploaded: 0, skipped: 0, failed: 0, results: [] };
     var firIds = String(req.body.selectedfile).toString().split(',');
     for (var i = 0; i < firIds.length; i++) {
         var firId = parseInt(firIds[i], 10);
         if (!firId) continue;
+        summary.total++;
         try {
             var detail = await CaseService.getCaseByFir(firId);
             if (!detail) {
                 console.log('uploadCaseToCis: no case details saved for fir ' + firId + ' - skipping CIS upload');
+                summary.skipped++;
+                summary.results.push({ fir: firId, status: 'skipped', reason: 'no case details' });
                 continue;
             }
             var caseJson = detail.toJSON ? detail.toJSON() : detail;
@@ -515,15 +520,22 @@ async function uploadCaseToCis(req) {
                 await new Promise(function (resolve) {
                     CIPAService.UpdateexecuteSQL(firupdate, function () { resolve(); });
                 });
+                summary.uploaded++;
+                summary.results.push({ fir: firId, cino: caseJson.cino, status: existsInCis ? 'updated' : 'created' });
                 console.log('uploadCaseToCis: fir ' + firId + ' cino ' + caseJson.cino + ' ' +
                     (existsInCis ? 'updated' : 'created') + ' in CIS ->', JSON.stringify(result));
             } else {
+                summary.failed++;
+                summary.results.push({ fir: firId, cino: caseJson.cino, status: 'rejected', response: result });
                 console.error('uploadCaseToCis: CIS rejected fir ' + firId + ' ->', JSON.stringify(result));
             }
         } catch (err) {
+            summary.failed++;
+            summary.results.push({ fir: firId, status: 'error', error: err.message });
             console.error('uploadCaseToCis failed for fir ' + firId + ':', err.message);
         }
     }
+    return summary;
 }
 
 function getClassficationDocs(firId, req) {

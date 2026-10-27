@@ -17,11 +17,7 @@ function getdilelist() {
 
 }
 
-function viewdocumentoffile(id) { 
-    pushtoSrever({ 'id': id }, "/viewdocumentoffile.dwf", "POST", function (node) { 
-        
-    })
-}
+
 function bulkVerify() {
     var jsonform = []
 
@@ -34,16 +30,33 @@ function bulkVerify() {
     if (jsonform.length == 0) {
         toastr.error("Select one file !");
     } else {
-        // $.blockUI();
+        $.blockUI();
         pushtoSrever({ 'selectedfile': jsonform, imagestatus: 6, Verifyremarks: '' }, "/secondtimebulkverifyfile.dwf", "POST", function (node) {
-
-            toastr.success('File uploaded successfully!');
+            $.unblockUI();
+            showUploadSummary(node.cisUpload);
             getdilelist();
-            // $.unblockUI();
         })
 
     }
     // console.log(jsonform);
+}
+
+function showUploadSummary(s) {
+    if (!s) { toastr.success('Upload finished.'); return; }
+    $('#sumUploaded').text('Uploaded: ' + (s.uploaded || 0));
+    $('#sumSkipped').text('Skipped: ' + (s.skipped || 0));
+    $('#sumFailed').text('Failed: ' + (s.failed || 0));
+    var html = '';
+    (s.results || []).forEach(function (r) {
+        var cls = (r.status === 'created' || r.status === 'updated') ? 'text-success'
+            : (r.status === 'skipped' ? 'text-warning' : 'text-danger');
+        var detail = r.reason || r.error || (r.response ? JSON.stringify(r.response) : '');
+        html += '<tr><td>' + (r.fir || '') + '</td><td>' + (r.cino || '') + '</td>' +
+            '<td class="font-weight-bold ' + cls + '">' + (r.status || '') + '</td>' +
+            '<td style="word-break:break-all;">' + detail + '</td></tr>';
+    });
+    $('#sumRows').html(html || '<tr><td colspan="4" class="text-muted">No results</td></tr>');
+    $('#uploadSummaryModal').modal('show');
 }
 function selectAll() {
     if ($('#iif1').prop('checked')) {
