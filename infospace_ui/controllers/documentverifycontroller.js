@@ -15,6 +15,19 @@ var Form_A_DocumentID = 'd7906485-028b-4ded-b485-c8a0c6ab32fd';
 
 const PDFDocument = require("pdfkit");
 
+function safeParse(node, fallback) {
+    try {
+        var parsed = JSON.parse(node);
+        return (parsed === null || parsed === undefined) ? fallback : parsed;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function escSql(val) {
+    return String(val === null || val === undefined ? '' : val).replace(/'/g, "''");
+}
+
 function DocumentverifyController() {
 }
 DocumentverifyController.prototype.documentverify = function (req, res) {
@@ -36,12 +49,21 @@ DocumentverifyController.prototype.thirdverify = function (req, res) {
 }
 DocumentverifyController.prototype.filenotuploadlist = function (req, res) {
     httpService.get("/firs?imagestatus=6&isupload=false&thirdverify=true&_limit=-1", req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        try {
+            res.send({ status: true, data: JSON.parse(node1) });
+        } catch (e) {
+            res.send({ status: false, data: [] });
+        }
     })
 }
 DocumentverifyController.prototype.secondtimebulkverifyfile = async function (req, res) {
-    var cisUpload = await uploadCaseToCis(req);
-    res.send({ status: true, cisUpload: cisUpload });
+    try {
+        var cisUpload = await uploadCaseToCis(req);
+        res.send({ status: true, cisUpload: cisUpload });
+    } catch (err) {
+        console.error('secondtimebulkverifyfile error:', err.message);
+        res.send({ status: false, error: err.message });
+    }
     // var deletequery = "update firs set isupload=true where id in (" + req.body.selectedfile.toString() + ")"; //console.log(deletequery)
     // CIPAService.UpdateexecuteSQL(deletequery, function (data) {
     //    uploadCaseToCis(req);
@@ -59,8 +81,8 @@ DocumentverifyController.prototype.getbstches = function (req, res) {
     query = 'SELECT  b.id, b.bundlenumber AS bundlenumber FROM  firs f JOIN   batches b ON b.id = f.batch  where f.inwardstatus=1 and f.readyforverify = true and  f.imagestatus=5 GROUP BY  b.id, b.bundlenumber ORDER BY  b.bundlenumber';
     CIPAService.executeSQL(query, function (batchdata) {
         let date = [];
-        let department = req.session.user.user.department.split(",");
-        for (var batch of batchdata[0]) {
+        let department = (req.session.user.user.department || '').split(",");
+        for (var batch of (batchdata && batchdata[0]) || []) {
             if (department.includes(batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')))) {
                 //if (batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')) == req.session.user.user.department) {
                 date.push(batch);
@@ -77,8 +99,8 @@ DocumentverifyController.prototype.getbstchesecondverify = function (req, res) {
     // query = 'select b.id,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch where  f.imagestatus=6 and isupload=false and (secondverify=false or secondverify is null) group by b.id,b.bundlenumber order by b.bundlenumber'
     CIPAService.executeSQL(query, function (batchdata) {
         let date = [];
-        let department = req.session.user.user.department.split(",");
-        for (var batch of batchdata[0]) {
+        let department = (req.session.user.user.department || '').split(",");
+        for (var batch of (batchdata && batchdata[0]) || []) {
             if (department.includes(batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')))) {
                 //if (batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')) == req.session.user.user.department) {
                 date.push(batch);
@@ -96,8 +118,8 @@ DocumentverifyController.prototype.getbstchethirdverify = function (req, res) {
     //query = 'select b.id,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch where  f.imagestatus=6 and isupload=false and secondverify=true and (thirdverify=false or thirdverify is null) group by b.id,b.bundlenumber order by b.bundlenumber'
     CIPAService.executeSQL(query, function (batchdata) {
         let date = [];
-        let department = req.session.user.user.department.split(",");
-        for (var batch of batchdata[0]) {
+        let department = (req.session.user.user.department || '').split(",");
+        for (var batch of (batchdata && batchdata[0]) || []) {
             if (department.includes(batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')))) {
                 //if (batch.bundlenumber.substring(0, batch.bundlenumber.lastIndexOf('-')) == req.session.user.user.department) {
                 date.push(batch);
@@ -284,23 +306,23 @@ DocumentverifyController.prototype.getbstchesForFirstTimeVerify = function (req,
 }
 DocumentverifyController.prototype.findFIrsbybathc = function (req, res) {
     httpService.get("/findfirbyQuery?imagestatus=5&readyforverify=true&batch=" + req.query.batch + "&_limit=-1", req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        res.send({ status: true, data: safeParse(node1, []) });
     })
 }
 DocumentverifyController.prototype.findFIrsbybathcsecondverify = function (req, res) {
     httpService.get("/findfirbyQuery?imagestatus=6&readyforverify=true&secondverify_ne=true&isupload=false&batch=" + req.query.batch + "&_limit=-1", req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        res.send({ status: true, data: safeParse(node1, []) });
     })
 }
 DocumentverifyController.prototype.findFIrsbybathcthidverify = function (req, res) {
     httpService.get("/findfirbyQuery?imagestatus=6&readyforverify=true&isupload=false&secondverify=true&thirdverify_ne=true&batch=" + req.query.batch + "&_limit=-1", req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        res.send({ status: true, data: safeParse(node1, []) });
     })
 }
 
 DocumentverifyController.prototype.findFIrsbybathcForFirstTime = function (req, res) {
     httpService.get("/firs?imagestatus=5&readyforverify=false&batch=" + req.query.batch + "&_limit=-1", req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        res.send({ status: true, data: safeParse(node1, []) });
     })
 }
 DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
@@ -316,18 +338,18 @@ DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
             }
         })
     } else {
-        deletequery = "update firs set readyforverify=false,verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",verifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set readyforverify=false,verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",verifyremarks='" + escSql(req.body.Verifyremarks) + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
 
         httpService.get("/firs/" + letfldid, req.body, function (node1) {
-            let firdata = JSON.parse(node1);
+            let firdata = safeParse(node1, {});
             lettostage = "";
             if (req.body.imagestatus == 1) {
                 lettostage = "Image QC";
             } else if (req.body.imagestatus == 2) {
                 lettostage = "Classfication";
             }
-            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + firdata.classficationpagecount + ",'L1 Rejected','" + lettostage + "','" + req.body.Verifyremarks + "'," + firdata.pdfpagecount + "," + firdata.scanpagecount + "," + firdata.qcpagecount + "," + firdata.metadatapage + ")";
+            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + (firdata.classficationpagecount || 0) + ",'L1 Rejected','" + lettostage + "','" + escSql(req.body.Verifyremarks) + "'," + (firdata.pdfpagecount || 0) + "," + (firdata.scanpagecount || 0) + "," + (firdata.qcpagecount || 0) + "," + (firdata.metadatapage || 0) + ")";
             console.log("queryinsert.............", queryinsert)
             CIPAService.InsertexecuteSQL(queryinsert, function (batchdata) {
                 CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
@@ -365,11 +387,11 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
             }
         })
     } else {
-        deletequery = "update firs set readyforverify=false,secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+        deletequery = "update firs set readyforverify=false,secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + escSql(req.body.Verifyremarks) + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
 
         httpService.get("/firs/" + letfldid, req.body, function (node1) {
-            let firdata = JSON.parse(node1);
+            let firdata = safeParse(node1, {});
             lettostage = "";
             if (req.body.imagestatus == 1) {
                 lettostage = "Image QC";
@@ -378,7 +400,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
             } else if (req.body.imagestatus == 5) {
                 lettostage = "First Verify";
             }
-            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + firdata.classficationpagecount + ",'L2 Rejected','" + lettostage + "','" + req.body.Verifyremarks + "'," + firdata.pdfpagecount + "," + firdata.scanpagecount + "," + firdata.qcpagecount + "," + firdata.metadatapage + ")";
+            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + (firdata.classficationpagecount || 0) + ",'L2 Rejected','" + lettostage + "','" + escSql(req.body.Verifyremarks) + "'," + (firdata.pdfpagecount || 0) + "," + (firdata.scanpagecount || 0) + "," + (firdata.qcpagecount || 0) + "," + (firdata.metadatapage || 0) + ")";
             console.log("queryinsert.............", queryinsert)
             CIPAService.InsertexecuteSQL(queryinsert, function (batchdata) {
                 CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
@@ -403,7 +425,12 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
             var cisUpload = null;
             if (req.body.imagestatus == 6) {
                 // uploadTodms1(req);
-                cisUpload = await uploadCaseToCis(req);
+                try {
+                    cisUpload = await uploadCaseToCis(req);
+                } catch (cisErr) {
+                    console.error('uploadCaseToCis outer error:', cisErr.message);
+                    cisUpload = { total: 0, uploaded: 0, skipped: 0, failed: 0, results: [], error: cisErr.message };
+                }
             }
 
             if (data != null) {
@@ -418,7 +445,7 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
         letfldid = req.body.selectedfile.toString().split(",")[0];
 
         httpService.get("/firs/" + letfldid, req.body, function (node1) {
-            let firdata = JSON.parse(node1);
+            let firdata = safeParse(node1, {});
             lettostage = "";
             if (req.body.imagestatus == 1) {
                 lettostage = "Image QC";
@@ -428,11 +455,11 @@ DocumentverifyController.prototype.thirdverifybulkwithupload = async function (r
                 lettostage = "First Verify";
             }
             updatesign = "update classficationfiles set firstsign=false,secondsign=false where id in (select  cf.id from classficationfiles cf  where cf.issubchild=false  and (cf.ocrpdfpath is not null or cf.ocrpdfpath !='') and cf.fir in (" + req.body.selectedfile + ") UNION  select chd.id from classficationfiles per join classficationfiles chd on chd.parent=per.id and per.issubchild=true where  per.issubchild=true   and (chd.ocrpdfpath != '' or chd.ocrpdfpath is not null)  and  per.fir in (" + req.body.selectedfile + ") )";
-            deletequery = "update firs set secondverify=false,readyforverify=false,thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",thirdverifyremarks='" + req.body.Verifyremarks + "' where id in (" + req.body.selectedfile.toString() + ")";
+            deletequery = "update firs set secondverify=false,readyforverify=false,thirdverify_at=NOW(),thirdverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",thirdverifyremarks='" + escSql(req.body.Verifyremarks) + "' where id in (" + req.body.selectedfile.toString() + ")";
 
             updateFORM_A = "delete from classficationfiles where fir in (" + req.body.selectedfile + ") and documenttype ='" + Form_A_DocumentID + "'";
 
-            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + firdata.classficationpagecount + ",'L3 Rejected','" + lettostage + "','" + req.body.Verifyremarks + "'," + firdata.pdfpagecount + "," + firdata.scanpagecount + "," + firdata.qcpagecount + "," + firdata.metadatapage + ")";
+            queryinsert = "INSERT INTO filereturnlogs(fir, users_by, action_at, pagecount, fromstage, tostage,remarks,pdfcount,scancount,qccount,metadatacount) VALUES (" + letfldid + "," + req.session.user.user.id + ",now()," + (firdata.classficationpagecount || 0) + ",'L3 Rejected','" + lettostage + "','" + escSql(req.body.Verifyremarks) + "'," + (firdata.pdfpagecount || 0) + "," + (firdata.scanpagecount || 0) + "," + (firdata.qcpagecount || 0) + "," + (firdata.metadatapage || 0) + ")";
             console.log("queryinsert.............", queryinsert)
             CIPAService.InsertexecuteSQL(queryinsert, function (batchdata) {
                 CIPAService.UpdateexecuteSQL(deletequery, async function (data1) {
@@ -469,7 +496,11 @@ DocumentverifyController.prototype.updateclassficationSecondSign = async functio
 async function getfile(fileid, req) {
     return new Promise((resolve, reject) => {
         httpService.get("/findfirbyQuery?id=" + fileid, req.body, async function (node1) {
-            resolve(JSON.parse(node1));
+            try {
+                resolve(JSON.parse(node1) || []);
+            } catch (e) {
+                resolve([]);
+            }
         })
     })
 }
@@ -506,7 +537,7 @@ async function uploadCaseToCis(req) {
             var existsInCis = !!(Array.isArray(firData) && firData[0] && firData[0].cisfound);
 
             console.log("cisPayload,,,existsInCis................", existsInCis)
-            // var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
+            var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
                 var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
                 await new Promise(function (resolve) {
@@ -850,19 +881,22 @@ async function uploadTodms1(req) {
     }
 }
 DocumentverifyController.prototype.getdocumentclassficationByfir = async function (req, res) {
-    let sendtoSign = "select  cf.* from classficationfiles cf  where   cf.fir in (" + req.query.fir + ")  order by cf.id ";
-    //console.log(sendtoSign)
-    let dataPDF = await CIPAService.executeSQLOnlyDatawithwait(sendtoSign);
-
-    res.send({ status: true, data: dataPDF });
+    var firId = parseInt(req.query.fir, 10);
+    if (!firId) return res.send({ status: true, data: [] });
+    let sendtoSign = "select  cf.* from classficationfiles cf  where   cf.fir in (" + firId + ")  order by cf.id ";
+    try {
+        let dataPDF = await CIPAService.executeSQLOnlyDatawithwait(sendtoSign);
+        res.send({ status: true, data: dataPDF });
+    } catch (err) {
+        console.error('getdocumentclassficationByfir error:', err.message);
+        res.send({ status: false, data: [] });
+    }
 }
 
 DocumentverifyController.prototype.findfilefromSeachInVerify = function (req, res) {
 
     httpService.get(encodeURI("/findfirbyQuery?casetype=" + req.query.casetype + "&year=" + req.query.caseyear + "&caseno=" + req.query.caseno + "&inwardstatus=1&imagestatus=5&qcreject=false&_sort=crn:asc&readyforverify=true&_limit=-1"), req.body, function (allbatch) {
-        allbatch = JSON.parse(allbatch)
-        //console.log(allbatch.statusCode)
-        res.send({ status: true, data: allbatch });
+        res.send({ status: true, data: safeParse(allbatch, []) });
 
 
     })
@@ -875,7 +909,7 @@ DocumentverifyController.prototype.verifyFile = function (req, res) {
     req.body.verify_at = new Date();
     try {
         httpService.put("/firs/" + req.params.id, req.body, function (node1) {
-            res.send({ status: true, data: JSON.parse(node1) });
+            res.send({ status: true, data: safeParse(node1, {}) });
         })
     } catch (error) {
         res.send({ status: false });
@@ -889,7 +923,7 @@ DocumentverifyController.prototype.rejectforMetadatathidverify = function (req, 
 
     try {
         httpService.put("/firs/" + req.body.id, req.body, function (node1) {
-            res.send({ status: true, data: JSON.parse(node1) });
+            res.send({ status: true, data: safeParse(node1, {}) });
         })
     } catch (error) {
         res.send({ status: false });
@@ -916,7 +950,7 @@ DocumentverifyController.prototype.rejectforMetadata = function (req, res) {
 
     try {
         httpService.put("/firs/" + req.body.id, req.body, function (node1) {
-            res.send({ status: true, data: JSON.parse(node1) });
+            res.send({ status: true, data: safeParse(node1, {}) });
         })
     } catch (error) {
         res.send({ status: false });
@@ -930,8 +964,8 @@ DocumentverifyController.prototype.rejectforMetadata = function (req, res) {
 
 DocumentverifyController.prototype.getpdf = function (req, res) {
     httpService.get(encodeURI("/classficationfiles/" + req.query.id), req.body, function (node1) {
-        files = JSON.parse(node1);
-        if (files.ocrpdfpath == null) {
+        var files = safeParse(node1, null);
+        if (!files || files.ocrpdfpath == null) {
             //  res.setHeader('Content-Type', 'application/pdf');
             res.status(500).send('Pdf path not available');
         }
@@ -963,13 +997,12 @@ DocumentverifyController.prototype.getpdf = function (req, res) {
 
 DocumentverifyController.prototype.getclassficationmodal = function (req, res) {
     httpService.get(encodeURI("/classficationfiles/" + req.query.id), req.body, function (node1) {
-        res.send({ status: true, data: JSON.parse(node1) });
+        res.send({ status: true, data: safeParse(node1, {}) });
     })
 }
 DocumentverifyController.prototype.updatedocumentclassficationByfir = function (req, res) {
     httpService.put("/classficationfiles/" + req.query.id, req.body, function (node) {
-        node = JSON.parse(node)
-        res.send({ status: true, data: node });
+        res.send({ status: true, data: safeParse(node, {}) });
 
     })
 }
