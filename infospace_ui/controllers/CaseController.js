@@ -21,7 +21,8 @@ function createFir(req, caseDetails) {
             casetype: caseDetails.typeName != null ? String(caseDetails.typeName) : null,
             caseno: caseDetails.regNo != null ? String(caseDetails.regNo) : null,
             year: caseDetails.regYear != null ? caseDetails.regYear: null,
-            pagecount: 0
+            pagecount: 0,
+            cisfound: caseDetails.cisfound
         };
         if (req.body.fir && typeof req.body.fir === 'object') {
             Object.assign(firBody, req.body.fir);

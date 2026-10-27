@@ -2,6 +2,7 @@ var currentCaseId = null;
 var additionalSubjects = [];
 var cfEmbed = false;
 var cfEmbedFirId = null;
+var cisfound = false;
 
 var CASE_FIELDS = ['efilno', 'dateOfEfiling', 'filNo', 'filYear', 'dateOfFiling', 'dateOfScrutiny',
     'regNo', 'regYear', 'dtRegis', 'typeName', 'caseType', 'status', 'dateFirstList', 'dateNextList',
@@ -722,6 +723,7 @@ function normalizeHistoryItem(it) {
 
 function populateFromExternal(data) {
     data = data || {};
+    cisfound = true;
 
     fillPrefix('cf_cd_', CASE_FIELDS, data.caseDetails || {});
 
@@ -821,11 +823,12 @@ function searchCase(forEdit) {
                             populateFromExternal(ext.data);
                             showStatusBadge((ext.data.caseDetails || {}).status || 'From CIS');
                             toastr.success('Case fetched from CIS. Review and Save All to digitize.');
-                            
+                            cisfound=true;
                         } else {
                             clearAll(false);
                             currentCaseId = null;
                             toastr.info('Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
+                            cisfound=false;
                         }
                         $('#cf_search_spinner').hide();
                     },
@@ -920,6 +923,7 @@ function buildPayload() {
 
     var caseDetails = collectPrefix('cf_cd_', CASE_FIELDS, CASE_NUM);
     caseDetails.cino = $('#cf_cino').val().trim();
+    caseDetails.cisfound = cisfound;
     payload.caseDetails = caseDetails;
 
     payload.additionalSubjects = additionalSubjects.map(function (code) {
@@ -1049,6 +1053,7 @@ function doSave(payload, onDone) {
 function clearAll(clearCino) {
     if (clearCino !== false) $('#cf_cino').val('');
     currentCaseId = null;
+    cisfound = false;
     updateSaveButtons(false);
     showStatusBadge(null);
     fillPrefix('cf_cd_', CASE_FIELDS, {});

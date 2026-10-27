@@ -225,6 +225,10 @@
     "qcauto": {
       "type": "boolean",
       "default": false
+    },
+    "cisfound": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
