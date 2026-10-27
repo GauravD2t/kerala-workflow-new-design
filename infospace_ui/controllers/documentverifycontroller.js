@@ -513,7 +513,7 @@ async function uploadCaseToCis(req) {
                 existsInCis = false;
             }
 
-            console.log("cisPayload,,,", cisPayload, existsInCis)
+            console.log("cisPayload,,,existsInCis................", existsInCis)
             var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
                 var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
