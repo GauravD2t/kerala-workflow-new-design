@@ -353,7 +353,7 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
 
             if (req.body.imagestatus == 6) {
-                CreateFromAfromB(req, res);
+               // CreateFromAfromB(req, res);
             }
 
 
