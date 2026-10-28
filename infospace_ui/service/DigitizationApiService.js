@@ -144,10 +144,7 @@ DigitizationApiService.prototype.syncAllMasters = async function (db) {
 
 
 DigitizationApiService.prototype.pushDigitizedEntry = async function (caseData, isUpdate) {
-    var payload = {
-        data: caseData,
-        courtCode: config.digitizationApi.courtCode
-    };
+    var payload = Object.assign({ courtCode: config.digitizationApi.courtCode }, caseData);
     var res = await requestWithToken(isUpdate ? 'put' : 'post', 'api/digitization/digitizedEntry', payload);
     return res.data;
 };

@@ -375,17 +375,17 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
 
     var deletequery = "";
     if (req.body.imagestatus == 6) {
-        //await uploadCaseToCis(req);
-        //res.send({ status: true });
-        deletequery = "update firs set secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
-        CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
-               // CreateFromAfromB(req, res);
-            if (data != null) {
-                res.send({ status: true });
-            } else {
-                res.send({ status: false });
-            }
-        })
+        await uploadCaseToCis(req);
+        res.send({ status: true });
+        // deletequery = "update firs set secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
+        // CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
+        //        // CreateFromAfromB(req, res);
+        //     if (data != null) {
+        //         res.send({ status: true });
+        //     } else {
+        //         res.send({ status: false });
+        //     }
+        // })
     } else {
         deletequery = "update firs set readyforverify=false,secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + escSql(req.body.Verifyremarks) + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
@@ -536,7 +536,7 @@ async function uploadCaseToCis(req) {
             var firData = await getfile(firId, req);
             var existsInCis = !!(Array.isArray(firData) && firData[0] && firData[0].cisfound);
 
-            console.log("cisPayload,,,existsInCis................", existsInCis)
+            console.log("cisPayload,,,existsInCis................", cisPayload)
             var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
                 var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
@@ -553,9 +553,13 @@ async function uploadCaseToCis(req) {
                 console.error('uploadCaseToCis: CIS rejected fir ' + firId + ' ->', JSON.stringify(result));
             }
         } catch (err) {
+            console.log(err)
+            var apiErr = err.response && err.response.data &&
+                (err.response.data.error || err.response.data.message);
+            var errMsg = apiErr || err.message;
             summary.failed++;
-            summary.results.push({ fir: firId, status: 'error', error: err.message });
-            console.error('uploadCaseToCis failed for fir ' + firId + ':', err.message);
+            summary.results.push({ fir: firId, cino: caseJson && caseJson.cino, status: 'error', error: errMsg });
+            console.error('uploadCaseToCis failed for fir ' + firId + ':', errMsg);
         }
     }
     return summary;
