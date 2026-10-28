@@ -24,5 +24,6 @@ function CaseRoute(app, db) {
     app.route("/api/digitization/digitizedEntryByFir").get(CaseController.digitizedEntryByFir);
     app.route("/api/digitization/checkFirBundle").get(CaseController.checkFirBundle);
     app.route("/api/digitization/fetchCase").get(CaseController.fetchCaseByCino);
+    app.route("/api/digitization/config").get(CaseController.appConfig);
 }
 module.exports = CaseRoute

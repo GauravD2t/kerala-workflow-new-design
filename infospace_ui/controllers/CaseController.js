@@ -2,6 +2,9 @@ var db = require('../models');
 var CaseService = require('../service/CaseService');
 var DigitizationApiService = require('../service/DigitizationApiService');
 var httpService = require('../service/httpService.js');
+var env = process.env.NODE_ENV || 'development';
+var config = require('../config/config.js')[env] || {};
+var COURT_CODE = (config.digitizationApi && config.digitizationApi.courtCode) || '';
 
 function createFir(req, caseDetails) {
     return new Promise(function (resolve, reject) {
@@ -189,12 +192,19 @@ CaseController.prototype.fetchCaseByCino = async function (req, res) {
     try {
         var cino = req.query.cino;
         if (!cino) return res.send({ success: false, error: 'cino query param is required' });
+        if (COURT_CODE && String(cino).toUpperCase().indexOf(COURT_CODE.toUpperCase()) !== 0) {
+            return res.send({ success: false, error: 'CINO must start with this court code ' + COURT_CODE });
+        }
         var data = await DigitizationApiService.fetchCaseByCino(cino);
         res.send(data);
     } catch (err) {
         console.error('CaseController.fetchCaseByCino error:', err);
         res.send({ success: false, error: err.message });
     }
+};
+
+CaseController.prototype.appConfig = function (req, res) {
+    res.send({ success: true, courtCode: COURT_CODE });
 };
 
 CaseController.prototype.digitizedEntryPage = function (req, res) {

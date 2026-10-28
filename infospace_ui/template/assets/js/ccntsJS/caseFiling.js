@@ -15,6 +15,7 @@ $(document).ready(function () {
     initCascades();
     initCasePickers();
     loadCourtCases();
+    loadAppConfig();
     initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
@@ -878,9 +879,27 @@ function checkFirBundleNotice(cino) {
     });
 }
 
+var cfCourtCode = '';
+
+function loadAppConfig() {
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/config',
+        success: function (res) {
+            if (res && res.success && res.courtCode) cfCourtCode = String(res.courtCode);
+        },
+        error: function (err) { console.error('appConfig load failed:', err); }
+    });
+}
+
 function searchCase(forEdit) {
     var cino = $('#cf_cino').val().trim();
     if (!cino) { toastr.warning('Enter CINO number'); return; }
+    if (cfCourtCode && cino.toUpperCase().indexOf(cfCourtCode.toUpperCase()) !== 0) {
+        toastr.warning('Invalid establishment code in CINO');
+        return;
+    }
     $('#cf_search_spinner').show();
     //checkFirBundleNotice(cino);
 
@@ -916,7 +935,7 @@ function searchCase(forEdit) {
                         } else {
                             clearAll(false);
                             currentCaseId = null;
-                            toastr.info('Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
+                            toastr.info(ext.error || 'Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
                             cisfound=false;
                         }
                         $('#cf_search_spinner').hide();
