@@ -894,7 +894,8 @@ function loadAppConfig() {
 }
 
 function searchCase(forEdit) {
-    var cino = $('#cf_cino').val().trim();
+    var cino = $('#cf_cino').val().trim().toUpperCase();
+    $('#cf_cino').val(cino);
     if (!cino) { toastr.warning('Enter CINO number'); return; }
     if (cfCourtCode && cino.toUpperCase().indexOf(cfCourtCode.toUpperCase()) !== 0) {
         toastr.warning('Invalid establishment code in CINO');
@@ -935,14 +936,19 @@ function searchCase(forEdit) {
                         } else {
                             clearAll(false);
                             currentCaseId = null;
-                            toastr.info(ext.error || 'Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
+                            if (ext.error) {
+                                toastr.error(ext.error);
+                            } else {
+                                toastr.info('Record not found in  CIS. Fill in the tabs and Save All to create a new entry.');
+                            }
                             cisfound=false;
                         }
                         $('#cf_search_spinner').hide();
                     },
                     error: function (err) {
                         console.error('searchCase error:', err);
-                        toastr.error('Search failed: ' + (err.statusText || 'unknown error'));
+                        var msg = (err.responseJSON && (err.responseJSON.error || err.responseJSON.message)) || err.statusText || 'unknown error';
+                        toastr.error('Search failed: ' + msg);
                         $('#cf_search_spinner').hide();
                     }
                 });

@@ -192,14 +192,17 @@ CaseController.prototype.fetchCaseByCino = async function (req, res) {
     try {
         var cino = req.query.cino;
         if (!cino) return res.send({ success: false, error: 'cino query param is required' });
-        if (COURT_CODE && String(cino).toUpperCase().indexOf(COURT_CODE.toUpperCase()) !== 0) {
+        cino = String(cino).trim().toUpperCase();
+        if (COURT_CODE && cino.indexOf(COURT_CODE.toUpperCase()) !== 0) {
             return res.send({ success: false, error: 'CINO must start with this court code ' + COURT_CODE });
         }
         var data = await DigitizationApiService.fetchCaseByCino(cino);
         res.send(data);
     } catch (err) {
-        console.error('CaseController.fetchCaseByCino error:', err);
-        res.send({ success: false, error: err.message });
+        var apiErr = err.response && err.response.data &&
+            (err.response.data.error || err.response.data.message);
+        console.error('CaseController.fetchCaseByCino error:', apiErr || err.message);
+        res.send({ success: false, error: apiErr || err.message });
     }
 };
 
