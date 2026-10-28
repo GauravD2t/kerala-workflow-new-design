@@ -13,6 +13,8 @@ var CASE_NUM = ['filNo', 'filYear', 'regNo', 'regYear', 'caseType', 'dispNature'
 $(document).ready(function () {
     initMasterSelects();
     initCascades();
+    initCasePickers();
+    loadCourtCases();
     initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
@@ -135,6 +137,93 @@ function loadSelect($el, params, done) {
 function initMasterSelects() {
     $('select[data-master]').each(function () {
         loadSelect($(this));
+    });
+}
+
+/* ---------------- courtcases picker (casetype -> year -> caseno -> cino) ---------------- */
+
+var courtCasesData = [];
+
+function fillSelect($el, options, placeholder) {
+    $el.empty().append('<option value="">' + placeholder + '</option>');
+    options.forEach(function (o) {
+        $el.append('<option value="' + o.value + '">' + o.label + '</option>');
+    });
+}
+
+function loadCourtCases(done) {
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/master/courtcases',
+        success: function (res) {
+            courtCasesData = (res.success && Array.isArray(res.data)) ? res.data : [];
+            var seen = {};
+            var types = [];
+            courtCasesData.forEach(function (row) {
+                if (row.regcase_type == null) return;
+                var key = String(row.regcase_type);
+                if (seen[key]) return;
+                seen[key] = true;
+                types.push({ value: row.regcase_type, label: row.regcase_type_name || row.regcase_type });
+            });
+            types.sort(function (a, b) { return String(a.label).localeCompare(String(b.label)); });
+            fillSelect($('#cf_pick_casetype'), types, 'Select Case Type');
+            if (done) done();
+        },
+        error: function (err) {
+            console.error('courtcases load failed:', err);
+            if (done) done();
+        }
+    });
+}
+
+function initCasePickers() {
+    $('#cf_pick_casetype').on('change', function () {
+        var v = $(this).val();
+        fillSelect($('#cf_pick_caseno'), [], 'Select Case No');
+        var years = {};
+        var ylist = [];
+        if (v !== '') {
+            courtCasesData.forEach(function (row) {
+                if (String(row.regcase_type) !== String(v) || row.reg_year == null) return;
+                var y = String(row.reg_year);
+                if (!years[y]) { years[y] = true; ylist.push({ value: y, label: y }); }
+            });
+        }
+        ylist.sort(function (a, b) { return b.value - a.value; });
+        fillSelect($('#cf_pick_caseyear'), ylist, 'Select Year');
+    });
+
+    $('#cf_pick_caseyear').on('change', function () {
+        var ct = $('#cf_pick_casetype').val();
+        var y = $(this).val();
+        var nos = [];
+        if (ct !== '' && y !== '') {
+            courtCasesData.forEach(function (row) {
+                if (String(row.regcase_type) === String(ct) && String(row.reg_year) === String(y) && row.reg_no != null) {
+                    nos.push({ value: row.reg_no, label: row.reg_no });
+                }
+            });
+        }
+        nos.sort(function (a, b) { return a.value - b.value; });
+        fillSelect($('#cf_pick_caseno'), nos, 'Select Case No');
+    });
+
+    $('#cf_pick_caseno').on('change', function () {
+        var ct = $('#cf_pick_casetype').val();
+        var y = $('#cf_pick_caseyear').val();
+        var no = $(this).val();
+        if (ct === '' || y === '' || no === '') return;
+        var hit = courtCasesData.filter(function (row) {
+            return String(row.regcase_type) === String(ct) &&
+                String(row.reg_year) === String(y) &&
+                String(row.reg_no) === String(no);
+        })[0];
+        if (hit && hit.cino) {
+            $('#cf_cino').val(hit.cino);
+            searchCase();
+        }
     });
 }
 
