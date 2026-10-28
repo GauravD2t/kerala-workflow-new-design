@@ -375,17 +375,17 @@ DocumentverifyController.prototype.secondverifybulkwithupload = async function (
 
     var deletequery = "";
     if (req.body.imagestatus == 6) {
-        await uploadCaseToCis(req);
-        res.send({ status: true });
-        // deletequery = "update firs set secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
-        // CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
-        //        // CreateFromAfromB(req, res);
-        //     if (data != null) {
-        //         res.send({ status: true });
-        //     } else {
-        //         res.send({ status: false });
-        //     }
-        // })
+        // await uploadCaseToCis(req);
+        // res.send({ status: true });
+        deletequery = "update firs set secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",secondverify=true,imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
+        CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
+               // CreateFromAfromB(req, res);
+            if (data != null) {
+                res.send({ status: true });
+            } else {
+                res.send({ status: false });
+            }
+        })
     } else {
         deletequery = "update firs set readyforverify=false,secondverify_at=NOW(),secondverify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + ",secondverifyremarks='" + escSql(req.body.Verifyremarks) + "' where id in (" + req.body.selectedfile.toString() + ")";
         letfldid = req.body.selectedfile.toString().split(",")[0];
