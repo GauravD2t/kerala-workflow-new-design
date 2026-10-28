@@ -516,6 +516,16 @@ function saveDocMeta() {
 
 function approveFile() {
     if (!FV.selectedFir) { toastr.error('Select one file !'); return; }
+    var unmappedOrders = FV.orderList.filter(function (r) {
+        return !r.documentPath || !String(r.documentPath).trim();
+    });
+    if (unmappedOrders.length) {
+        var names = unmappedOrders.map(function (r) {
+            return 'Order ' + (r.orderDate || '') + ' (' + (r.documentType || '') + ')';
+        }).join(', ');
+        toastr.error('Map a PDF to all Orders before approving. Unmapped: ' + names);
+        return;
+    }
     if (!confirm('Save case detail changes and approve this file now?')) return;
     var frame = document.getElementById('caseFrame');
     var w = frame && frame.contentWindow;
