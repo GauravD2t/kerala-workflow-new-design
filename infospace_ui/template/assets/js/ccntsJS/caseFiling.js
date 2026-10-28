@@ -1091,10 +1091,11 @@ function saveAll(onDone) {
     var payload = buildPayload();
     if (!payload.caseDetails.cino) { toastr.warning('CINO is required'); if (onDone) onDone(false); return; }
     if (cfEmbed && !currentCaseId) { toastr.warning('Case not digitized yet — nothing to update.'); if (onDone) onDone(false); return; }
-    if (!additionalSubjects.length) {
-        toastr.warning('Add at least one Additional Subject.');
+    var subjectVal = $('#cf_cd_subject').val();
+    if (subjectVal === '' || subjectVal === null || subjectVal === undefined || subjectVal === 'null') {
+        toastr.warning('Select subject!');
         $('a[href="#cf_tab_caseinfo"]').tab('show');
-        $('#cf_as_input').focus();
+        $('#cf_cd_subject').focus();
         if (onDone) onDone(false);
         return;
     }

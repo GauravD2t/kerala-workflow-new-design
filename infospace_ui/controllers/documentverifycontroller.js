@@ -536,7 +536,7 @@ async function uploadCaseToCis(req) {
             var firData = await getfile(firId, req);
             var existsInCis = !!(Array.isArray(firData) && firData[0] && firData[0].cisfound);
 
-            console.log("cisPayload,,,existsInCis................", cisPayload)
+            console.log("cisPayload,,,existsInCis................", existsInCis)
             var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
                 var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
@@ -553,9 +553,9 @@ async function uploadCaseToCis(req) {
                 console.error('uploadCaseToCis: CIS rejected fir ' + firId + ' ->', JSON.stringify(result));
             }
         } catch (err) {
-            console.log(err)
+            console.log(err.response.data)
             var apiErr = err.response && err.response.data &&
-                (err.response.data.error || err.response.data.message);
+                (err.response.data.message || err.response.data.error);
             var errMsg = apiErr || err.message;
             summary.failed++;
             summary.results.push({ fir: firId, cino: caseJson && caseJson.cino, status: 'error', error: errMsg });
@@ -649,7 +649,7 @@ function cisDocuments(cd, classDocs) {
         docs.push({
             partyNo: null,
             partyType: null,
-            documentType: cf.documenttype,
+            documentType: parseInt(cf.documenttype),
             documentName: String(p).split(/[\\/]/).pop(),
             documentTitle: cf.documenttypename,
             description: cf.documentdesc,
