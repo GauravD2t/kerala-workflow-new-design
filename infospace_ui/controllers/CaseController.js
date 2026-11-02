@@ -47,13 +47,14 @@ function createFir(req, caseDetails) {
 
 
 function findFirByCrn(cino) {
-    return new Promise(function (resolve) {
-        httpService.get(encodeURI("/firs?crn_eq=" + cino), {}, function (node) {
+    return new Promise(function (resolve, reject) {
+        httpService.get("/firs?crn_eq=" + encodeURIComponent(cino), {}, function (node) {
             try {
-                node = JSON.parse(node);
-                resolve(Array.isArray(node) && node.length ? node[0] : null);
+                node = typeof node === 'string' ? JSON.parse(node) : node;
+                if (!Array.isArray(node)) return reject(new Error('Unable to check whether CINO already exists. Please try again.'));
+                resolve(node.length ? node[0] : null);
             } catch (e) {
-                resolve(null);
+                reject(new Error('Unable to check whether CINO already exists. Please try again.'));
             }
         });
     });
@@ -95,6 +96,16 @@ CaseController.prototype.save = async function (req, res) {
         var payload = parsePayload(req);
         if (!payload.caseDetails || !payload.caseDetails.cino) {
             return res.send({ status: false, error: 'caseDetails.cino is required' });
+        }
+
+        var existingFir = await findFirByCrn(payload.caseDetails.cino);
+        if (existingFir) {
+            var bundle = existingFir.batch ;
+            return res.send({
+                status: false,
+                error: 'CINO already exists' + (bundle ? ' in batch ' + bundle.bundlenumber : '') + '. Case was not saved.',
+                data: { firId: existingFir.id, bundlenumber: bundle.bundlenumber || null }
+            });
         }
         if (req.session.batch != null) {
             fir = await createFir(req, payload.caseDetails);
@@ -193,9 +204,9 @@ CaseController.prototype.fetchCaseByCino = async function (req, res) {
         var cino = req.query.cino;
         if (!cino) return res.send({ success: false, error: 'cino query param is required' });
         cino = String(cino).trim().toUpperCase();
-        if (COURT_CODE && cino.indexOf(COURT_CODE.toUpperCase()) !== 0) {
-            return res.send({ success: false, error: 'CINO must start with this court code ' + COURT_CODE });
-        }
+        // if (COURT_CODE && cino.indexOf(COURT_CODE.toUpperCase()) !== 0) {
+        //     return res.send({ success: false, error: 'CINO must start with this court code ' + COURT_CODE });
+        // }
         var data = await DigitizationApiService.fetchCaseByCino(cino);
         res.send(data);
     } catch (err) {
@@ -257,7 +268,7 @@ CaseController.prototype.checkFirBundle = async function (req, res) {
             status: true,
             data: {
                 firId: fir ? fir.id : null,
-                bundlenumber: (fir && fir.batch && fir.batch.bundlenumber) ? fir.batch.bundlenumber : null
+                bundlenumber: (fir && fir.batch ) ? fir.batch.bundlenumber : null
             }
         });
     } catch (err) {

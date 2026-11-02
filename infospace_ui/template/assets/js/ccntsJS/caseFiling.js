@@ -897,10 +897,10 @@ function searchCase(forEdit) {
     var cino = $('#cf_cino').val().trim().toUpperCase();
     $('#cf_cino').val(cino);
     if (!cino) { toastr.warning('Enter CINO number'); return; }
-    if (cfCourtCode && cino.toUpperCase().indexOf(cfCourtCode.toUpperCase()) !== 0) {
-        toastr.warning('Invalid establishment code in CINO');
-        return;
-    }
+    // if (cfCourtCode && cino.toUpperCase().indexOf(cfCourtCode.toUpperCase()) !== 0) {
+    //     toastr.warning('Invalid establishment code in CINO');
+    //     return;
+    // }
     $('#cf_search_spinner').show();
     //checkFirBundleNotice(cino);
 
