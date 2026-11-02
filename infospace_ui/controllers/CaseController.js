@@ -165,10 +165,21 @@ CaseController.prototype.delete = async function (req, res) {
 
 CaseController.prototype.master = async function (req, res) {
     var masterName = req.params.master;
-    if (MASTERS.indexOf(masterName) === -1) {
-        return res.send({ success: false, error: 'Unknown master: ' + masterName });
-    }
+    // if (MASTERS.indexOf(masterName) === -1) {
+    //     return res.send({ success: false, error: 'Unknown master: ' + masterName });
+    // }
     try {
+        if (masterName === 'courtcases') {
+            var courtCode = String(req.query.courtCode || COURT_CODE).trim().toUpperCase();
+            if (!/^KL[A-Z]{2}\d{2}$/.test(courtCode)) {
+                return res.send({ success: false, error: 'Invalid establishment code' });
+            }
+            var courtLive = await DigitizationApiService.fetchMaster(masterName, courtCode);
+            if (!courtLive || !courtLive.success || !Array.isArray(courtLive.data)) {
+                return res.send({ success: false, error: (courtLive && courtLive.error) || 'Unable to load establishment cases' });
+            }
+            return res.send({ success: true, data: courtLive.data, source: 'live' });
+        }
         var cached = await db.MasterCache.findOne({ where: { master_name: masterName } });
         if (cached && Array.isArray(cached.data) && cached.data.length) {
             return res.send({ success: true, data: filterRows(cached.data, req.query), source: 'cache', synced_at: cached.synced_at });

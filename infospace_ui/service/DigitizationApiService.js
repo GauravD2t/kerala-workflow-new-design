@@ -79,9 +79,9 @@ async function postWithToken(path, body, forceTokenRefresh, timeoutMs) {
 DigitizationApiService.prototype.getToken = getToken;
 DigitizationApiService.prototype.MASTER_RESOURCES = MASTER_RESOURCES;
 
-DigitizationApiService.prototype.fetchMaster = async function (master) {
+DigitizationApiService.prototype.fetchMaster = async function (master, courtCode) {
     var res = await postWithToken('api/digitization/master/' + master, {
-        courtCode: config.digitizationApi.courtCode
+        courtCode: courtCode || config.digitizationApi.courtCode
     });
     return res.data;
 };
@@ -113,6 +113,7 @@ DigitizationApiService.prototype.syncAllMasters = async function (db) {
     var results = [];
     for (var i = 0; i < MASTER_RESOURCES.length; i++) {
         var name = MASTER_RESOURCES[i];
+        if (name === 'courtcases') continue;
         try {
             var timeout = name === 'courtcases' ? 180000 : 60000;
             var res;

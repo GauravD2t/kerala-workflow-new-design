@@ -14,7 +14,6 @@ $(document).ready(function () {
     initMasterSelects();
     initCascades();
     initCasePickers();
-    loadCourtCases();
     loadAppConfig();
     initDatePickers();
     wirePdpToggle();
@@ -143,22 +142,64 @@ function initMasterSelects() {
 
 /* ---------------- courtcases picker (casetype -> year -> caseno -> cino) ---------------- */
 
+var ESTABLISHMENTS = [
+    ['KLER57', 'Additional Special Sessions Court /SPE/CBI-III, Ernakulam'],
+    ['KLER75', 'Addl. Chief Judicial Magistrate (Special Court for Cases Related to MPs/MLAs), Ernakulam'],
+    ['KLER23', 'Addl. Chief Judicial Magistrate Court (Economic Offense), Ernakulam'],
+    ['KLER06', 'Addl. Chief Judicial Magistrate Court, Ernakulam'],
+    ['KLER56', 'Addl. District Court for cases against Atrocities and Sexual violence against women and children, Ernakulam'],
+    ['KLER05', 'Chief Judicial Magistrate Court, Ernakulam'],
+    ['KLER78', 'Commercial Court, Ernakulam'],
+    ['KLER01', 'District and Sessions Court/Rent Control Appellate Authority, Ernakulam'],
+    ['KLER14', 'Family Court, Ernakulam'],
+    ['KLER71', 'Judicial First Class Magistrate Court (NI Act), Ernakulam'],
+    ['KLER68', 'Judicial First Class Magistrate Court IX, Ernakulam'],
+    ['KLER66', 'Judicial First Class Magistrate Court VIII, Ernakulam'],
+    ['KLER07', 'Judicial First Class Magistrate Court I, Ernakulam'],
+    ['KLER08', 'Judicial First Class Magistrate Court II, Ernakulam'],
+    ['KLER09', 'Judicial First Class Magistrate Court III, Ernakulam'],
+    ['KLER10', 'Judicial First Class Magistrate Court IV, Ernakulam'],
+    ['KLER11', 'Judicial First Class Magistrate Court V, Ernakulam'],
+    ['KLER12', 'Judicial First Class Magistrate Court VI, Ernakulam'],
+    ['KLER13', 'Judicial First Class Magistrate Court VII, Ernakulam'],
+    ['KLER88', 'Juvenile Justice Board, Ernakulam'],
+    ['KLER19', 'Motor Accidents Claims Tribunal, Ernakulam'],
+    ['KLER04', 'Munsiff Court, Ernakulam'],
+    ['KLER15', 'Special Court /SPE/CBI-I/PMLA, Ernakulam'],
+    ['KLER18', 'Special Court for NIA Cases/SPE/CBI-II, Ernakulam'],
+    ['KLER89', 'Special Court for the trial of offences under the SC and ST PoA Act 1989, Ernakulam'],
+    ['KLER92', 'Special Court for trial of cases under Narcotic Drugs and Psychotropic Substances Act, 1985, Ernakulam'],
+    ['KLER17', 'Special Court for/NIA Cases/SPE/CBI-I, Ernakulam'],
+    ['KLER16', 'Special Court SPE.CBI-II, Ernakulam'],
+    ['KLER02', 'State Transport Appellate Tribunal'],
+    ['KLER03', 'Sub Court, Ernakulam']
+].map(function (row) { return { courtCode: row[0], courtName: row[1] }; });
 var courtCasesData = [];
+var establishmentCases = Object.create(null);
 
 function fillSelect($el, options, placeholder) {
     $el.empty().append('<option value="">' + placeholder + '</option>');
     options.forEach(function (o) {
-        $el.append('<option value="' + o.value + '">' + o.label + '</option>');
+        $el.append($('<option>').val(o.value).text(o.label));
     });
+    $el.val('').trigger('change.select2');
 }
 
+var courtCasesLoadId = 0;
+
 function loadCourtCases(done) {
-    $.ajax({
-        type: 'GET',
-        dataType: 'json',
-        url: '/api/digitization/master/courtcases',
-        success: function (res) {
-            courtCasesData = (res.success && Array.isArray(res.data)) ? res.data : [];
+    var loadId = ++courtCasesLoadId;
+    $('#cf_courtcases_loader').css('visibility', 'hidden');
+    $('#cf_pick_casetype, #cf_pick_caseyear, #cf_pick_caseno').prop('disabled', false);
+    var courtCode = $('#cf_pick_establishment').val();
+    courtCasesData = [];
+    fillSelect($('#cf_pick_casetype'), [], 'Select Case Type');
+    fillSelect($('#cf_pick_caseyear'), [], 'Select Case Year');
+    fillSelect($('#cf_pick_caseno'), [], 'Select Case No');
+    if (!courtCode) return;
+    function applyCases(rows) {
+            if ($('#cf_pick_establishment').val() !== courtCode) return;
+            courtCasesData = rows;
             var seen = {};
             var types = [];
             courtCasesData.forEach(function (row) {
@@ -171,15 +212,53 @@ function loadCourtCases(done) {
             types.sort(function (a, b) { return String(a.label).localeCompare(String(b.label)); });
             fillSelect($('#cf_pick_casetype'), types, 'Select Case Type');
             if (done) done();
+    }
+    if (Object.prototype.hasOwnProperty.call(establishmentCases, courtCode)) {
+        applyCases(establishmentCases[courtCode]);
+        return;
+    }
+    $('#cf_courtcases_loader').css('visibility', 'visible');
+    $('#cf_pick_casetype, #cf_pick_caseyear, #cf_pick_caseno').prop('disabled', true);
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/master/courtcases',
+        data: { courtCode: courtCode },
+        success: function (res) {
+            if (!res || !res.success || !Array.isArray(res.data)) {
+                if ($('#cf_pick_establishment').val() === courtCode) toastr.error((res && res.error) || 'Unable to load establishment cases');
+                return;
+            }
+            establishmentCases[courtCode] = res.data;
+            applyCases(res.data);
         },
-        error: function (err) {
-            console.error('courtcases load failed:', err);
+        error: function () {
+            if ($('#cf_pick_establishment').val() === courtCode) toastr.error('Unable to load establishment cases. Please select the establishment again to retry.');
             if (done) done();
+        },
+        complete: function () {
+            if (loadId !== courtCasesLoadId) return;
+            $('#cf_courtcases_loader').css('visibility', 'hidden');
+            $('#cf_pick_casetype, #cf_pick_caseyear, #cf_pick_caseno').prop('disabled', false);
         }
     });
 }
 
 function initCasePickers() {
+    fillSelect($('#cf_pick_establishment'), ESTABLISHMENTS.map(function (row) {
+        return { value: row.courtCode, label: row.courtName };
+    }), 'Select Establishment');
+    [
+        ['#cf_pick_establishment', 'Select Establishment'],
+        ['#cf_pick_casetype', 'Select Case Type'],
+        ['#cf_pick_caseyear', 'Select Case Year'],
+        ['#cf_pick_caseno', 'Select Case No']
+    ].forEach(function (picker) {
+        $(picker[0]).select2({ placeholder: picker[1], allowClear: true, width: '100%' });
+    });
+    $('#cf_pick_establishment').on('change', function () {
+        loadCourtCases();
+    });
     $('#cf_pick_casetype').on('change', function () {
         var v = $(this).val();
         fillSelect($('#cf_pick_caseno'), [], 'Select Case No');
@@ -887,7 +966,12 @@ function loadAppConfig() {
         dataType: 'json',
         url: '/api/digitization/config',
         success: function (res) {
-            if (res && res.success && res.courtCode) cfCourtCode = String(res.courtCode);
+            if (res && res.success) {
+                cfCourtCode = String(res.courtCode || '');
+                if (!$('#cf_pick_establishment').val() && ESTABLISHMENTS.some(function (row) { return row.courtCode === cfCourtCode; })) {
+                    $('#cf_pick_establishment').val(cfCourtCode).trigger('change');
+                }
+            }
         },
         error: function (err) { console.error('appConfig load failed:', err); }
     });

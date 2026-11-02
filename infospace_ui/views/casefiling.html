@@ -72,6 +72,14 @@
     <div class="row sticky-top bg-white py-2" style="z-index: 10; border-bottom: 1px solid #EBEDF3;">
         <div class="col-lg-12 pb-2">
             <div class="row">
+                <div class="col-lg-5">
+                    <select id="cf_pick_establishment" class="form-control form-control-sm" aria-label="Establishment">
+                        <option value="">Select Establishment</option>
+                    </select>
+                    <span id="cf_courtcases_loader" class="text-primary" role="status" style="display:block; min-height:20px; visibility:hidden;">
+                        <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Loading cases...
+                    </span>
+                </div>
                 <div class="col-lg-3">
                     <select id="cf_pick_casetype" class="form-control form-control-sm">
                         <option value="">Select Case Type</option>
@@ -79,7 +87,7 @@
                 </div>
                 <div class="col-lg-2">
                     <select id="cf_pick_caseyear" class="form-control form-control-sm">
-                        <option value="">Select Year</option>
+                        <option value="">Select Case Year</option>
                     </select>
                 </div>
                 <div class="col-lg-2">
@@ -87,7 +95,6 @@
                         <option value="">Select Case No</option>
                     </select>
                 </div>
-                <div class="col-lg-5"></div>
             </div>
         </div>
         <div class="col-lg-4">
