@@ -14,7 +14,7 @@ $(document).ready(function () {
     initMasterSelects();
     initCascades();
     initCasePickers();
-    loadAppConfig();
+    //loadAppConfig();
     initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
@@ -1091,6 +1091,9 @@ function buildPayload() {
     var caseDetails = collectPrefix('cf_cd_', CASE_FIELDS, CASE_NUM);
     caseDetails.cino = $('#cf_cino').val().trim();
     caseDetails.cisfound = cisfound;
+    caseDetails.est_code = $('#cf_pick_establishment').val()
+        ? $('#cf_pick_establishment option:selected').text().replace(/[&/',]/g, ' ').replace(/\s+/g, ' ').trim()
+        : null;
     payload.caseDetails = caseDetails;
 
     payload.additionalSubjects = additionalSubjects.map(function (code) {

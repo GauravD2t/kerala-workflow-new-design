@@ -659,7 +659,7 @@ function cisDocuments(cd, classDocs) {
             advCode: null,
             filedDate: cf.documentdate,
             documentOrder: null,
-            fileSize: cf.filesize,
+            fileSize: parseInt(cf.filesize),
             fileExtension: 'pdf'
         });
     });
