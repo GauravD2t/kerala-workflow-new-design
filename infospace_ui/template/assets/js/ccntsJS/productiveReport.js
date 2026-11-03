@@ -192,7 +192,7 @@ function showdata() {
                     let tr95 = "<tr> <td>Files Received </td><td><b>" + c.filereceived + "</b></td><td><b>" + c.totalfilereceived + "</b></td> </tr> ";
                     tr95 = tr95 + "<tr><td>Files / Images Scanned </td><td><b>" + scan_file + "</b></td><td><b>" + scan_filetotal + "</b></td> </tr>";
                     tr95 = tr95 + "<tr><td>Files / Images QC </td><td><b>" + imageqc_file + "</b></td><td><b>" + imageqctotal + "</b></td> </tr>";
-                    tr95 = tr95 + "<tr><td>Files / Data Entry </td><td><b>" + dataentry_file + "</b></td><td><b>" + dataentrytotal + "</b></td> </tr>";
+                   // tr95 = tr95 + "<tr><td>Files / Data Entry </td><td><b>" + dataentry_file + "</b></td><td><b>" + dataentrytotal + "</b></td> </tr>";
                     tr95 = tr95 + "<tr><td>Files Bookmarked </td><td><b>" + bookmarfile + "</b></td><td><b>" + totalbookmarfile + "</b></td> </tr> ";
                     tr95 = tr95 + "<tr><td>Files / PDF </td><td><b>" + pdf_file + "</b></td><td><b>" + pdftotal + "</b></td> </tr>";
                     tr95 = tr95 + "<tr><td>Files / IM Verification </td><td><b>" + firstverify_file + "</b></td><td><b>" + firstverifytotal + "</b></td> </tr>";

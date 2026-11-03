@@ -470,7 +470,7 @@ AuditReportController.prototype.inwardReport = function (req, res) {
             } else if (element.imagestatus == 1) {
                 imagestatus = "Scan QC  Mode";
             } else if (element.imagestatus == 2) {
-                imagestatus = "Data Entry Mode";
+                imagestatus = "Classification Mode";
             } else if (element.imagestatus == 3) {
                 imagestatus = "Classification Mode";
             } else if (element.imagestatus == 4) {
@@ -536,8 +536,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
         { header: "QC Pages", key: "qcpage", width: 10 },
         { header: "1st Verification Files", key: "fvfile", width: 20 },
         { header: "1st Verification Pages", key: "fvpage", width: 20 },
-        { header: "Data Entry Files", key: "datafile", width: 15 },
-        { header: "Data Entry Pages", key: "datapage", width: 15 },
+        { header: "Classification Files", key: "classificationfile", width: 15 },
+        { header: "Classification Pages", key: "classificationpage", width: 15 },
         { header: "PDF Files", key: "pdffile", width: 10 },
         { header: "PDF Pages", key: "pdfpage", width: 10 },
         { header: "Customer Verification Files", key: "finalfile", width: 25 },
@@ -575,8 +575,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                 qcpage: 0,
                 fvfile: 0,
                 fvpage: 0,
-                datafile: 0,
-                datapage: 0,
+                classificationfile: 0,
+                classificationpage: 0,
                 pdffile: 0,
                 pdfpage: 0,
                 finalfile: 0,
@@ -647,8 +647,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                             qcpage: 0,
                             fvfile: parseInt(element.files),
                             fvpage: parseInt(element.pages),
-                            datafile: 0,
-                            datapage: 0,
+                            classificationfile: 0,
+                            classificationpage: 0,
                             pdffile: 0,
                             pdfpage: 0,
                             finalfile: 0,
@@ -685,8 +685,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                 qcpage: 0,
                                 fvfile: 0,
                                 fvpage: 0,
-                                datafile: parseInt(element.files),
-                                datapage: parseInt(element.pages),
+                                classificationfile: parseInt(element.files),
+                                classificationpage: parseInt(element.pages),
                                 pdffile: 0,
                                 pdfpage: 0,
                                 finalfile: 0,
@@ -696,8 +696,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                             });
                             counter++;
                         } else {
-                            tutorials[index].datafile = parseInt(element.files);
-                            tutorials[index].datapage = parseInt(element.pages);
+                            tutorials[index].classificationfile = parseInt(element.files);
+                            tutorials[index].classificationpage = parseInt(element.pages);
                         }
 
                     });
@@ -725,8 +725,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                     qcpage: 0,
                                     fvfile: 0,
                                     fvpage: 0,
-                                    datafile: 0,
-                                    datapage: 0,
+                                    classificationfile: 0,
+                                    classificationpage: 0,
                                     pdffile: parseInt(element.files),
                                     pdfpage: parseInt(element.pages),
                                     finalfile: 0,
@@ -763,8 +763,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                         qcpage: 0,
                                         fvfile: 0,
                                         fvpage: 0,
-                                        datafile: 0,
-                                        datapage: 0,
+                                        classificationfile: 0,
+                                        classificationpage: 0,
                                         pdffile: 0,
                                         pdfpage: 0,
                                         finalfile: parseInt(element.files),
@@ -802,8 +802,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                             qcpage: 0,
                                             fvfile: 0,
                                             fvpage: 0,
-                                            datafile: 0,
-                                            datapage: 0,
+                                            classificationfile: 0,
+                                            classificationpage: 0,
                                             pdffile: 0,
                                             pdfpage: 0,
                                             finalfile: 0,
@@ -842,8 +842,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                             qcpage: 0,
                                             fvfile: 0,
                                             fvpage: 0,
-                                            datafile: 0,
-                                            datapage: 0,
+                                            classificationfile: 0,
+                                            classificationpage: 0,
                                             pdffile: 0,
                                             pdfpage: 0,
                                             finalfile: 0,
@@ -881,8 +881,8 @@ AuditReportController.prototype.UserWiseInwardReport = function (req, res) {
                                                 qcpage: 0,
                                                 fvfile: 0,
                                                 fvpage: 0,
-                                                datafile: 0,
-                                                datapage: 0,
+                                                classificationfile: 0,
+                                                classificationpage: 0,
                                                 pdffile: 0,
                                                 pdfpage: 0,
                                                 finalfile: 0,
@@ -2026,7 +2026,7 @@ AuditReportController.prototype.pendingauditreportfilter = (req, res) => {
             res.send({ status: true, data: data });
         })
     } else if (action == 2) {
-        query = "select f.*,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join 'users-permissions_user' u on u.id=b.created_by_d2 and u.digitizationcenter=" + userID + " where  f.imagestatus=3  and f.inwardstatus=1 order by id";
+        query = "select f.*,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join 'users-permissions_user' u on u.id=b.created_by_d2 and u.digitizationcenter=" + userID + " where  f.imagestatus=2  and f.inwardstatus=1 order by id";
         query = query.replace(/'users/g, '"users');
         query = query.replace(/user'/g, 'user"');
         CIPAService.executeSQL(query, function (batchdata) {
@@ -2247,7 +2247,7 @@ AuditReportController.prototype.PEndingprogressReportAuditreport = function (req
 
         })
     } else if (action == 2) {
-        query = "select f.*,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join 'users-permissions_user' u on u.id=b.created_by_d2 and u.digitizationcenter=" + userID + " where  f.imagestatus=3  and f.inwardstatus=1  order by id";
+        query = "select f.*,b.bundlenumber as bundlenumber from firs f join batches b on b.id=f.batch join 'users-permissions_user' u on u.id=b.created_by_d2 and u.digitizationcenter=" + userID + " where  f.imagestatus=2  and f.inwardstatus=1  order by id";
         query = query.replace(/'users/g, '"users');
         query = query.replace(/user'/g, 'user"');
         CIPAService.executeSQL(query, function (batchdata) {
