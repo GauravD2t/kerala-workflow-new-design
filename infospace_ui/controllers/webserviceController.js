@@ -895,7 +895,10 @@ webserviceController.prototype.getListofpdfuploadtoDMS = function (req, res) {
 
 webserviceController.prototype.commitFileFromClassification = function (req, res) {
     let user = req.session.user;
-
+   if( req.body.id=='' ||  req.body.id == undefined || req.body.id == null){
+        res.send({ status: false, message: "FIR ID is required" });
+        return;
+    }
     console.log("=====================commit Classfication FILE============")
     console.log("body...", req.body)
     console.log("=====================commit Classfication FILE============")
