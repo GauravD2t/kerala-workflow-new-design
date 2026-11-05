@@ -48,7 +48,7 @@ ScanningSoftwareController.prototype.getFileListForScanningStageByBatchID = func
 }
 //Image QC stage
 //Auto QC off
-/*
+
 ScanningSoftwareController.prototype.getBatchesNameForImageQCStage = function (req, res) {
     console.log("getBatchesNameForImageQCStage")
     query = 'WITH user_locked_batches AS ( SELECT DISTINCT f.batch FROM firs f  WHERE (f.qc_by = ' + req.session.user.user.id +'  or f.qc_by is null) AND f.islock = true AND f.imagestatus = 1 ) SELECT DISTINCT b.id, b.bundlenumber FROM batches b JOIN firs f ON f.batch = b.id WHERE ( EXISTS (SELECT 1 FROM user_locked_batches ulb WHERE ulb.batch = b.id) ) OR ( NOT EXISTS (SELECT 1 FROM user_locked_batches)  AND f.imagestatus = 1  AND (f.islock = false OR f.islock IS NULL)  ) ORDER BY b.bundlenumber'
@@ -72,34 +72,34 @@ ScanningSoftwareController.prototype.getFileListForImageQCStageByBatchID = funct
 
 
     })
-}*/
+}
 
 ///AUTO QC ON
 
-ScanningSoftwareController.prototype.getBatchesNameForImageQCStage = function (req, res) {
-    console.log("getBatchesNameForImageQCStage")
-    query = 'WITH user_locked_batches AS ( SELECT DISTINCT f.batch FROM firs f  WHERE (f.qc_by = ' + req.session.user.user.id +'  or f.qc_by is null) AND f.islock = true AND f.imagestatus = 1 and f.qcauto=true) SELECT DISTINCT b.id, b.bundlenumber FROM batches b JOIN firs f ON f.batch = b.id WHERE ( EXISTS (SELECT 1 FROM user_locked_batches ulb WHERE ulb.batch = b.id) ) OR ( NOT EXISTS (SELECT 1 FROM user_locked_batches)  AND f.imagestatus = 1  AND (f.islock = false OR f.islock IS NULL) and f.qcauto=true ) ORDER BY b.bundlenumber'
-    CIPAService.executeSQL(query, function (batchdata) {
-        var resultbat = batchdata[0];
-        res.send({ status: true, data: resultbat });
-    })
-}
-ScanningSoftwareController.prototype.getFileListForImageQCStageByBatchID = function (req, res) {
-    console.log("getFileListForImageQCStageByBatchID")
-    httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&qcauto=true&verify_by_null=true&inwardstatus=1&imagestatus=1&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
-        allbatch = JSON.parse(allbatch)
-        ////console.log(allbatch.statusCode)
-        if (allbatch.statusCode != 403) {
-            getbatchByFire(allbatch, req.session.user.user.id).then(function (retuennode) {
-                res.send({ status: true, data: retuennode });
-            })
-        } else {
-            res.send({ status: false, message: allbatch.message });
-        }
+// ScanningSoftwareController.prototype.getBatchesNameForImageQCStage = function (req, res) {
+//     console.log("getBatchesNameForImageQCStage")
+//     query = 'WITH user_locked_batches AS ( SELECT DISTINCT f.batch FROM firs f  WHERE (f.qc_by = ' + req.session.user.user.id +'  or f.qc_by is null) AND f.islock = true AND f.imagestatus = 1 and f.qcauto=true) SELECT DISTINCT b.id, b.bundlenumber FROM batches b JOIN firs f ON f.batch = b.id WHERE ( EXISTS (SELECT 1 FROM user_locked_batches ulb WHERE ulb.batch = b.id) ) OR ( NOT EXISTS (SELECT 1 FROM user_locked_batches)  AND f.imagestatus = 1  AND (f.islock = false OR f.islock IS NULL) and f.qcauto=true ) ORDER BY b.bundlenumber'
+//     CIPAService.executeSQL(query, function (batchdata) {
+//         var resultbat = batchdata[0];
+//         res.send({ status: true, data: resultbat });
+//     })
+// }
+// ScanningSoftwareController.prototype.getFileListForImageQCStageByBatchID = function (req, res) {
+//     console.log("getFileListForImageQCStageByBatchID")
+//     httpService.get(encodeURI("/findfirbyQuery?batch=" + req.body.batchid + "&qcauto=true&verify_by_null=true&inwardstatus=1&imagestatus=1&qcreject=false&_sort=id:asc&_limit=-1"), req.body, function (allbatch) {
+//         allbatch = JSON.parse(allbatch)
+//         ////console.log(allbatch.statusCode)
+//         if (allbatch.statusCode != 403) {
+//             getbatchByFire(allbatch, req.session.user.user.id).then(function (retuennode) {
+//                 res.send({ status: true, data: retuennode });
+//             })
+//         } else {
+//             res.send({ status: false, message: allbatch.message });
+//         }
 
 
-    })
-} 
+//     })
+// } 
 
 //image QC Reject
 ScanningSoftwareController.prototype.getBatchesNameForImageQCRejectStage = function (req, res) {
