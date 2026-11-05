@@ -4,7 +4,8 @@ var DigitizationApiService = require('../service/DigitizationApiService');
 var httpService = require('../service/httpService.js');
 var env = process.env.NODE_ENV || 'development';
 var config = require('../config/config.js')[env] || {};
-var COURT_CODE = (config.digitizationApi && config.digitizationApi.courtCode) || '';
+var ESTABLISHMENTS_CFG = (config.digitizationApi && config.digitizationApi.establishments) || [];
+var COURT_CODE = (ESTABLISHMENTS_CFG[0] && ESTABLISHMENTS_CFG[0].courtCode) || '';
 
 function createFir(req, caseDetails) {
     return new Promise(function (resolve, reject) {
@@ -84,6 +85,26 @@ function filterRows(rows, query) {
             return row[k] !== undefined && String(row[k]) === String(query[k]);
         });
     });
+}
+
+var masterCacheLocks = Object.create(null);
+
+function upsertMasterCache(existing, masterName, courtCode, data) {
+    var key = masterName + '|' + String(courtCode || '');
+    var prev = masterCacheLocks[key] || Promise.resolve();
+    var next = prev.catch(function () {}).then(function () {
+        return db.MasterCache.findOne({ where: { master_name: masterName, courtcode: courtCode } }).then(function (row) {
+            if (row) return row.update({ data: data, synced_at: new Date() });
+            return db.MasterCache.create({ master_name: masterName, courtcode: courtCode, data: data, synced_at: new Date() });
+        }).catch(function (e) {
+            return db.MasterCache.findOne({ where: { master_name: masterName, courtcode: courtCode } }).then(function (dup) {
+                if (dup) return dup.update({ data: data, synced_at: new Date() });
+                throw e;
+            });
+        });
+    });
+    masterCacheLocks[key] = next.catch(function () {});
+    return next;
 }
 
 function parsePayload(req) {
@@ -170,30 +191,42 @@ CaseController.prototype.master = async function (req, res) {
     //     return res.send({ success: false, error: 'Unknown master: ' + masterName });
     // }
     try {
-        if (masterName === 'courtcases') {
-            var courtCode = String(req.query.courtCode || COURT_CODE).trim().toUpperCase();
-            if (!/^KL[A-Z]{2}\d{2}$/.test(courtCode)) {
-                return res.send({ success: false, error: 'Invalid establishment code' });
-            }
-            var courtLive = await DigitizationApiService.fetchMaster(masterName, courtCode);
-            if (!courtLive || !courtLive.success || !Array.isArray(courtLive.data)) {
-                return res.send({ success: false, error: (courtLive && courtLive.error) || 'Unable to load establishment cases' });
-            }
-            return res.send({ success: true, data: courtLive.data, source: 'live' });
+        var courtCode = String(req.query.courtCode || (req.query.cino && String(req.query.cino).slice(0, 6)) || COURT_CODE).trim().toUpperCase();
+        if (!/^KL[A-Z]{2}\d{2}$/.test(courtCode)) {
+            return res.send({ success: false, error: 'Invalid establishment code' });
         }
-        var cached = await db.MasterCache.findOne({ where: { master_name: masterName } });
-        if (cached && Array.isArray(cached.data) && cached.data.length) {
-            return res.send({ success: true, data: filterRows(cached.data, req.query), source: 'cache', synced_at: cached.synced_at });
+        var rowQuery = Object.assign({}, req.query);
+        delete rowQuery.courtCode;
+        delete rowQuery.cino;
+        if (Object.keys(rowQuery).length) {
+            var filtered = await DigitizationApiService.fetchMaster(masterName, courtCode, rowQuery);
+            if (filtered && filtered.success && Array.isArray(filtered.data)) {
+                return res.send({ success: true, data: filtered.data, source: 'live' });
+            }
+            return res.send({ success: false, error: (filtered && filtered.error) || 'Unable to load master ' + masterName });
         }
-        var live = await DigitizationApiService.fetchMaster(masterName);
+        var cached = await db.MasterCache.findOne({ where: { master_name: masterName, courtcode: courtCode } });
+        if (cached && Array.isArray(cached.data)) {
+            return res.send({ success: true, data: filterRows(cached.data, rowQuery), source: 'cache', synced_at: cached.synced_at });
+        }
+        var live = await DigitizationApiService.fetchMaster(masterName, courtCode, rowQuery);
         if (live && live.success && Array.isArray(live.data)) {
-            await db.MasterCache.findOrCreate({
-                where: { master_name: masterName },
-                defaults: { data: live.data, synced_at: new Date() }
-            });
-            return res.send({ success: true, data: filterRows(live.data, req.query), source: 'live' });
+            await upsertMasterCache(cached, masterName, courtCode, live.data);
+            return res.send({ success: true, data: filterRows(live.data, rowQuery), source: 'live' });
         }
-        res.send({ success: true, data: [] });
+        if (courtCode !== COURT_CODE) {
+            console.warn('Master ' + masterName + ' empty for ' + courtCode + ' - falling back to ' + COURT_CODE);
+            var fallbackCached = await db.MasterCache.findOne({ where: { master_name: masterName, courtcode: COURT_CODE } });
+            if (fallbackCached && Array.isArray(fallbackCached.data)) {
+                return res.send({ success: true, data: filterRows(fallbackCached.data, rowQuery), source: 'cache', synced_at: fallbackCached.synced_at, fallbackCourtCode: COURT_CODE });
+            }
+            var fallbackLive = await DigitizationApiService.fetchMaster(masterName, COURT_CODE);
+            if (fallbackLive && fallbackLive.success && Array.isArray(fallbackLive.data)) {
+                await upsertMasterCache(fallbackCached, masterName, COURT_CODE, fallbackLive.data);
+                return res.send({ success: true, data: filterRows(fallbackLive.data, rowQuery), source: 'live', fallbackCourtCode: COURT_CODE });
+            }
+        }
+        res.send({ success: false, error: (live && live.error) || 'Unable to load master ' + masterName });
     } catch (err) {
         console.error('CaseController.master error:', err);
         res.send({ success: false, error: err.message });
@@ -202,7 +235,8 @@ CaseController.prototype.master = async function (req, res) {
 
 CaseController.prototype.syncMasters = async function (req, res) {
     try {
-        var results = await DigitizationApiService.syncAllMasters(db);
+        var syncCourtCode = String((req.body && req.body.courtCode) || req.query.courtCode || COURT_CODE).trim().toUpperCase();
+        var results = await DigitizationApiService.syncAllMasters(db, syncCourtCode);
         var failed = results.filter(function (r) { return !r.success; }).length;
         res.send({ status: true, failed: failed, results: results });
     } catch (err) {
@@ -219,7 +253,7 @@ CaseController.prototype.fetchCaseByCino = async function (req, res) {
         // if (COURT_CODE && cino.indexOf(COURT_CODE.toUpperCase()) !== 0) {
         //     return res.send({ success: false, error: 'CINO must start with this court code ' + COURT_CODE });
         // }
-        var data = await DigitizationApiService.fetchCaseByCino(cino);
+        var data = await DigitizationApiService.fetchCaseByCino(cino, req.query.courtCode);
         res.send(data);
     } catch (err) {
         var apiErr = err.response && err.response.data &&
@@ -230,7 +264,7 @@ CaseController.prototype.fetchCaseByCino = async function (req, res) {
 };
 
 CaseController.prototype.appConfig = function (req, res) {
-    res.send({ success: true, courtCode: COURT_CODE });
+    res.send({ success: true, courtCode: COURT_CODE, establishments: ESTABLISHMENTS_CFG });
 };
 
 CaseController.prototype.digitizedEntryPage = function (req, res) {

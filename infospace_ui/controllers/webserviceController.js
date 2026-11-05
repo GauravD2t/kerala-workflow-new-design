@@ -287,7 +287,25 @@ webserviceController.prototype.getDocumenttype = function (req, res) {
 }
 webserviceController.prototype.getAllnodehierarchyforScanning = async function (req, res) {
     try {
-        var cached = await db.MasterCache.findOne({ where: { master_name: 'docutype' } });
+        var fileid = String(req.body.fileid || '').trim();
+        if (!/^\d+$/.test(fileid)) {
+            return res.send({ status: false, data: [], message: 'A valid fileid is required' });
+        }
+        var fir = await new Promise(function (resolve, reject) {
+            httpService.get('/firs/' + fileid, {}, function (node) {
+                try {
+                    resolve(typeof node === 'string' ? JSON.parse(node) : node);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        });
+        var crn = String((fir && fir.crn) || '').trim().toUpperCase();
+        if (!fir || fir.statusCode || crn.length < 6) {
+            return res.send({ status: false, data: [], message: 'FIR or valid CINO not found' });
+        }
+        var courtCode = crn.slice(0, 6);
+        var cached = await db.MasterCache.findOne({ where: { master_name: 'docutype', courtcode: courtCode } });
         var data = (cached && Array.isArray(cached.data)) ? cached.data : [];
         res.send({ status: true, data: data });
     } catch (err) {

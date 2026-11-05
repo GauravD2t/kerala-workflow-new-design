@@ -124,13 +124,14 @@ function openFile($btn) {
 
     // embedded full case filing form (auto-loads this FIR in edit mode)
     $('#caseFrameSpinner').show();
-    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1');
+    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1&courtCode=' + encodeURIComponent(FV.selectedCrn.slice(0, 6).toUpperCase()));
 
     $('.batchsection').hide(300);
     $('.filesection').show(300);
     window.scrollTo(0, 0);
 
     loadDocuments(FV.selectedFir);
+    fvInitMasterSelects();
 }
 
 $('#caseFrame').on('load', function () {
@@ -461,9 +462,10 @@ function fvSaveNewEntry(type) {
 }
 
 function fvInitMasterSelects() {
+    var courtCode = (FV.selectedCrn || '').slice(0, 6).toUpperCase();
     $('#fvIaModal select[data-master], #fvOrderModal select[data-master]').each(function () {
         var $el = $(this);
-        pushtoServer(null, '/api/digitization/master/' + $el.data('master'), 'GET', function (res) {
+        pushtoServer(null, '/api/digitization/master/' + $el.data('master') + (courtCode ? '?courtCode=' + encodeURIComponent(courtCode) : ''), 'GET', function (res) {
             var valKey = $el.data('val');
             var labelTpl = String($el.data('label'));
             $el.empty().append('<option value="">Select</option>');

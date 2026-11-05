@@ -17,8 +17,8 @@ function decryptDigitizationPayload(payload, secretKey) {
 
 var MASTER_RESOURCES = [
     'state', 'district', 'taluka', 'village', 'casetype', 'ia_casetype', 'purpose',
-    'act', 'ia_nature', 'docutype', 'police_stn', 'firtype', 'subject', 'advocate',
-    'organization', 'courtdetails', 'disposal_nature'
+    'act', 'ia_nature', 'docutype', 'police_stn', 'firtype', 'subject', 
+    'organization', 'disposal_nature', 'courtcases'
 ];
 
 var tokenCache = { token: null, fetchedAt: 0 };
@@ -79,15 +79,20 @@ async function postWithToken(path, body, forceTokenRefresh, timeoutMs) {
 DigitizationApiService.prototype.getToken = getToken;
 DigitizationApiService.prototype.MASTER_RESOURCES = MASTER_RESOURCES;
 
-DigitizationApiService.prototype.fetchMaster = async function (master, courtCode) {
-    var res = await postWithToken('api/digitization/master/' + master, {
-        courtCode: courtCode || config.digitizationApi.courtCode
-    });
+function defaultCourtCode() {
+    var list = (config.digitizationApi && config.digitizationApi.establishments) || [];
+    return (list[0] && list[0].courtCode) || '';
+}
+
+DigitizationApiService.prototype.fetchMaster = async function (master, courtCode, params) {
+    var body = Object.assign({ courtCode: courtCode || defaultCourtCode() }, params || {});
+    var res = await postWithToken('api/digitization/master/' + master, body);
     return res.data;
 };
 
-DigitizationApiService.prototype.fetchCaseByCino = async function (cino) {
-    var res = await postWithToken('api/digitization', { cino: cino }, true);
+DigitizationApiService.prototype.fetchCaseByCino = async function (cino, courtCode) {
+    var body = { cino: cino, courtCode:  String(cino).trim().slice(0, 6).toUpperCase() || courtCode };
+    var res = await postWithToken('api/digitization', body, true);
     var responseBody = res.data;
     if (responseBody && responseBody.success && typeof responseBody.data === 'string') {
         if (config.digitizationApi.encryptionKey) {
@@ -108,36 +113,28 @@ DigitizationApiService.prototype.fetchCaseByCino = async function (cino) {
 
 DigitizationApiService.prototype.decryptPayload = decryptDigitizationPayload;
 
-DigitizationApiService.prototype.syncAllMasters = async function (db) {
+DigitizationApiService.prototype.syncAllMasters = async function (db, courtCode) {
     await getToken(true);
     var results = [];
+    var syncCode = courtCode || defaultCourtCode();
     for (var i = 0; i < MASTER_RESOURCES.length; i++) {
         var name = MASTER_RESOURCES[i];
-        if (name === 'courtcases') continue;
+        var timeout = name === 'courtcases' ? 3600000 : 180000;
         try {
-            var timeout = name === 'courtcases' ? 180000 : 60000;
-            var res;
-            try {
-                res = await postWithToken('api/digitization/master/' + name, {
-                    courtCode: config.digitizationApi.courtCode
-                }, false, timeout);
-            } catch (firstErr) {
-                console.error('Master sync retrying (' + name + '):', firstErr.message);
-                res = await postWithToken('api/digitization/master/' + name, {
-                    courtCode: config.digitizationApi.courtCode
-                }, false, timeout);
-            }
+            var res = await postWithToken('api/digitization/master/' + name, {
+                courtCode: syncCode
+            }, false, timeout);
             var data = (res.data && res.data.success && Array.isArray(res.data.data)) ? res.data.data : [];
-            var existing = await db.MasterCache.findOne({ where: { master_name: name } });
+            var existing = await db.MasterCache.findOne({ where: { master_name: name, courtcode: syncCode } });
             if (existing) {
                 await existing.update({ data: data, synced_at: new Date() });
             } else {
-                await db.MasterCache.create({ master_name: name, data: data, synced_at: new Date() });
+                await db.MasterCache.create({ master_name: name, courtcode: syncCode, data: data, synced_at: new Date() });
             }
-            results.push({ master: name, success: true, count: data.length });
+            results.push({ master: name + ':' + syncCode, success: true, count: data.length });
         } catch (err) {
-            console.error('Master sync failed (' + name + '):', err.message);
-            results.push({ master: name, success: false, error: err.message });
+            console.error('Master sync failed (' + name + ':' + syncCode + '):', err.message);
+            results.push({ master: name + ':' + syncCode, success: false, error: err.message });
         }
     }
     return results;
@@ -145,7 +142,10 @@ DigitizationApiService.prototype.syncAllMasters = async function (db) {
 
 
 DigitizationApiService.prototype.pushDigitizedEntry = async function (caseData, isUpdate) {
-    var payload = Object.assign({ courtCode: config.digitizationApi.courtCode }, caseData);
+    var cinoCode = caseData && caseData.caseDetails && caseData.caseDetails.cino
+        ? String(caseData.caseDetails.cino).trim().slice(0, 6).toUpperCase()
+        : '';
+    var payload = Object.assign({ courtCode: cinoCode || defaultCourtCode() }, caseData);
     var res = await requestWithToken(isUpdate ? 'put' : 'post', 'api/digitization/digitizedEntry', payload);
     return res.data;
 };

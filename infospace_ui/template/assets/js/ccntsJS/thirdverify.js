@@ -130,7 +130,7 @@ function openFile($btn) {
 
     // embedded case filing form — read-only at this stage (no Update button)
     $('#caseFrameSpinner').show();
-    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1&readonly=1');
+    $('#caseFrame').attr('src', '/caseFilingEmbed.dwf?fir=' + FV.selectedFir + '&embed=1&readonly=1&courtCode=' + encodeURIComponent(FV.selectedCrn.slice(0, 6).toUpperCase()));
 
     $('.batchsection').hide(300);
     $('.filesection').show(300);

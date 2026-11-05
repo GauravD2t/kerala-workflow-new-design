@@ -1,13 +1,3 @@
-var ESTABLISHMENTS = [
-    ['KLAL18', 'Judl.First Class Magistrate Court-I, Mavelikara'],
-  ['KLAL19', 'Judl.First Class Magistrate Court-II, Mavelikara'],
-  ['KLAL20', 'Judl.First Class Magistrate Court-III, Mavelikara'],
-  ['KLAL15', 'Addl MACT, Mavelikkara'],
-  ['KLAL14', 'Addl.District And Sessions Court-I / Rent Control Appellate Authority, Mavelikkara'],
-  ['KLAL17', 'Munsiff Court, Mavelikkara'],
-  ['KLAL16', 'Sub Court, Mavelikkara']
-].map(function (row) { return { courtCode: row[0], courtName: row[1] }; });
-
 
 let departmentname = ["ACJM", "ACJM(EO)", "ACJM(MP-MLA)", "CJM", "DistrictCourt", "FamilyCourt", "JFCM-I", "JFCM-II", "JFCM-III", "JFCM-IX", "JFCM-NI-Act", "JFCM-VIII", "MunsiffCourt", "Pocso", "SpecialCourtSC-ST", "STAT", "SubCourt"]
 

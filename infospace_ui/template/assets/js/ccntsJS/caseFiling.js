@@ -14,7 +14,7 @@ $(document).ready(function () {
     initMasterSelects();
     initCascades();
     initCasePickers();
-    //loadAppConfig();
+    if (new URLSearchParams(window.location.search).get('embed') !== '1') loadAppConfig();
     initDatePickers();
     wirePdpToggle();
     $('#cf_cino').keypress(function (e) { if (e.which === 13) searchCase(); });
@@ -107,30 +107,67 @@ function renderLabel(template, row) {
     return template.replace(/\{([^}]+)\}/g, function (m, key) { return row[key] !== undefined ? row[key] : ''; });
 }
 
+function currentCourtCode() {
+    var qs = new URLSearchParams(window.location.search);
+    var paramCode = String(qs.get('courtCode') || (qs.get('cino') || '').slice(0, 6)).trim().toUpperCase();
+    if (paramCode) return paramCode;
+    var sel = $('#cf_pick_establishment').val();
+    if (sel) return sel;
+    var cino = ($('#cf_cino').val() || '').trim().toUpperCase();
+    if (cino.length >= 6) return cino.slice(0, 6);
+    return '';
+}
+
+var masterRespCache = Object.create(null);
+var masterPending = Object.create(null);
+
+function fillMasterSelect($el, rows) {
+    var valKey = $el.data('val');
+    var labelTpl = String($el.data('label'));
+    var current = $el.data('keep');
+    $el.empty().append('<option value="">Select</option>');
+    (rows || []).forEach(function (row) {
+        $el.append('<option value="' + row[valKey] + '">' + renderLabel(labelTpl, row) + '</option>');
+    });
+    if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
+    else { $el.trigger('change.select2'); }
+    reRenderLists();
+    renderSubjectChips();
+}
+
 function loadSelect($el, params, done) {
     var master = $el.data('master');
+    var query = Object.assign({}, params || {});
+    var courtCode = currentCourtCode();
+    if (courtCode) query.courtCode = courtCode;
+    var cacheKey = master + '|' + courtCode + '|' + JSON.stringify(query);
+    var apply = function (rows) { fillMasterSelect($el, rows); if (done) done(); };
+    if (Object.prototype.hasOwnProperty.call(masterRespCache, cacheKey)) {
+        apply(masterRespCache[cacheKey]);
+        return;
+    }
+    if (masterPending[cacheKey]) {
+        masterPending[cacheKey].push(apply);
+        return;
+    }
+    masterPending[cacheKey] = [apply];
     $.ajax({
         async: true,
         type: 'GET',
         dataType: 'json',
         url: '/api/digitization/master/' + master,
-        data: params || {},
+        data: query,
         success: function (res) {
-            var valKey = $el.data('val');
-            var labelTpl = String($el.data('label'));
-            var current = $el.data('keep');
-            $el.empty().append('<option value="">Select</option>');
-            if (res.success && res.data) {
-                res.data.forEach(function (row) {
-                    $el.append('<option value="' + row[valKey] + '">' + renderLabel(labelTpl, row) + '</option>');
-                });
-            }
-            if (current !== undefined) { $el.val(current); $el.removeData('keep'); $el.trigger('change'); }
-            reRenderLists();
-            renderSubjectChips();
-            if (done) done();
+            var rows = (res && res.success && Array.isArray(res.data)) ? res.data : [];
+            masterRespCache[cacheKey] = rows;
+            masterPending[cacheKey].splice(0).forEach(function (cb) { cb(rows); });
+            delete masterPending[cacheKey];
         },
-        error: function (err) { console.error('master load failed:', master, err); if (done) done(); }
+        error: function (err) {
+            console.error('master load failed:', master, err);
+            masterPending[cacheKey].splice(0).forEach(function (cb) { cb(null); });
+            delete masterPending[cacheKey];
+        }
     });
 }
 
@@ -143,6 +180,7 @@ function initMasterSelects() {
 /* ---------------- courtcases picker (casetype -> year -> caseno -> cino) ---------------- */
 
 
+var cfEstablishments = [];
 var courtCasesData = [];
 var establishmentCases = Object.create(null);
 
@@ -213,10 +251,14 @@ function loadCourtCases(done) {
     });
 }
 
-function initCasePickers() {
-    fillSelect($('#cf_pick_establishment'), ESTABLISHMENTS.map(function (row) {
+function fillEstablishmentSelect() {
+    fillSelect($('#cf_pick_establishment'), cfEstablishments.map(function (row) {
         return { value: row.courtCode, label: row.courtName };
     }), 'Select Establishment');
+}
+
+function initCasePickers() {
+    fillEstablishmentSelect();
     [
         ['#cf_pick_establishment', 'Select Establishment'],
         ['#cf_pick_casetype', 'Select Case Type'],
@@ -227,6 +269,7 @@ function initCasePickers() {
     });
     $('#cf_pick_establishment').on('change', function () {
         loadCourtCases();
+        initMasterSelects();
     });
     $('#cf_pick_casetype').on('change', function () {
         var v = $(this).val();
@@ -937,8 +980,11 @@ function loadAppConfig() {
         success: function (res) {
             if (res && res.success) {
                 cfCourtCode = String(res.courtCode || '');
-                if (!$('#cf_pick_establishment').val() && ESTABLISHMENTS.some(function (row) { return row.courtCode === cfCourtCode; })) {
-                    $('#cf_pick_establishment').val(cfCourtCode).trigger('change');
+                cfEstablishments = Array.isArray(res.establishments) ? res.establishments : [];
+                fillEstablishmentSelect();
+                var targetCourt = currentCourtCode() || cfCourtCode;
+                if (!$('#cf_pick_establishment').val() && cfEstablishments.some(function (row) { return row.courtCode === targetCourt; })) {
+                    $('#cf_pick_establishment').val(targetCourt).trigger('change');
                 }
             }
         },
@@ -954,6 +1000,10 @@ function searchCase(forEdit) {
     //     toastr.warning('Invalid establishment code in CINO');
     //     return;
     // }
+    var cinoCourtCode = cino.slice(0, 6);
+    if (cfEstablishments.some(function (row) { return row.courtCode === cinoCourtCode; }) && $('#cf_pick_establishment').val() !== cinoCourtCode) {
+        $('#cf_pick_establishment').val(cinoCourtCode).trigger('change');
+    }
     $('#cf_search_spinner').show();
     //checkFirBundleNotice(cino);
 
@@ -977,7 +1027,7 @@ function searchCase(forEdit) {
                     type: 'GET',
                     dataType: 'json',
                     url: '/api/digitization/fetchCase',
-                    data: { cino: cino },
+                    data: { cino: cino, courtCode: cinoCourtCode },
                     success: function (ext) {
                         if (ext.success && ext.data && typeof ext.data === 'object') {
                             clearAll(false);
@@ -1260,6 +1310,7 @@ function resetAll() {
 /* ================= master sync ================= */
 
 function syncAllMasters() {
+    var syncCourtCode = currentCourtCode();
     $('#cf_sync_btn').prop('disabled', true);
     $('#cf_sync_spinner').show();
     $.ajax({
@@ -1267,6 +1318,7 @@ function syncAllMasters() {
         type: 'POST',
         dataType: 'json',
         url: '/api/digitization/master/sync',
+        data: { courtCode: syncCourtCode },
         success: function (res) {
             if (res.status) {
                 var total = res.results.length;
@@ -1279,6 +1331,9 @@ function syncAllMasters() {
                 res.results
                     .filter(function (r) { return !r.success; })
                     .forEach(function (r) { toastr.error('Sync failed: ' + r.master + ' — ' + r.error); });
+                Object.keys(masterRespCache).forEach(function (key) {
+                    if (key.indexOf('|' + syncCourtCode + '|') !== -1) delete masterRespCache[key];
+                });
                 initMasterSelects();
             } else {
                 toastr.error(res.error || 'Master sync failed');
@@ -1401,6 +1456,10 @@ function cfEditFirFromTable(firId, crn) {
                 clearAll(false);
                 currentCaseId = res.data.id;
                 $('#cf_cino').val(res.data.cino || crn || '');
+                var firCourtCode = String(res.data.cino || crn || '').trim().toUpperCase().slice(0, 6);
+                if (cfEstablishments.some(function (row) { return row.courtCode === firCourtCode; }) && $('#cf_pick_establishment').val() !== firCourtCode) {
+                    $('#cf_pick_establishment').val(firCourtCode).trigger('change');
+                }
                 populateAll(res.data.caseDetails);
                 showStatusBadge(res.data.status);
                 updateSaveButtons(true);
