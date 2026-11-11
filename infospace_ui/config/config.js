@@ -3,11 +3,11 @@ module.exports = {
         host: "localhost",
         port: "1337",
         digitizationApi: {
-            baseUrl: "https://filing.keralacourts.in/",
+            baseUrl: "https://staging-dcms.keralacourts.in/",
             username: "digitizationIM",
             password: "f2qX36k6ME3D",
             tokenTtlMs: 150000,
-            encryptionKey: "Q2hhdEdQVF9BRVNfMjU2X1NlY3VyZV9LZXlfMTIzNA==",
+            encryptionKey: "U2FsdGVkX1+Fz3Z5Y2V0b3JQZXRlcjE=",
             establishments: [
                 { courtCode: "KLAL18", courtName: "Judl.First Class Magistrate Court-I, Mavelikara" },
                 { courtCode: "KLAL19", courtName: "Judl.First Class Magistrate Court-II, Mavelikara" },
