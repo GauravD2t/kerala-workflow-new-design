@@ -175,6 +175,7 @@ function initMasterSelects() {
     $('select[data-master]').each(function () {
         loadSelect($(this));
     });
+    refreshAdvocateSelects();
 }
 
 /* ---------------- courtcases picker (casetype -> year -> caseno -> cino) ---------------- */
@@ -387,17 +388,100 @@ function hasAnyValue(prefix, fields, boolFields) {
     return false;
 }
 
+/* ---------------- advocate master ---------------- */
+
+var advocateCache = Object.create(null); // courtCode -> rows
+var advocatePending = Object.create(null); // courtCode -> [callbacks]
+
+function advField(row, keys) {
+    for (var i = 0; i < keys.length; i++) {
+        if (row && row[keys[i]] !== undefined && row[keys[i]] !== null && row[keys[i]] !== '') return row[keys[i]];
+    }
+    return '';
+}
+function advName(row) { return advField(row, ['adv_name', 'advname', 'name', 'advocate_name', 'advName']); }
+function advCode(row) { return advField(row, ['adv_code', 'advcode', 'code', 'advCode', 'adv_code_no']); }
+function advReg(row) { return advField(row, ['adv_reg', 'bar_reg_no', 'reg_no', 'regno', 'adv_bar_reg', 'barRegNo', 'advReg']); }
+
+function loadAdvocateRows(done) {
+    var courtCode = currentCourtCode();
+    var key = courtCode || '';
+    if (advocateCache[key]) { done(advocateCache[key]); return; }
+    if (advocatePending[key]) { advocatePending[key].push(done); return; }
+    advocatePending[key] = [done];
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        url: '/api/digitization/master/advocate',
+        data: courtCode ? { courtCode: courtCode } : {},
+        success: function (res) {
+            var rows = (res && res.success && Array.isArray(res.data)) ? res.data : [];
+            advocateCache[key] = rows;
+            advocatePending[key].splice(0).forEach(function (cb) { cb(rows); });
+            delete advocatePending[key];
+        },
+        error: function (err) {
+            console.error('advocate master load failed:', err);
+            advocatePending[key].splice(0).forEach(function (cb) { cb([]); });
+            delete advocatePending[key];
+        }
+    });
+}
+
+function fillAdvocateOptions($sel, rows) {
+    var current = $sel.val();
+    $sel.empty().append('<option value="">Select Advocate</option>');
+    (rows || []).forEach(function (r, i) {
+        var label = advName(r) || ('Advocate ' + advCode(r));
+        if (advReg(r)) label += ' (' + advReg(r) + ')';
+        $sel.append('<option value="' + i + '">' + label + '</option>');
+    });
+    if (current) $sel.val(current);
+}
+
+function refreshAdvocateSelects() {
+    loadAdvocateRows(function (rows) {
+        $('.cf-adv-pick, select.adv-pick').each(function () {
+            fillAdvocateOptions($(this), rows);
+        });
+    });
+}
+
+$(document).on('change', '.cf-adv-pick, select.adv-pick', function () {
+    var $sel = $(this);
+    var idx = parseInt($sel.val(), 10);
+    if (isNaN(idx)) return;
+    var courtCode = currentCourtCode() || '';
+    var rows = advocateCache[courtCode] || [];
+    var r = rows[idx];
+    if (!r) return;
+    var target = $sel.data('target');
+    if (target) {
+        $('#' + target + 'advName').val(advName(r));
+        $('#' + target + 'advCode').val(advCode(r));
+        $('#' + target + 'advReg').val(advReg(r));
+    } else {
+        var $tr = $sel.closest('tr');
+        $tr.find('.adv-name').val(advName(r));
+        $tr.find('.adv-code').val(advCode(r));
+        $tr.find('.adv-reg').val(advReg(r));
+    }
+});
+
 /* ---------------- advocate mini-rows ---------------- */
 
 function addAdvRow(tbodyId, data) {
     data = data || {};
     var row = '<tr' + (data.id ? ' data-adrid="' + data.id + '"' : '') + '>' +
+        '<td><select class="form-control form-control-sm adv-pick"></select></td>' +
         '<td><input type="text" class="form-control form-control-sm adv-name" value="' + (data.name || '') + '"></td>' +
         '<td><input type="text" class="form-control form-control-sm adv-code" value="' + (data.code || '') + '"></td>' +
         '<td><input type="text" class="form-control form-control-sm adv-reg" value="' + (data.regNo || '') + '"></td>' +
         '<td><button type="button" class="btn btn-sm btn-danger" onclick="$(this).closest(\'tr\').remove()">x</button></td>' +
         '</tr>';
     $('#' + tbodyId).append(row);
+    var courtCode = currentCourtCode() || '';
+    fillAdvocateOptions($('#' + tbodyId + ' tr:last .adv-pick'), advocateCache[courtCode] || []);
 }
 
 function collectAdvRows(tbodyId) {

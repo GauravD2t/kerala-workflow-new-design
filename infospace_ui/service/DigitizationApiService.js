@@ -18,7 +18,7 @@ function decryptDigitizationPayload(payload, secretKey) {
 var MASTER_RESOURCES = [
     'state', 'district', 'taluka', 'village', 'casetype', 'ia_casetype', 'purpose',
     'act', 'ia_nature', 'docutype', 'police_stn', 'firtype', 'subject', 
-    'organization', 'disposal_nature', 'courtcases'
+    'organization', 'disposal_nature', 'courtcases', 'advocate'
 ];
 
 var tokenCache = { token: null, fetchedAt: 0 };
