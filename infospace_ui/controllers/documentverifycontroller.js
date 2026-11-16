@@ -327,6 +327,9 @@ DocumentverifyController.prototype.findFIrsbybathcForFirstTime = function (req, 
 }
 DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
     var deletequery = "";
+
+    //  await uploadCaseToCis(req);
+    //  res.send({ status: true });
     if (req.body.imagestatus == 6) {
         deletequery = "update firs set verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
@@ -512,6 +515,87 @@ async function getclassficationbyfilewait(fileid, request) {
     })
 }
 
+var appConfig = require('../config/config.js');
+var cisCfg = (appConfig.development && appConfig.development.digitizationApi) || {};
+
+function cisPathSegment(s) {
+    return String(s || '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'UNKNOWN';
+}
+
+function cisEstablishment(courtCode) {
+    var list = cisCfg.establishments || [];
+    for (var i = 0; i < list.length; i++) {
+        if (String(list[i].courtCode).toUpperCase() === String(courtCode).toUpperCase()) return list[i];
+    }
+    return null;
+}
+
+function sqlUpdate(table, setCol, newVal, id) {
+    if (!id) return Promise.resolve();
+    var sql = 'update ' + table + ' set ' + setCol + "='" + escSql(newVal) + "' where id=" + parseInt(id, 10);
+    return new Promise(function (resolve) {
+        CIPAService.UpdateexecuteSQL(sql, function () { resolve(); });
+    });
+}
+
+// Copies every document into DISTRICT/DIGITIZATION_CENTER/CINO/FILENAME.pdf under
+// config digitizationApi.documentRoot, then rewrites documentPath in the payload
+// objects and persists the new path back to ia_filings / order_details /
+// case_documents / classficationfiles.
+async function prepareCisFiles(caseJson, classDocs, fir) {
+    var cino = String(caseJson.cino || '').trim();
+    if (!cino) return;
+    var courtCode = cino.slice(0, 6).toUpperCase();
+    var est = cisEstablishment(courtCode) || {};
+    var district = cisPathSegment(est.district || cisCfg.district || courtCode);
+    var center = cisPathSegment((fir && fir.est_code) || est.courtName || courtCode);
+    var root = cisCfg.documentRoot;
+    if (!root) { console.warn('prepareCisFiles: digitizationApi.documentRoot not configured - skipping copy'); return; }
+    var destDir = path.join(root, district, center, cino);
+    fs.mkdirSync(destDir, { recursive: true });
+
+    async function relocate(obj, col, table, id, key) {
+        var src = String(obj[key] || '').trim();
+        if (!src) return;
+        var srcPath = src.replace(/\\/g, '/');
+        var fileName = path.basename(srcPath);
+        if (!fileName) return;
+        var relPath = String(root).replace(/\\/g, '/').replace(/\/+$/, '') + '/' + district + '/' + center + '/' + cino + '/' + fileName;
+        try {
+            if (!fs.existsSync(srcPath)) {
+                console.warn('prepareCisFiles: source missing ' + srcPath);
+            } else {
+                var destPath = path.join(destDir, fileName);
+                if (path.resolve(srcPath) !== path.resolve(destPath)) {
+                    fs.copyFileSync(srcPath, destPath);
+                }
+            }
+            obj[key] = relPath;
+            if (table) await sqlUpdate(table, col, relPath, id);
+        } catch (e) {
+            console.error('prepareCisFiles: copy failed ' + srcPath + ' -> ' + relPath + ':', e.message);
+            throw e;
+        }
+    }
+
+    for (var i = 0; i < (caseJson.ia_filings || []).length; i++) {
+        var ia = caseJson.ia_filings[i];
+        await relocate(ia, '"documentPath"', 'ia_filings', ia.id, 'documentPath');
+    }
+    for (var j = 0; j < (caseJson.order_details || []).length; j++) {
+        var od = caseJson.order_details[j];
+        await relocate(od, '"documentPath"', 'order_details', od.id, 'documentPath');
+    }
+    for (var k = 0; k < (caseJson.case_documents || []).length; k++) {
+        var doc = caseJson.case_documents[k];
+        await relocate(doc, '"documentPath"', 'case_documents', doc.id, 'documentPath');
+    }
+    for (var m = 0; m < (classDocs || []).length; m++) {
+        var cf = classDocs[m];
+        await relocate(cf, null, null, null, 'ocrpdfpath');
+    }
+}
+
 // Upload digitized case details to CIS after third-level approval.
 // If the CINO already exists in CIS -> PUT (update), otherwise -> POST (create).
 async function uploadCaseToCis(req) {
@@ -531,11 +615,20 @@ async function uploadCaseToCis(req) {
             }
             var caseJson = detail.toJSON ? detail.toJSON() : detail;
             var classDocs = await getClassficationDocs(firId, req);
-            var cisPayload = buildCisPayload(caseJson, classDocs);
-            // fir.cisfound=false -> POST (create); true -> PUT (update)
             var firData = await getfile(firId, req);
+            // Copy all PDFs into DISTRICT/DIGITIZATION_CENTER/CINO/ and update
+            // documentPath in ia_filings, order_details, case_documents, classficationfiles
+            await prepareCisFiles(caseJson, classDocs, Array.isArray(firData) ? firData[0] : null);
+            var batchNo = buildBatchNo(caseJson, Array.isArray(firData) ? firData[0] : null);
+            var cisPayload = buildCisPayload(caseJson, classDocs, batchNo);
+           
+            // fir.cisfound=false -> POST (create); true -> PUT (update)
             var existsInCis = !!(Array.isArray(firData) && firData[0] && firData[0].cisfound);
 
+            // try {
+            //     fs.writeFileSync(path.join(__dirname, '..', 'scratch', 'cisPayload_' + (caseJson.cino || firId) + '.json'),
+            //         JSON.stringify(cisPayload, null, 2));
+            // } catch (dumpErr) { console.error('cisPayload dump failed:', dumpErr.message); }
             console.log("cisPayload,,,existsInCis................", existsInCis)
             var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
@@ -667,12 +760,27 @@ function cisDocuments(cd, classDocs) {
     return docs;
 }
 
+// Batch nomenclature: IM_KDC_<H|P>_<ESTCODE>-<bundlenumber>
+// H = Disposed, P = Pending; serial = fir's batch bundlenumber.
+function buildBatchNo(cd, fir) {
+    var cino = String(cd.cino || '').trim();
+    var est = cino.slice(0, 6).toUpperCase();
+    if (!est) return null;
+    var hp = String(cd.status || '').toLowerCase() === 'disposed' ? 'H' : 'P';
+    var bundle = fir && fir.batch && fir.batch.bundlenumber;
+    if (!bundle) return null;
+    var serial = String(bundle).split('-').pop();
+    if (!serial) return null;
+    return 'IM_KDC_' + hp + '_' + est + '-' + serial;
+}
+
 // Build the CIS digitizedEntry payload from a local case (CaseService.getCaseByFir toJSON)
 // in the same shape the CIS fetch API returns.
-function buildCisPayload(cd, classDocs) {
+function buildCisPayload(cd, classDocs, batchNo) {
     var crime = (cd.crime_details || [])[0];
     var parties = cd.main_parties || [];
     return {
+        batchNo: batchNo || null,
         caseDetails: {
             cino: cd.cino,
             efilno: cd.efilno,

@@ -1,0 +1,262 @@
+{
+  "batchNo": "IM_KDC_H_KLER01-0105",
+  "caseDetails": {
+    "cino": "KLER010064662024",
+    "efilno": "AKL20210000107C202400071",
+    "dateOfEfiling": "2024-07-24",
+    "filNo": 101883,
+    "filYear": 2024,
+    "dateOfFiling": "2024-07-24",
+    "dateOfScrutiny": null,
+    "regNo": 100115,
+    "regYear": 2024,
+    "dtRegis": "2024-07-27",
+    "typeName": "GOP",
+    "caseType": 7,
+    "ciCri": null,
+    "status": "Disposed",
+    "dateFirstList": "2024-07-31",
+    "dateNextList": "2024-11-30",
+    "dateLastList": "2024-11-30",
+    "dateOfDecision": "2024-11-30",
+    "dateFilingDisp": null,
+    "dateFilingDispO": null,
+    "dispNature": 31,
+    "courtNo": 9,
+    "policeStCode": null,
+    "firNo": null,
+    "firYear": null,
+    "mainCaseNo": null,
+    "subject": 657,
+    "caseNo": "200701001152024",
+    "mainMatterCino": null
+  },
+  "additionalSubjects": [
+    {
+      "subjectCode": 609
+    },
+    {
+      "subjectCode": 507
+    }
+  ],
+  "mainparties": {
+    "petitioner": {
+      "name": "S Krishnakumar",
+      "address": "5G, Shanthi Bhavan, Warriam Road, Kochi - 16",
+      "isPartyInPerson": false,
+      "mobileNumber": "90909090900",
+      "isHidden": false,
+      "legalHeir": null,
+      "advocate": {
+        "name": null,
+        "code": null,
+        "regNo": null
+      }
+    },
+    "respondent": {
+      "name": "Nil",
+      "address": "Nil",
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "isHidden": false,
+      "legalHeir": null,
+      "advocate": {
+        "name": null,
+        "code": null,
+        "regNo": null
+      }
+    }
+  },
+  "extraParties": [],
+  "additionalAdvocates": [],
+  "otherParties": [],
+  "victims": [],
+  "witness": [],
+  "caveat": [],
+  "act": [
+    {
+      "actcode": 2008,
+      "section": "Section 8"
+    }
+  ],
+  "factDetails": [],
+  "causeofaction": [],
+  "iaFiling": [
+    {
+      "iaType": 1,
+      "iaNumber": "1",
+      "iaYear": 2024,
+      "iaNature": 1501,
+      "filingDate": "2024-07-29",
+      "applicantName": "S Krishnakumar",
+      "applicantAdvocate": null,
+      "respondentName": "Nil",
+      "respondentAdvocate": null,
+      "documentPath": null,
+      "status": "Pending",
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 13,
+      "iaNumber": "1111",
+      "iaYear": 1111,
+      "iaNature": 1515,
+      "filingDate": "1900-11-11",
+      "applicantName": null,
+      "applicantAdvocate": null,
+      "respondentName": null,
+      "respondentAdvocate": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2019_FormA.pdf",
+      "status": null,
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 4,
+      "iaNumber": "222",
+      "iaYear": 2022,
+      "iaNature": 1515,
+      "filingDate": "2022-02-02",
+      "applicantName": null,
+      "applicantAdvocate": null,
+      "respondentName": null,
+      "respondentAdvocate": null,
+      "documentPath": null,
+      "status": null,
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 1,
+      "iaNumber": "3333",
+      "iaYear": 2033,
+      "iaNature": 1502,
+      "filingDate": null,
+      "applicantName": null,
+      "applicantAdvocate": null,
+      "respondentName": null,
+      "respondentAdvocate": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb-Apl_2_2019_FormA.pdf",
+      "status": null,
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 1,
+      "iaNumber": "4",
+      "iaYear": 2024,
+      "iaNature": 0,
+      "filingDate": "2024-12-02",
+      "applicantName": "S Krishnakumar",
+      "applicantAdvocate": null,
+      "respondentName": "Nil",
+      "respondentAdvocate": null,
+      "documentPath": null,
+      "status": "Pending",
+      "dateOfDecision": null,
+      "nextdate": null
+    }
+  ],
+  "caseHistory": [],
+  "iaHistory": [],
+  "proceedingsPresence": [],
+  "trialCourtDetails": [],
+  "crimeDetails": [],
+  "transferDetails": [],
+  "orderDetails": [
+    {
+      "documentType": 1121,
+      "orderDate": "2022-01-22",
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_4_2021_FormA.pdf",
+      "judgeCode": null,
+      "jocode": null,
+      "iaNumber": "123123",
+      "iaType": 3
+    },
+    {
+      "documentType": 1184,
+      "orderDate": "2022-02-22",
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_66_2024_FormA.pdf",
+      "judgeCode": null,
+      "jocode": null,
+      "iaNumber": "234",
+      "iaType": 1
+    },
+    {
+      "documentType": 1082,
+      "orderDate": "2024-11-29",
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Com.A_44_2013_FormA.pdf",
+      "judgeCode": 54,
+      "jocode": "KL00445",
+      "iaNumber": "NULL        ",
+      "iaType": null
+    }
+  ],
+  "documents": [
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1219,
+      "documentName": "AOP_1_2024_FormA.pdf",
+      "documentTitle": "Acknowledgment",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2024_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 1,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1235,
+      "documentName": "AOP_1_2024_FormB.pdf",
+      "documentTitle": "311 petition",
+      "description": "Form B",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2024_FormB.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 2,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1184,
+      "documentName": "AOP_1_2020_FormA.pdf",
+      "documentTitle": "313 Statement",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2020_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 3,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1121,
+      "documentName": "AOP_1_2020_FormB.pdf",
+      "documentTitle": "Affidavit",
+      "description": "Form B",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2020_FormB.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 4,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    }
+  ]
+}
