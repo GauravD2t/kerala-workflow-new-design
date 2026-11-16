@@ -329,7 +329,8 @@ DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
     var deletequery = "";
 
     //  await uploadCaseToCis(req);
-    //  res.send({ status: true });
+    //  return ;
+     res.send({ status: true });
     if (req.body.imagestatus == 6) {
         deletequery = "update firs set verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
         CIPAService.UpdateexecuteSQL(deletequery, async function (data) {
@@ -725,6 +726,47 @@ function cisAdvGroups(rows) {
     return keys.map(function (k) { return map[k]; });
 }
 
+function cisExtraParty(r) {
+    if (!r) return null;
+    return {
+        partyType: r.partyType,
+        partyNo: r.partyNo,
+        partyId: r.partyId,
+        isPartyInPerson: r.isPartyInPerson || false,
+        mobileNumber: r.mobile,
+        personalDetails: {
+            firstName: r.firstName,
+            lastName: r.lastName,
+            rank: r.rank,
+            age: r.age,
+            dateOfBirth: r.dateOfBirth,
+            gender: r.gender,
+            email: r.email,
+            mobile: r.mobile
+        },
+        address: {
+            fullAddress: r.fullAddress,
+            pincode: r.pincode,
+            villageCode: r.villageCode,
+            talukaCode: r.talukaCode,
+            districtCode: r.districtCode,
+            stateId: r.stateId
+        },
+        organizationDetails: {
+            name: r.orgName,
+            type: r.orgType
+        },
+        advocate: {
+            name: r.advName,
+            code: (r.advCode !== null && r.advCode !== undefined) ? String(r.advCode) : null,
+            regNo: r.advReg
+        },
+        legalHeir: r.legalHeir,
+        isNameHidden: r.isNameHidden || false,
+        status: r.status || 'Y'
+    };
+}
+
 function normCisPath(p) {
     return String(p || '').replace(/\\/g, '/').toLowerCase();
 }
@@ -819,7 +861,7 @@ function buildCisPayload(cd, classDocs, batchNo) {
             petitioner: cisMainParty(parties.filter(function (r) { return r.partytype == 1; })[0]),
             respondent: cisMainParty(parties.filter(function (r) { return r.partytype == 2; })[0])
         },
-        extraParties: (cd.extra_parties || []).map(cisStrip),
+        extraParties: (cd.extra_parties || []).map(cisExtraParty),
         additionalAdvocates: cisAdvGroups(cd.additional_advocates),
         otherParties: (cd.other_parties || []).map(cisStrip),
         victims: (cd.victims || []).map(cisStrip),

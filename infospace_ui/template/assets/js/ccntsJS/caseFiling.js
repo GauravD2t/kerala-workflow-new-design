@@ -439,10 +439,37 @@ function fillAdvocateOptions($sel, rows) {
     if (current) $sel.val(current);
 }
 
+function syncAdvPickSel($sel) {
+    var target = $sel.data('target');
+    if (!target) return;
+    var courtCode = currentCourtCode() || '';
+    var rows = advocateCache[courtCode] || [];
+    var code = String($('#' + target + 'advCode').val() || '');
+    var name = String($('#' + target + 'advName').val() || '');
+    var idx = -1;
+    rows.forEach(function (r, i) {
+        if (idx !== -1) return;
+        if (code && String(advCode(r)) === code) idx = i;
+        else if (!code && name && String(advName(r)) === name) idx = i;
+    });
+    if (idx === -1 && (code || name)) {
+        var reg = String($('#' + target + 'advReg').val() || '');
+        var label = name || ('Advocate ' + code);
+        if (reg) label += ' (' + reg + ')';
+        $sel.find('option[value="manual"]').remove();
+        $sel.append('<option value="manual">' + label + '</option>');
+        $sel.val('manual');
+        return;
+    }
+    $sel.find('option[value="manual"]').remove();
+    $sel.val(idx >= 0 ? String(idx) : '');
+}
+
 function refreshAdvocateSelects() {
     loadAdvocateRows(function (rows) {
         $('.cf-adv-pick, select.adv-pick').each(function () {
             fillAdvocateOptions($(this), rows);
+            syncAdvPickSel($(this));
         });
     });
 }
@@ -455,6 +482,7 @@ $(document).on('change', '.cf-adv-pick, select.adv-pick', function () {
     var rows = advocateCache[courtCode] || [];
     var r = rows[idx];
     if (!r) return;
+    $sel.find('option[value="manual"]').remove();
     var target = $sel.data('target');
     if (target) {
         $('#' + target + 'advName').val(advName(r));
@@ -569,6 +597,7 @@ function makeListManager(cfg) {
         open: function (index) {
             var item = (index === undefined) ? {} : items[index];
             if (cfg.fill) { cfg.fill(item); } else { fillModalFlat(cfg, item); }
+            $(cfg.modalId).find('.cf-adv-pick').each(function () { syncAdvPickSel($(this)); });
             $(cfg.modalId).data('edit-index', (index === undefined) ? -1 : index).modal('show');
         },
         save: function () {
@@ -944,12 +973,14 @@ function buildParty(prefix) {
 
 function fillParty(prefix, item) {
     item = item || {};
-    var adv = item.advocate || {};
+    var adv = item.advocate || { name: item.advName, code: item.advCode, regNo: item.advReg };
     fillPrefix(prefix, PET_FIELDS.concat(PET_BOOL), {
         name: item.name, address: item.address, mobileNumber: item.mobileNumber,
         legalHeir: item.legalHeir, advName: adv.name, advCode: adv.code, advReg: adv.regNo,
         isPartyInPerson: item.isPartyInPerson, isHidden: item.isHidden
     }, PET_BOOL);
+    var $advPick = $('#' + prefix + 'advSelect');
+    if ($advPick.length) syncAdvPickSel($advPick);
 }
 
 /* ---------------- search / populate / save ---------------- */

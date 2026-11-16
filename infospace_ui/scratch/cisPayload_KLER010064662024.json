@@ -1,82 +1,357 @@
 {
-  "batchNo": "IM_KDC_H_KLER01-0105",
+  "batchNo": "IM_KDC_P_KLER01-0105",
   "caseDetails": {
     "cino": "KLER010064662024",
-    "efilno": "AKL20210000107C202400071",
-    "dateOfEfiling": "2024-07-24",
-    "filNo": 101883,
-    "filYear": 2024,
-    "dateOfFiling": "2024-07-24",
+    "efilno": null,
+    "dateOfEfiling": "2023-04-11",
+    "filNo": 2000173,
+    "filYear": 2023,
+    "dateOfFiling": "2023-04-11",
     "dateOfScrutiny": null,
-    "regNo": 100115,
-    "regYear": 2024,
-    "dtRegis": "2024-07-27",
-    "typeName": "GOP",
-    "caseType": 7,
+    "regNo": 200093,
+    "regYear": 2023,
+    "dtRegis": "2023-04-11",
+    "typeName": "OS",
+    "caseType": 47,
     "ciCri": null,
-    "status": "Disposed",
-    "dateFirstList": "2024-07-31",
-    "dateNextList": "2024-11-30",
-    "dateLastList": "2024-11-30",
-    "dateOfDecision": "2024-11-30",
+    "status": "Pending",
+    "dateFirstList": "2023-04-11",
+    "dateNextList": "2026-06-09",
+    "dateLastList": "2026-04-06",
+    "dateOfDecision": null,
     "dateFilingDisp": null,
     "dateFilingDispO": null,
-    "dispNature": 31,
-    "courtNo": 9,
+    "dispNature": null,
+    "courtNo": 2,
     "policeStCode": null,
     "firNo": null,
     "firYear": null,
-    "mainCaseNo": null,
-    "subject": 657,
-    "caseNo": "200701001152024",
+    "mainCaseNo": "               ",
+    "subject": 506,
+    "caseNo": "204702000932023",
     "mainMatterCino": null
   },
-  "additionalSubjects": [
-    {
-      "subjectCode": 609
-    },
-    {
-      "subjectCode": 507
-    }
-  ],
+  "additionalSubjects": [],
   "mainparties": {
     "petitioner": {
-      "name": "S Krishnakumar",
-      "address": "5G, Shanthi Bhavan, Warriam Road, Kochi - 16",
-      "isPartyInPerson": false,
-      "mobileNumber": "90909090900",
-      "isHidden": false,
-      "legalHeir": null,
-      "advocate": {
-        "name": null,
-        "code": null,
-        "regNo": null
-      }
-    },
-    "respondent": {
-      "name": "Nil",
-      "address": "Nil",
+      "name": "N.V Vinod Kumar",
+      "address": "Weingarten, STR-3, CH-3904, Naters, Switzerland, Now residing at Vijalayam, Karikkamuri Cross Road, Ernakulam\nRepresented by POA Holder Denson Xavier, aged 48 years, S/o Xavier, residing Adhappalli House, Doctor George Road, Kaloor P.O, 682017.",
       "isPartyInPerson": false,
       "mobileNumber": null,
       "isHidden": false,
       "legalHeir": null,
       "advocate": {
-        "name": null,
-        "code": null,
+        "name": "Karthik S. Acharya",
+        "code": "0",
+        "regNo": null
+      }
+    },
+    "respondent": {
+      "name": "N.V Veerkumar",
+      "address": "Now residing at New Venil Vihar, House No. 39/153A, Karikkmuri Cross Road, Ernakulam.",
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "isHidden": false,
+      "legalHeir": null,
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
         "regNo": null
       }
     }
   },
-  "extraParties": [],
-  "additionalAdvocates": [],
+  "extraParties": [
+    {
+      "partyType": 2,
+      "partyNo": 1,
+      "partyId": 1,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N.V VenuGopal",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Now residing at Narayana Vilas, Ammancoil Road, Ernakulam, Kochi.",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 5,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    },
+    {
+      "partyType": 2,
+      "partyNo": 2,
+      "partyId": 2,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N.V. Vasanthy",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Retired School Teacher, residing at '' APPAWIN 135, Chellam compund, K.P Road, Ramavarmapuram, Nagarcoil, Tamilnadu.",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 0,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    },
+    {
+      "partyType": 2,
+      "partyNo": 3,
+      "partyId": 3,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N.V Jayanthi",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Vysakh, Elamkulam Road, Kaloor P.O,  Kochi",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 0,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    },
+    {
+      "partyType": 2,
+      "partyNo": 4,
+      "partyId": 4,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N.V Vimalakumari",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Now residing at  Sayoojam, Kathrikadavu, EKM",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 0,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    },
+    {
+      "partyType": 2,
+      "partyNo": 5,
+      "partyId": 5,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N.V Valsalakumari",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Residing at Common  Wealth Group Plot No. 135, Float No. 203 Sector 28, Vashy, Mumbai",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 0,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    },
+    {
+      "partyType": 2,
+      "partyNo": 6,
+      "partyId": 6,
+      "isPartyInPerson": false,
+      "mobileNumber": null,
+      "personalDetails": {
+        "firstName": "N V Vidhyakumari",
+        "lastName": null,
+        "rank": null,
+        "age": null,
+        "dateOfBirth": null,
+        "gender": null,
+        "email": null,
+        "mobile": null
+      },
+      "address": {
+        "fullAddress": "Residing at 3381, Bertrand Road, Mississauga, Ontario/L5L.4G3, \nCanada",
+        "pincode": "0",
+        "villageCode": 0,
+        "talukaCode": 0,
+        "districtCode": 0,
+        "stateId": 0
+      },
+      "organizationDetails": {
+        "name": null,
+        "type": null
+      },
+      "advocate": {
+        "name": "NIRMAL KUMAR.S.",
+        "code": "352",
+        "regNo": null
+      },
+      "legalHeir": null,
+      "isNameHidden": false,
+      "status": "Y"
+    }
+  ],
+  "additionalAdvocates": [
+    {
+      "partyNo": 5,
+      "partyId": 5,
+      "partyType": 2,
+      "advocates": [
+        {
+          "name": "Jimmy",
+          "code": "5030",
+          "regNo": null
+        }
+      ]
+    },
+    {
+      "partyNo": 4,
+      "partyId": 4,
+      "partyType": 2,
+      "advocates": [
+        {
+          "name": "MANOJ B MENON",
+          "code": "20658",
+          "regNo": null
+        },
+        {
+          "name": "Jimmy",
+          "code": "20829",
+          "regNo": null
+        }
+      ]
+    },
+    {
+      "partyNo": 3,
+      "partyId": 3,
+      "partyType": 2,
+      "advocates": [
+        {
+          "name": "Jimmy",
+          "code": "34611",
+          "regNo": null
+        },
+        {
+          "name": "MANOJ B MENON",
+          "code": "20658",
+          "regNo": null
+        }
+      ]
+    },
+    {
+      "partyNo": 2,
+      "partyId": 2,
+      "partyType": 2,
+      "advocates": [
+        {
+          "name": "Jimmy",
+          "code": "5038",
+          "regNo": null
+        }
+      ]
+    }
+  ],
   "otherParties": [],
   "victims": [],
   "witness": [],
   "caveat": [],
   "act": [
     {
-      "actcode": 2008,
-      "section": "Section 8"
+      "actcode": 567,
+      "section": "O-VII,R-1,S-26"
     }
   ],
   "factDetails": [],
@@ -84,13 +359,13 @@
   "iaFiling": [
     {
       "iaType": 1,
-      "iaNumber": "1",
-      "iaYear": 2024,
-      "iaNature": 1501,
-      "filingDate": "2024-07-29",
-      "applicantName": "S Krishnakumar",
+      "iaNumber": "3",
+      "iaYear": 2023,
+      "iaNature": 0,
+      "filingDate": "2023-04-11",
+      "applicantName": "N.V Vinod Kumar",
       "applicantAdvocate": null,
-      "respondentName": "Nil",
+      "respondentName": "N.V Veerkumar",
       "respondentAdvocate": null,
       "documentPath": null,
       "status": "Pending",
@@ -98,59 +373,74 @@
       "nextdate": null
     },
     {
-      "iaType": 13,
-      "iaNumber": "1111",
-      "iaYear": 1111,
-      "iaNature": 1515,
-      "filingDate": "1900-11-11",
-      "applicantName": null,
+      "iaType": 1,
+      "iaNumber": "1",
+      "iaYear": 2023,
+      "iaNature": 0,
+      "filingDate": "2023-04-11",
+      "applicantName": "N.V Vinod Kumar",
       "applicantAdvocate": null,
-      "respondentName": null,
-      "respondentAdvocate": null,
-      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2019_FormA.pdf",
-      "status": null,
-      "dateOfDecision": null,
-      "nextdate": null
-    },
-    {
-      "iaType": 4,
-      "iaNumber": "222",
-      "iaYear": 2022,
-      "iaNature": 1515,
-      "filingDate": "2022-02-02",
-      "applicantName": null,
-      "applicantAdvocate": null,
-      "respondentName": null,
+      "respondentName": "N.V Veerkumar",
       "respondentAdvocate": null,
       "documentPath": null,
-      "status": null,
+      "status": "Pending",
       "dateOfDecision": null,
       "nextdate": null
     },
     {
       "iaType": 1,
-      "iaNumber": "3333",
-      "iaYear": 2033,
-      "iaNature": 1502,
-      "filingDate": null,
-      "applicantName": null,
+      "iaNumber": "1",
+      "iaYear": 2026,
+      "iaNature": 1609,
+      "filingDate": "2026-03-27",
+      "applicantName": "N.V Vinod Kumar",
       "applicantAdvocate": null,
-      "respondentName": null,
+      "respondentName": "N.V Veerkumar",
       "respondentAdvocate": null,
-      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb-Apl_2_2019_FormA.pdf",
-      "status": null,
+      "documentPath": null,
+      "status": "Pending",
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 1,
+      "iaNumber": "2",
+      "iaYear": 2023,
+      "iaNature": 0,
+      "filingDate": "2023-04-11",
+      "applicantName": "N.V Vinod Kumar",
+      "applicantAdvocate": null,
+      "respondentName": "N.V Veerkumar",
+      "respondentAdvocate": null,
+      "documentPath": null,
+      "status": "Pending",
       "dateOfDecision": null,
       "nextdate": null
     },
     {
       "iaType": 1,
       "iaNumber": "4",
-      "iaYear": 2024,
+      "iaYear": 2023,
       "iaNature": 0,
-      "filingDate": "2024-12-02",
-      "applicantName": "S Krishnakumar",
+      "filingDate": "2023-04-11",
+      "applicantName": "N.V Vinod Kumar",
       "applicantAdvocate": null,
-      "respondentName": "Nil",
+      "respondentName": "N.V Veerkumar",
+      "respondentAdvocate": null,
+      "documentPath": null,
+      "status": "Pending",
+      "dateOfDecision": null,
+      "nextdate": null
+    },
+    {
+      "iaType": 1,
+      "iaNumber": "2",
+      "iaYear": 2026,
+      "iaNature": 1542,
+      "filingDate": "2026-03-27",
+      "applicantName": "N.V Vinod Kumar",
+      "applicantAdvocate": null,
+      "respondentName": "N.V Veerkumar",
       "respondentAdvocate": null,
       "documentPath": null,
       "status": "Pending",
@@ -164,36 +454,104 @@
   "trialCourtDetails": [],
   "crimeDetails": [],
   "transferDetails": [],
-  "orderDetails": [
-    {
-      "documentType": 1121,
-      "orderDate": "2022-01-22",
-      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_4_2021_FormA.pdf",
-      "judgeCode": null,
-      "jocode": null,
-      "iaNumber": "123123",
-      "iaType": 3
-    },
-    {
-      "documentType": 1184,
-      "orderDate": "2022-02-22",
-      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_66_2024_FormA.pdf",
-      "judgeCode": null,
-      "jocode": null,
-      "iaNumber": "234",
-      "iaType": 1
-    },
-    {
-      "documentType": 1082,
-      "orderDate": "2024-11-29",
-      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Com.A_44_2013_FormA.pdf",
-      "judgeCode": 54,
-      "jocode": "KL00445",
-      "iaNumber": "NULL        ",
-      "iaType": null
-    }
-  ],
+  "orderDetails": [],
   "documents": [
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1070,
+      "documentName": "AOP_1_2019_FormA.pdf",
+      "documentTitle": "183 Statement",
+      "description": "form A",
+      "remarks": "demo test",
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2019_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": "01-02-2003",
+      "documentOrder": 1,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1187,
+      "documentName": "AOP_1_2019_FormA.pdf",
+      "documentTitle": "Form A",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/AOP_1_2019_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 2,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1188,
+      "documentName": "Arb-Apl_2_2019_FormA.pdf",
+      "documentTitle": "Form A",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb-Apl_2_2019_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 3,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1204,
+      "documentName": "Arb.Award.no_66_2024_FormA.pdf",
+      "documentTitle": "Aadhar Card",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_66_2024_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 4,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1192,
+      "documentName": "Com.A_44_2013_FormA.pdf",
+      "documentTitle": "Absent Application",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Com.A_44_2013_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 5,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
+    {
+      "partyNo": null,
+      "partyType": null,
+      "documentType": 1131,
+      "documentName": "Arb.Award.no_4_2021_FormA.pdf",
+      "documentTitle": "Address",
+      "description": "Form A",
+      "remarks": null,
+      "documentPath": "E:/cis_upload/ERNAKULAM/DISTRICT_AND_SESSIONS_COURT_RENT_CONTROL_APPELLATE_AUTHORITY_ERNAKULAM/KLER010064662024/Arb.Award.no_4_2021_FormA.pdf",
+      "advReg": null,
+      "advCode": null,
+      "filedDate": null,
+      "documentOrder": 6,
+      "fileSize": null,
+      "fileExtension": "pdf"
+    },
     {
       "partyNo": null,
       "partyType": null,
@@ -206,7 +564,7 @@
       "advReg": null,
       "advCode": null,
       "filedDate": null,
-      "documentOrder": 1,
+      "documentOrder": 7,
       "fileSize": null,
       "fileExtension": "pdf"
     },
@@ -222,7 +580,7 @@
       "advReg": null,
       "advCode": null,
       "filedDate": null,
-      "documentOrder": 2,
+      "documentOrder": 8,
       "fileSize": null,
       "fileExtension": "pdf"
     },
@@ -238,7 +596,7 @@
       "advReg": null,
       "advCode": null,
       "filedDate": null,
-      "documentOrder": 3,
+      "documentOrder": 9,
       "fileSize": null,
       "fileExtension": "pdf"
     },
@@ -254,7 +612,7 @@
       "advReg": null,
       "advCode": null,
       "filedDate": null,
-      "documentOrder": 4,
+      "documentOrder": 10,
       "fileSize": null,
       "fileExtension": "pdf"
     }
