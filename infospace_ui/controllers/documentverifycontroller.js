@@ -328,8 +328,8 @@ DocumentverifyController.prototype.findFIrsbybathcForFirstTime = function (req, 
 DocumentverifyController.prototype.bulverifyfile = async function (req, res) {
     var deletequery = "";
 
-    //  await uploadCaseToCis(req);
-    //  return ;
+     //await uploadCaseToCis(req);
+    // return ;
      res.send({ status: true });
     if (req.body.imagestatus == 6) {
         deletequery = "update firs set verify_at=NOW(),verify_by=" + req.session.user.user.id + ",imagestatus=" + req.body.imagestatus + " where id in (" + req.body.selectedfile.toString() + ")";
@@ -631,7 +631,8 @@ async function uploadCaseToCis(req) {
             //         JSON.stringify(cisPayload, null, 2));
             // } catch (dumpErr) { console.error('cisPayload dump failed:', dumpErr.message); }
             console.log("cisPayload,,,existsInCis................", existsInCis)
-            var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
+           var result;
+             var result = await DigitizationApiService.pushDigitizedEntry(cisPayload, existsInCis);
             if (result && result.success !== false && result.status !== false) {
                 var firupdate = "update firs set isupload=true,upload_at=NOW() where id in (" + firId + ")";
                 await new Promise(function (resolve) {

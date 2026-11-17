@@ -1116,6 +1116,10 @@ function searchCase(forEdit) {
     //     return;
     // }
     var cinoCourtCode = cino.slice(0, 6);
+    if (cfEstablishments.length && !cfEstablishments.some(function (row) { return row.courtCode === cinoCourtCode; })) {
+        toastr.warning('CINO ' + cino + ' belongs to establishment ' + cinoCourtCode + ', which is not configured. Search is allowed only for listed establishments.');
+        return;
+    }
     if (cfEstablishments.some(function (row) { return row.courtCode === cinoCourtCode; }) && $('#cf_pick_establishment').val() !== cinoCourtCode) {
         $('#cf_pick_establishment').val(cinoCourtCode).trigger('change');
     }

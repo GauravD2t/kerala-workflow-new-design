@@ -286,30 +286,13 @@
   ],
   "additionalAdvocates": [
     {
-      "partyNo": 5,
-      "partyId": 5,
+      "partyNo": 2,
+      "partyId": 2,
       "partyType": 2,
       "advocates": [
         {
           "name": "Jimmy",
-          "code": "5030",
-          "regNo": null
-        }
-      ]
-    },
-    {
-      "partyNo": 4,
-      "partyId": 4,
-      "partyType": 2,
-      "advocates": [
-        {
-          "name": "MANOJ B MENON",
-          "code": "20658",
-          "regNo": null
-        },
-        {
-          "name": "Jimmy",
-          "code": "20829",
+          "code": "5038",
           "regNo": null
         }
       ]
@@ -320,8 +303,25 @@
       "partyType": 2,
       "advocates": [
         {
+          "name": "MANOJ B MENON",
+          "code": "20658",
+          "regNo": null
+        },
+        {
           "name": "Jimmy",
           "code": "34611",
+          "regNo": null
+        }
+      ]
+    },
+    {
+      "partyNo": 4,
+      "partyId": 4,
+      "partyType": 2,
+      "advocates": [
+        {
+          "name": "Jimmy",
+          "code": "20829",
           "regNo": null
         },
         {
@@ -332,13 +332,13 @@
       ]
     },
     {
-      "partyNo": 2,
-      "partyId": 2,
+      "partyNo": 5,
+      "partyId": 5,
       "partyType": 2,
       "advocates": [
         {
           "name": "Jimmy",
-          "code": "5038",
+          "code": "5030",
           "regNo": null
         }
       ]
