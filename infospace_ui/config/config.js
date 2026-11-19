@@ -1,7 +1,7 @@
 module.exports = {
     development: {
         host: "localhost",
-        port: "1337",
+        port: "1339",
         digitizationApi: {
             baseUrl: "https://staging-dcms.keralacourts.in/",
             username: "digitizationIM",
@@ -9,7 +9,7 @@ module.exports = {
             tokenTtlMs: 150000,
             encryptionKey: "U2FsdGVkX1+Fz3Z5Y2V0b3JQZXRlcjE=",
             district: "Ernakulam",
-            documentRoot: "E:/cis_upload",
+            documentRoot: "/",
             establishments: [
     { courtCode: "KLER57", courtName: "Additional Special Sessions Court /SPE/CBI -III,Ernakulam" },
     { courtCode: "KLER75", courtName: "Addl. Chief Judicial Magistrate (Special Court for Cases Related to MPs/MLAs), Ernakulam" },
@@ -23,24 +23,7 @@ module.exports = {
     { courtCode: "KLER71", courtName: "Judicial First class Magistrate Court (NI Act) Ernakulam" },
     { courtCode: "KLER68", courtName: "Judicial First class Magistrate Court IX Ernakulam" },
     { courtCode: "KLER66", courtName: "Judicial First class Magistrate Court VIII Ernakulam" },
-    { courtCode: "KLER07", courtName: "Judicial First class MagistrateCourt I, Ernakulam" },
-    { courtCode: "KLER08", courtName: "Judicial First class MagistrateCourt II Ernakulam" },
-    { courtCode: "KLER09", courtName: "Judicial First class MagistrateCourt III Ernakulam" },
-    { courtCode: "KLER10", courtName: "Judicial First class MagistrateCourt IV Ernakulam" },
-    { courtCode: "KLER11", courtName: "Judicial First class MagistrateCourt V, Ernakulam" },
-    { courtCode: "KLER12", courtName: "Judicial First class MagistrateCourt VI Ernakulam" },
-    { courtCode: "KLER13", courtName: "Judicial First class MagistrateCourt VII Ernakulam" },
-    { courtCode: "KLER88", courtName: "Juvenile Justice Board Ernakulam" },
-    { courtCode: "KLER19", courtName: "Motor Accidents Claims Tribunal, Ernakulam" },
-    { courtCode: "KLER04", courtName: "Munsiff Court Ernakulam" },
-    { courtCode: "KLER15", courtName: "Special Court /SPE/CBI-I/PMLA, Ernakulam" },
-    { courtCode: "KLER18", courtName: "Special Court for NIA Cases/SPE/CBI -II, Ernakulam" },
-    { courtCode: "KLER89", courtName: "Special Court for the trial of offences under the SC and ST PoA ACT 1989, Ernakulam" },
-    { courtCode: "KLER92", courtName: "Special Court for trial of cases under Narcotic Drugs and Psychotropic Substances Act, 1985, Ernakulam" },
-    { courtCode: "KLER17", courtName: "Special Court for/NIA Cases/SPE/CBI-I, Ernakulam" },
-    { courtCode: "KLER16", courtName: "Special Court SPE.CBI-II, Ernakulam" },
-    { courtCode: "KLER02", courtName: "State Transport Appellate Tribunal" },
-    { courtCode: "KLER03", courtName: "Sub Court Ernakulam" }
+    
   ]
         }
     }
